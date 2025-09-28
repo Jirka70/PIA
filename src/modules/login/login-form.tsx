@@ -48,7 +48,8 @@ export function LoginForm() {
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full"></div>
             </div>
         </div>
-        <div className="space-y-2">
+
+        <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight text-balance">Welcome back</h1>
             <p className="text-muted-foreground text-balance">Sign in to your account to continue</p>
         </div>

@@ -49,7 +49,7 @@ export function LoginForm() {
             </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-balance">Welcome back</h1>
             <p className="text-muted-foreground text-balance">Sign in to your account to continue</p>
         </div>

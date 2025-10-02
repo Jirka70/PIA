@@ -12,7 +12,12 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react"
 import { signIn } from "@/server/users"
 import { z } from "zod"
-import { Form } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+
 
 const formSchema = z.object({
     email: z.email(),
@@ -28,12 +33,31 @@ export function LoginForm() {
         }
     })
     const [showPassword, setShowPassword] = useState(false)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
 
-    const handleSubmit = async () => {
-        
+    const googleSignIn = async () => {
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/dashboard"
+        });
+    };
+
+    const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+        setIsLoading(true)
+        try {
+            const { success, message } = await signIn(values.email, values.password)
+            if (success) {
+                toast.success(message as string)
+                router.push("/dashboard")
+            } else {
+                toast.error(message as string)
+            }
+        } catch (error) {
+            toast.error("Unable to sign in right now. Please try again.")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -65,54 +89,69 @@ export function LoginForm() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">
-                    Email address
-                    </Label>
-                    <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 h-11"
-                        required
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Email address</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                                    <Input
+                                        type="email"
+                                        placeholder="Enter your email"
+                                        className="pl-10 h-11"
+                                        {...field}
+                                    />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    </div>
+                    
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium">
-                        Password
-                    </Label>
-                    <button type="button" className="text-sm text-accent hover:text-accent/80 font-medium">
-                        Forgot password?
-                    </button>
-                    </div>
-                    <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 pr-10 h-11"
-                        required
+
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center justify-between">
+                                    <FormLabel htmlFor="password" className="text-sm font-medium">
+                                        Password
+                                    </FormLabel>
+
+                                </div>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Enter your password"
+                                            className="pl-10 pr-10 h-11"
+                                            {...field}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                    </div>
+                    
                 </div>
 
-                <Button type="button" className="w-full h-11 font-medium group" disabled={isLoading} onClick={signIn}>
+                <Button type="submit" className="w-full h-11 font-medium group" disabled={isLoading}>
                     {isLoading ? (
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
@@ -138,7 +177,7 @@ export function LoginForm() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-11 bg-transparent">
+            <Button type="button" variant="outline" className="h-11 bg-transparent" onClick={googleSignIn}>
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                     fill="currentColor"
@@ -169,7 +208,9 @@ export function LoginForm() {
 
             <div className="text-center text-sm text-muted-foreground">
             {"Don't have an account? "}
-            <button className="text-accent hover:text-accent/80 font-medium">Sign up</button>
+                <Link href="/sign-up" className="text-accent">
+                    Sign up
+                </Link>    
             </div>
         </CardContent>
         </Card>

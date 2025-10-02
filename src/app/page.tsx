@@ -1,5 +1,5 @@
-import { LoginForm } from "@/modules/login/login-form";
+import { LoginForm } from "@/modules/login/forms/login-form";
 
 export default function Home() {
-
+  return <p>home</p>
 }

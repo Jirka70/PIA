@@ -1,4 +1,4 @@
-import { LoginForm } from "@/modules/login/login-form";
+import { LoginForm } from "@/modules/login/forms/login-form";
 
 export default function Home() {
       return <div className="min-h-screen bg-background flex items-center justify-center p-4">

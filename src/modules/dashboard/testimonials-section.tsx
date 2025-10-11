@@ -4,7 +4,7 @@ import { Star, Quote } from "lucide-react"
 
 const testimonials = [
   {
-    name: "Sarah Chen",
+    name: "André Chernozem",
     role: "International Business Manager",
     company: "TechGlobal Inc.",
     content:

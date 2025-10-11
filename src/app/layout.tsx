@@ -30,29 +30,29 @@ export default function RootLayout({
   return (
     <TRPCReactProvider>
         <html lang="en" suppressHydrationWarning>
-        <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                <div className="relative min-h-screen overflow-hidden bg-background">
-                {/* Gradient overlay */}
-                <div className="fixed inset-0 bg-gradient-to-br from-accent/5 via-accent/10 to-accent/5" />
+          <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                  <div className="relative min-h-screen overflow-hidden bg-background">
+                  {/* Gradient overlay */}
+                  <div className="fixed inset-0 bg-gradient-to-br from-accent/5 via-accent/10 to-accent/5" />
 
-                {/* Blurred ornamental shapes */}
-                <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-                  <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/15 rounded-full blur-3xl" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-accent/10 rounded-full blur-3xl" />
-                </div>
+                  {/* Blurred ornamental shapes */}
+                  <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/15 rounded-full blur-3xl" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-accent/10 rounded-full blur-3xl" />
+                  </div>
 
-                {/* Content */}
-                <div className="relative z-10">
-                  {children}
-                  <Toaster />
+                  {/* Content */}
+                  <div className="relative z-10">
+                    {children}
+                    <Toaster />
+                  </div>
                 </div>
-              </div>
-            </ThemeProvider>
-        </body>
+              </ThemeProvider>
+          </body>
         </html>
     </TRPCReactProvider>
   );

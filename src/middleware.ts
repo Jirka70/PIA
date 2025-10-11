@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
-import { locales } from "@/internationalization/i18n";
 
-function getPrefferedLocale() {
-    return "en"
-}
 
 export async function middleware(request: NextRequest) {
+    console.log("Launchin middleware with", request.url)
+    const sessionCookie = getSessionCookie(request);
+
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    return NextResponse.next()
+}
+
+/*export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const pathnameHasLocale = locales.some(
         (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
@@ -17,7 +24,7 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = `/${locale}${pathname}`
         return NextResponse.redirect(url)
-    }*/
+    }
 
     const sessionCookie = getSessionCookie(request);
 
@@ -26,10 +33,8 @@ export async function middleware(request: NextRequest) {
     }
 
 	return NextResponse.next();
-}
+}*/
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
-  ],
+  matcher: ["/user-dashboard"],
 };

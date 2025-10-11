@@ -11,8 +11,7 @@ export default async function UserDashboardPage() {
 
     const user = session?.user
     if (!user) {
-        const currentUrl = "/user-dashboard"
-        redirect(`/sign-in?callbackUrl=${encodeURIComponent(currentUrl)}`)
+        redirect("/sign-in")
     }
 
     return <UserDashboard user={user as User}/>

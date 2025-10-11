@@ -11,7 +11,7 @@ import { logOutSignedUser } from "@/lib/utils"
 import { User } from "better-auth"
 import { LogOut, User as UserIcon } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 
 interface UserMenuProps {
     user: User
@@ -22,7 +22,7 @@ export const UserSectionDropdownMenu = ({ user } : UserMenuProps) => {
 
     const logout = async () => {
         await logOutSignedUser()
-        router.refresh()    
+        router.refresh()
     }
 
 

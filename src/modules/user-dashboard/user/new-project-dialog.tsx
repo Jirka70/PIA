@@ -99,6 +99,7 @@ export function NewProjectDialog({ user } : NewDialogProps) {
           size: Number(data.size),
           storageKey: data.storageKey as string,
           url: data.url as string,
+          fileId: data.id as string
         },
         {
           shouldValidate: true,

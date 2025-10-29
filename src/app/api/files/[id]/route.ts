@@ -25,9 +25,6 @@ export async function GET(
         })
     }
 
-
-
-    
     const [meta] = await db
         .select()
         .from(ProjectFile)

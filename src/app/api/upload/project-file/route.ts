@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
     const url = `${publicBase}/api/files/${id}`
 
     return NextResponse.json({
+        id,
         storageKey,
         url,
         fileName: origName,

@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Award, CheckCircle, FileText, Star, TrendingUp } from "lucide-react"
 import type { User } from "better-auth"
-import { Suspense, useState } from "react"
 import { ProjectsContent } from "./translator-projects-content"
 
 interface TranslatorDashboardProps {
@@ -16,8 +15,6 @@ interface TranslatorDashboardProps {
 export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
   const userName = user?.name || "Translator"
 
-  const [progress, setProgress] = useState(65)
-  const [progressNote, setProgressNote] = useState("")
 
   const translatorStats = {
     rating: 4.8,
@@ -28,48 +25,6 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
     averageCompletionTime: "3.2 days",
     totalEarnings: "$12,450",
   }
-
-  /*const projects = [
-    {
-      id: "1",
-      title: "Legal Contract Translation",
-      description: "English to Spanish • 15 pages",
-      status: "in_progress",
-      progress: 65,
-      progressNote: "Working on legal terminology verification",
-      deadline: "2025-10-25",
-      customerName: "John Smith",
-      priority: "high",
-      estimatedHours: 12,
-      hoursSpent: 8,
-    },
-    {
-      id: "2",
-      title: "Technical Documentation",
-      description: "English to Japanese • 25 pages",
-      status: "assigned",
-      progress: 0,
-      progressNote: "",
-      deadline: "2025-10-28",
-      customerName: "Tech Corp Inc.",
-      priority: "medium",
-      estimatedHours: 20,
-      hoursSpent: 0,
-    },
-    {
-      id: "3",
-      title: "Marketing Materials",
-      description: "English to French • 8 pages",
-      status: "review",
-      progress: 100,
-      progressNote: "Translation completed, awaiting customer review",
-      deadline: "2025-10-20",
-      customerName: "Marketing Agency",
-      priority: "low",
-      estimatedHours: 6,
-      hoursSpent: 5,
-    },
-  ]*/
 
   const recentFeedback = [
     {
@@ -89,44 +44,6 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
       date: "2025-10-12",
     },
   ]
-
-  const handleUpdateProgress = () => {
-    // API call to update progress
-    console.log("Updating progress:", { progress, progressNote })
-  }
-
-  const handleCompleteProject = (projectId: string) => {
-    // API call to mark project as completed
-    console.log("Completing project:", projectId)
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "assigned":
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Assigned</Badge>
-      case "in_progress":
-        return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">In Progress</Badge>
-      case "review":
-        return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20">Under Review</Badge>
-      case "completed":
-        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Completed</Badge>
-      default:
-        return <Badge>Unknown</Badge>
-    }
-  }
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <Badge variant="destructive">High Priority</Badge>
-      case "medium":
-        return <Badge variant="secondary">Medium</Badge>
-      case "low":
-        return <Badge variant="outline">Low</Badge>
-      default:
-        return null
-    }
-  }
 
   return (
     <div className="min-h-screen py-12">

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const uploadedFileMeta = z.object({
+    fileId: z.string(),
     fileName: z.string()
         .min(2, { message: "File name needs to be at least 2 characters long"})
         .max(512, { message: "File name cannot be longer than 512 characters"}),

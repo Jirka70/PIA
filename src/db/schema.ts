@@ -161,4 +161,4 @@ export const schema = {
 
 export type ProjectType = typeof Project.$inferSelect
 export type ProjectStatusType = typeof projectStatus
-
+export type ProjectFileType = typeof ProjectFile.$inferSelect

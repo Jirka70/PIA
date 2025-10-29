@@ -51,7 +51,7 @@ export const projectRouter = createTRPCRouter({
                 }).returning()
 
             const [projectFile] = await ctx.db.insert(ProjectFile).values({
-                id: nanoid(),
+                id: input.file.fileId,
                 projectId: project.id,
                 fileName: input.file.fileName,
                 contentType: input.file.contentType,

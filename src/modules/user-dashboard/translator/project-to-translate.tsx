@@ -14,9 +14,10 @@ import {
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
-import { ProjectType } from "@/db/schema"
+import { ProjectFileType, ProjectType } from "@/db/schema"
+import { performDownload, performPreview } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download } from "lucide-react"
 import { useState } from "react"
 
@@ -35,55 +36,52 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
   const [message, setMessage] = useState<string>("")
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleUpdateProgress = async (newProgress: number) => {
-
+  async function handleUpdateProgress(progress: number) {
+    
   }
 
-  const handleViewFile = () => {
-    if (project.sourceFileId) {
-      window.open(project.sourceFileId, "_blank", "noopener,noreferrer")
-    }
+
+  const previewFileMutation = useMutation({
+    mutationFn: viewFile
+  })
+
+  async function viewFile()  {
+      const data = getFileToDownloadQuery.data;
+      if (!data) {
+        throw new Error("No data provided") // TODO create better error handling
+      }
+
+      const projectFile: ProjectFileType = data.projectFile
+
+      await performPreview(projectFile)
+  }
+
+  async function handleViewFile() {
+    await previewFileMutation.mutateAsync()
   }
 
   const trpc = useTRPC()
 
-  const downloadFileQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
+  const getFileToDownloadQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
     projectId: project.id
   }))
+
+  async function download() {
+    const data = getFileToDownloadQuery.data;
+    if (!data) {
+      throw new Error("No data provided") // TODO create better error handling
+    }
+
+    const projectFile: ProjectFileType = data.projectFile
+    await performDownload(projectFile);
+  }
+
+  const downloadMutation = useMutation({
+    mutationFn: download,
+  });
   
   const handleDownloadFile = async () => {
-      const data = downloadFileQuery.data;
-      console.log("Dwonaload clicked, data:", data)
-      if (!data) {
-        console.log("no data provided...")
-        return;
-      }
-      const projectFile = data.projectFile
-      try {
-        const res = await fetch(`http://localhost:3000/api/files/${projectFile.id}`, {
-          method: "GET",
-        })  
-
-        if (!res.ok) {
-          const msg = await res.text()
-          throw new Error(`Stažení selhalo (${res.status}): ${msg}`);
-        }
-
-        const blob = await res.blob();
-
-        const filename = projectFile.fileName;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-
-      } catch (err) {
-        // TODO doplnit
-      }
+      downloadMutation.mutate();
   }
 
   const handleMarkCompleted = () => {
@@ -306,17 +304,16 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog>  
 
-          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!project.sourceFileId}>
+          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!project.sourceFileId || previewFileMutation.isPending}>
             <Eye className="mr-2 h-4 w-4" />
-            View
+            {previewFileMutation.isPending ? "Creating View..." : "View"}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!project.sourceFileId || downloadFileQuery.isLoading}>
+          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!project.sourceFileId || getFileToDownloadQuery.isLoading || downloadMutation.isPending}>
             <Download className="mr-2 h-4 w-4" />
-              {downloadFileQuery.isLoading && !downloadFileQuery.data
-                ? "Getting file to download"
-                : "Download"}
+              
+              {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
           </Button>
         </div>
       </CardContent>

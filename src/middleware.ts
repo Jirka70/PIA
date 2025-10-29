@@ -1,40 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
+let locales = ["en", "cs"]
+
 
 export async function middleware(request: NextRequest) {
-    console.log("Launchin middleware with", request.url)
-    const sessionCookie = getSessionCookie(request);
 
-    if (!sessionCookie) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
 
-    return NextResponse.next()
+  const pathname = request.nextUrl.pathname.toString();
+
+  if (pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/robots') ||
+    pathname.startsWith('/sitemap') ||
+    /\.[\w]+$/.test(pathname)) {
+      return NextResponse.next()
 }
 
-/*export async function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
-    const pathnameHasLocale = locales.some(
-        (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-    )
+  const segments = pathname.split("/");
+  console.log(segments)
+  const localeSegment = segments[1]
+  const restParts = segments.slice(2);
 
-    /*if (!pathnameHasLocale) {
-        const locale = getPrefferedLocale()
-        const url = request.nextUrl.clone()
-        url.pathname = `/${locale}${pathname}`
-        return NextResponse.redirect(url)
-    }
+  console.log("segments", segments)
+  console.log("localesegment", localeSegment)
+  console.log("restparts", restParts)
 
-    const sessionCookie = getSessionCookie(request);
+  const locale = locales.includes(localeSegment)
+    ? localeSegment
+    : "en"
 
-    if (!sessionCookie) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+  if (locale === localeSegment) { // no change
+    return NextResponse.next()
+  }
 
-	return NextResponse.next();
-}*/
+
+
+  const sessionCookie = getSessionCookie(request);
+  const rest = segments.join("/")
+  const localeUrl = new URL(`/${locale}/${rest}`, request.url)
+  console.log("localeUrl", localeUrl.href)
+
+
+  if (!sessionCookie) {
+    const url = new URL(`/${locale}/sign-in`, request.url)
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.redirect(localeUrl)
+}
 
 export const config = {
-  matcher: ["/user-dashboard"],
-};
+  matcher: ['/((?!_next|api|favicon.ico|robots.txt|sitemap.xml).*)'],
+}
+
+

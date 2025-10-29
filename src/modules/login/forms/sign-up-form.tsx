@@ -48,7 +48,7 @@ export function SignupForm() {
     const message = response.message
     if (response.success) {
         toast.success(message)
-        router.push("/dashboard")
+        router.replace("/dashboard")
     } else {
         toast.error(message)
     }

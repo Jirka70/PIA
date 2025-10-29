@@ -1,1 +1,41 @@
-{"version":"7","dialect":"postgresql","entries":[]}
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1759434634966,
+      "tag": "0000_broken_hercules",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759436604496,
+      "tag": "0001_vengeful_adam_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759437304121,
+      "tag": "0002_numerous_mongu",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759437828620,
+      "tag": "0003_strange_brood",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1760629495388,
+      "tag": "0004_majestic_sharon_carter",
+      "breakpoints": true
+    }
+  ]
+}

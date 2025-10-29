@@ -29,6 +29,13 @@
       "when": 1759437828620,
       "tag": "0003_strange_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1760629495388,
+      "tag": "0004_majestic_sharon_carter",
+      "breakpoints": true
     }
   ]
 }

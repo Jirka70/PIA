@@ -4,14 +4,18 @@ import { ArrowRight, Globe, Shield, Zap } from "lucide-react"
 import Link from "next/link"
 import { TestimonialsSection } from "@/modules/dashboard/testimonials-section"
 import { getDictionary } from "@/lib/get-dictionary"
+import { getTranslations } from "next-intl/server"
 
-type PageProps = {
-  params: { lang: string }
-}
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  
 
-export default async function HomePage({ params }: PageProps) {
-  const { lang } = params
-  const dict = await getDictionary(lang)
+  const {locale} = await params
+  const t = await getTranslations("hero")
+  const navT = await getTranslations("nav")
 
   return (
     <main>
@@ -28,14 +32,14 @@ export default async function HomePage({ params }: PageProps) {
                 <Globe className="h-6 w-6 text-accent" />
               </div>
               <h3 className="text-lg sm:text-xl font-bold mb-2 text-foreground">
-                100+ {dict.hero.languages}
+                100+ {t("languages")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                {dict.hero.whyChooseUsDesc}
+                {t("whyChooseUsDesc")}
               </p>
               <Button variant="link" className="mt-4 p-0 h-auto text-accent" asChild>
                 <Link href="/about">
-                  {dict.hero.learnMore} <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("learnMore")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -46,14 +50,14 @@ export default async function HomePage({ params }: PageProps) {
                 <Shield className="h-6 w-6 text-accent" />
               </div>
               <h3 className="text-lg sm:text-xl font-bold mb-2 text-foreground">
-                {dict.hero.certifiedQuality}
+                {t("certifiedQuality")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                {dict.hero.certifiedQualityDesc}
+                {t("certifiedQualityDesc")}
               </p>
               <Button variant="link" className="mt-4 p-0 h-auto text-accent" asChild>
                 <Link href="/about">
-                  {dict.hero.learnMore} <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("learnMore")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -64,14 +68,14 @@ export default async function HomePage({ params }: PageProps) {
                 <Zap className="h-6 w-6 text-accent" />
               </div>
               <h3 className="text-lg sm:text-xl font-bold mb-2 text-foreground">
-                {dict.hero.fastTurnaround}
+                {t("fastTurnaround")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                {dict.hero.fastTurnaroundDesc}
+                {t("fastTurnaroundDesc")}
               </p>
               <Button variant="link" className="mt-4 p-0 h-auto text-accent" asChild>
                 <Link href="/pricing">
-                  {dict.nav.pricing} <ArrowRight className="ml-2 h-4 w-4" />
+                  {navT("pricing")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -87,14 +91,14 @@ export default async function HomePage({ params }: PageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-accent/90 backdrop-blur-md rounded-2xl p-8 sm:p-12 md:p-16 text-center shadow-xl border border-accent/20">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-accent-foreground text-balance">
-              {dict.hero.title1} {dict.hero.title2}?
+              {t("title1")} {t("title2")}?
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-accent-foreground/80 mb-8 max-w-2xl mx-auto text-pretty">
-              {dict.hero.whyChooseUsDesc}
+              {t("whyChooseUsDesc")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/register">{dict.nav.getStarted}</Link>
+                <Link href="/register">{navT("getStarted")}</Link>
               </Button>
               <Button
                 size="lg"
@@ -102,7 +106,7 @@ export default async function HomePage({ params }: PageProps) {
                 className="border-accent-foreground/20 hover:bg-accent-foreground/10 bg-transparent"
                 asChild
               >
-                <Link href="/contact">{dict.nav.contact}</Link>
+                <Link href="/contact">{navT("contact")}</Link>
               </Button>
             </div>
           </div>

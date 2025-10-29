@@ -1,5 +1,8 @@
 {
   "nav": {
+    "home": "Home",
+    "services": "Services",
+    "languages": "Languages",
     "about": "About",
     "pricing": "Pricing",
     "contact": "Contact",
@@ -13,13 +16,11 @@
   },
   "hero": {
     "badge": "Professional Translation Services",
-    "title1": "Break Language",
-    "title2": "Barriers",
-    "title3": "with Expert",
-    "title4": "Translation",
+    "title1": "Break Language Barriers with Expert",
+    "title2": "Translation",
     "description1": "Connect with global audiences through our",
     "description2": "certified translators",
-    "description3": "and cutting-edge technology. Get",
+    "description3": "and cutting-edge technology. Get ",
     "description4": "accurate translations",
     "description5": "in over 100 languages.",
     "getFreeQuote": "Get Free Quote",
@@ -42,7 +43,18 @@
     "fastTurnaroundDesc": "Get your translations delivered on time, every time with our efficient workflow.",
     "industryExpertise": "Industry Expertise",
     "industryExpertiseDesc": "Specialized translators with deep knowledge in legal, medical, and technical fields.",
-    "learnMore": "Learn more"
+    "learnMore": "Learn more",
+    "clientSuccessStories": "Client Success Stories",
+    "trustedByProfessionals": "Trusted by Professionals Worldwide",
+    "seeHowOur": "See how our ",
+    "expertServices": "expert translation services",
+    "haveHelped": "have helped businesses achieve",
+    "globalSuccess": "global success",
+    "introParagraph": "See how our expert translation services have helped businesses achieve global success.",
+    "projectsCompleted": "Projects Completed",
+    "expertTranslators": "Expert Translators",
+    "languagesSupported": "Languages Supported",
+    "clientSatisfaction": "Client Satisfaction"  
   },
   "footer": {
     "description": "Breaking language barriers with expert translation services. Connecting businesses and individuals across cultures worldwide.",

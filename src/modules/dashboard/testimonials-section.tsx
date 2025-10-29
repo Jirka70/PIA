@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Star, Quote } from "lucide-react"
+import { getTranslations } from "next-intl/server"
 
 const testimonials = [
   {
@@ -41,20 +42,21 @@ const testimonials = [
   },
 ]
 
-export function TestimonialsSection() {
+export async function TestimonialsSection() {
+  const t = await getTranslations("hero");
+
   return (
     <section className="py-12 sm:py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-3 md:space-y-4 mb-12 md:mb-16">
           <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs sm:text-sm">
-            Client Success Stories
+            {t("clientSuccessStories")}
           </Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-balance px-4">
-            Trusted by <span className="text-primary">Professionals</span> Worldwide
+            {t("trustedByProfessionals")}
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-2xl mx-auto px-4">
-            See how our <span className="text-accent font-semibold">expert translation services</span> have helped
-            businesses achieve <span className="text-primary font-semibold">global success</span>.
+            {t("seeHowOur")}<span className="text-accent font-semibold">{t("expertServices")}</span> {t("haveHelped")} <span className="text-primary font-semibold">{t("globalSuccess")}</span>.
           </p>
         </div>
 

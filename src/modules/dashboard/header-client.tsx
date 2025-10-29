@@ -2,20 +2,23 @@
 
 import { Button } from "@/components/ui/button"
 import { Globe, Menu, X } from "lucide-react"
-import Link from "next/link"
 import { useState } from "react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { LoginSection } from "./login-section"
+import {Link} from '@/i18n/navigation';
 import { UserSectionDropdownMenu } from "./user-section-dropdown-menu"
+import { LoginSection } from "./login-section"
 import { User } from "better-auth"
-import { Role } from "@/db/schema"
+import { useTranslations } from "next-intl"
+import { LanguageSwitcher } from "./language-switcher"
 
-interface HeaderProps {
-    user: User | Role
+interface Props {
+  user: User
 }
 
-export function HeaderClient({ user } : HeaderProps) {
+export function HeaderClient({ user } : Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const t = useTranslations("nav")
 
 
   return (
@@ -35,44 +38,44 @@ export function HeaderClient({ user } : HeaderProps) {
             href="/"
             className="text-sm lg:text-base text-muted-foreground hover:text-accent transition-colors"
           >
-            Home
+            {t("home")}
           </Link>
           <Link
             href="/services"
             className="text-sm lg:text-base text-muted-foreground hover:text-accent transition-colors"
           >
-            Services
+            {t("services")}
           </Link>
           <Link
             href="/languages"
             className="text-sm lg:text-base text-muted-foreground hover:text-accent transition-colors"
           >
-            Languages
+            {t("languages")}
           </Link>
           <Link
             href="/pricing"
             className="text-sm lg:text-base text-muted-foreground hover:text-accent transition-colors"
           >
-            Pricing
+            {t("pricing")}
           </Link>
           <Link
             href="/contact"
             className="text-sm lg:text-base text-muted-foreground hover:text-accent transition-colors"
           >
-            Contact
+            {t("contact")}
           </Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-4">
+          <LanguageSwitcher />
           <ThemeToggle />
 
           <div className="hidden md:flex items-center gap-2">
-            {!user
-              ? (
-                <LoginSection />
-              ) : (
-                <UserSectionDropdownMenu user={user as User}/>
-              )}
+            {user ? (
+              <UserSectionDropdownMenu username={user.name} />
+            ) : (
+              <LoginSection />
+            )}
           </div>
 
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -89,46 +92,46 @@ export function HeaderClient({ user } : HeaderProps) {
               className="text-muted-foreground hover:text-accent transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Services
+              {t("services")}
             </Link>
             <Link
               href="/languages"
               className="text-muted-foreground hover:text-accent transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Languages
+              {t("languages")}
             </Link>
             <Link
               href="/pricing"
               className="text-muted-foreground hover:text-accent transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Pricing
+              {t("pricing")}
             </Link>
             <Link
               href="/about"
               className="text-muted-foreground hover:text-accent transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              About
+              {t("about")}
             </Link>
             <Link
               href="/contact"
               className="text-muted-foreground hover:text-accent transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Contact
+              {t("contact")}
             </Link>
             <div className="flex flex-col gap-2 pt-4 border-t">
               <Button variant="ghost" asChild onClick={() => setMobileMenuOpen(false)}>
-                <Link href="/login">Log in</Link>
+                <Link href="/login">{t("login")}</Link>
               </Button>
               <Button
                 asChild
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Link href="/register">Get Started</Link>
+                <Link href="/register">{t("getStarted")}</Link>
               </Button>
             </div>
           </nav>

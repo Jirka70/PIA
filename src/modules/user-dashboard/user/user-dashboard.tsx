@@ -1,8 +1,13 @@
+"use client"
+
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle, Clock, FileText, Plus } from "lucide-react"
 import { NewProjectDialog } from "./new-project-dialog"
 import { User } from "better-auth"
+import { useTRPC } from "@/trpc/client"
+import { useQuery } from "@tanstack/react-query"
+import { UserProjectsContent } from "./user-projects-content"
 
 interface UserDashboardProps {
   user: User
@@ -64,71 +69,12 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
         </div>
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Recent Projects</h2>
-          <NewProjectDialog />
+          <h2 className="text-2xl font-bold">Your Projects</h2>
+          <NewProjectDialog user={user}/>
         </div>
 
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Legal Contract Translation</CardTitle>
-                  <CardDescription>English to Spanish • 15 pages</CardDescription>
-                </div>
-                <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">In Progress</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">65%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-accent rounded-full h-2 w-[65%]"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Marketing Materials</CardTitle>
-                  <CardDescription>English to French, German • 8 pages</CardDescription>
-                </div>
-                <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Completed</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4" />
-                <span>Delivered 2 days ago</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>Technical Documentation</CardTitle>
-                  <CardDescription>English to Japanese • 25 pages</CardDescription>
-                </div>
-                <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Review</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <AlertCircle className="h-4 w-4" />
-                <span>Awaiting your approval</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <UserProjectsContent user={user} />
       </div>
     </div>
   )
-}
+} 

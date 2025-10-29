@@ -8,17 +8,18 @@ import { DropdownMenu,
     DropdownMenuSeparator, 
     DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { logOutSignedUser } from "@/lib/utils"
-import { User } from "better-auth"
 import { LogOut, User as UserIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { redirect, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 
 interface UserMenuProps {
-    user: User
+    username: string
 }
 
-export const UserSectionDropdownMenu = ({ user } : UserMenuProps) => {
+export const UserSectionDropdownMenu = ({ username } : UserMenuProps) => {
     const router = useRouter()
+    const t = useTranslations("nav")
 
     const logout = async () => {
         await logOutSignedUser()
@@ -30,25 +31,25 @@ export const UserSectionDropdownMenu = ({ user } : UserMenuProps) => {
         <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2 bg-transparent">
             <UserIcon className="h-4 w-4" />
-            <span className="text-sm lg:text-base">{user.name}</span>
+            <span className="text-sm lg:text-base">{username}</span>
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-            <Link href="/user-dashboard">Dashboard</Link>
+            <Link href="/user-dashboard">{t("dashboard")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-            <Link href="/projects">My Projects</Link>
+            <Link href="/projects">{t("myProjects")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-            <Link href="/settings">Settings</Link>
+            <Link href="/settings">{t("settings")}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
             <LogOut className="h-4 w-4 mr-2" />
-            Log out
+            {t("logout")}
             </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>

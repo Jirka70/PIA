@@ -31,9 +31,6 @@ export async function GET(
         .where(eq(ProjectFile.id, params.id))
         .limit(1)
 
-    console.log("meta", meta)
-    console.log("params.id", params.id)
-
     if (!meta) {
         return new NextResponse("Not found", {
             status: 400

@@ -58,3 +58,16 @@ export async function performPreview(projectFile: ProjectFileType) {
     // TODO doplnit
   }
 }
+
+export async function uploadFile(fd: FormData) {
+  const res = await fetch("/api/upload/project-file", {
+        method: "POST",
+        body: fd
+      })
+
+      if (!res.ok) {
+          throw new Error("Upload failed")
+      }
+
+      return await res.json()
+}

@@ -8,16 +8,18 @@ interface UserProjectsProps {
     user: User
 }
 
-export const UserProjectsContent = ({ user } : UserProjectsProps) => {
+export const UserProjectsContent = ({ user } : UserProjectsProps) => {    
     const trpc = useTRPC()
-    const { data, isLoading, isError, error, isFetching } = useQuery({...trpc.projects.getManyAsUser.queryOptions({
-        userId: user.id
-    }),
+    const { data, isLoading, isError, isFetching, error } = useQuery({
+        ...trpc.projects.getManyAsUser.queryOptions({
+            userId: user.id,
+        }),
+        
         staleTime: 60_000,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
         refetchInterval: false,
-    })
+    });
 
     if (isLoading || !data) {
         return <ProjectListSkeleton />;
@@ -31,7 +33,7 @@ export const UserProjectsContent = ({ user } : UserProjectsProps) => {
         );
     }
 
-    const projects = data?.projects 
+    const projects = data?.projects
         ? data?.projects 
         : []
 

@@ -3,6 +3,10 @@ import type { ProjectType } from "@/db/schema"
 import { ProjectBadge } from "./project-badge"
 import { Clock, TrendingUp, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTRPC } from "@/trpc/client"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { performDownload } from "@/lib/utils"
 
 interface UserProjectProps {
   project: ProjectType
@@ -14,6 +18,30 @@ export const UserProject = ({ project }: UserProjectProps) => {
     if (progress >= 50) return "bg-blue-500"
     if (progress >= 25) return "bg-amber-500"
     return "bg-slate-400"
+  }
+
+  const trpc = useTRPC();
+  const sourceFileDownloadQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
+      projectId: project.id
+  }))
+
+  const downloadMutation = useMutation({
+    mutationFn: download
+  })
+
+  async function handleDownload() {
+    await downloadMutation.mutateAsync();
+  }
+
+  async function download() {
+    const data = sourceFileDownloadQuery.data;
+    if (!data) {
+      toast.error("File cannot be downloaded, because was not found")
+      return;
+    }
+
+    const projectFile = data?.projectFile;
+    await performDownload(projectFile);
   }
 
   const progressColor = getProgressColor(project.progressPercent)
@@ -60,14 +88,11 @@ export const UserProject = ({ project }: UserProjectProps) => {
         {(project.sourceFileId || project.translatedFileId) && (
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border/50">
             {project.sourceFileId && (
-              <Button variant="outline" size="sm" className="flex min-w-[140px] gap-2 bg-transparent" asChild>
-                <a href={project.sourceFileId} download>
-                  <Download className="w-4 h-4" />
-                  <span>Source File</span>
-                </a>
-              </Button>
-            )}
-            
+              <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloadMutation.isPending}>
+                <Download className="mr-2 h-4 w-4" />          
+                  {downloadMutation.isPending ? "Waiting for start donwload..." : "Download Source File"}
+              </Button>            
+            )}         
             {project.translatedFileId && project.status === "DONE" && (
               <Button variant="default" size="sm" className="flex-1 min-w-[140px] gap-2" asChild>
                 <a href={project.translatedFileId} download>

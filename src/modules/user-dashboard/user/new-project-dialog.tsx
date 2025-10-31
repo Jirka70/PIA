@@ -23,12 +23,13 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, uploadFile } from "@/lib/utils";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 const languages = [
   { code: "en", name: "English" },
@@ -50,8 +51,8 @@ interface NewDialogProps {
 export function NewProjectDialog({ user } : NewDialogProps) {
   const [open, setOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const fileRef = useRef<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient();
 
   const form = useForm<CreateProjectFormInput>({
     resolver: zodResolver(createProjectInput),
@@ -67,7 +68,10 @@ export function NewProjectDialog({ user } : NewDialogProps) {
       toast.success("Project was successfully created")
       form.reset()
       setOpen(false)
-      // Invalidate query for getMany in projectsRouter
+      queryClient.invalidateQueries(trpc.projects.getManyAsUser.queryOptions({
+        userId: user.id
+      }));
+      
     },
     onError: (err) => {
       toast.error(err.message)
@@ -75,23 +79,27 @@ export function NewProjectDialog({ user } : NewDialogProps) {
     }
   }))
 
-  async function uploadFile(file: File) {
+  function removeFile() {
+    form.setValue("file", undefined as any, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+
+    toast.info("File removed");
+  }
+
+  async function handleFileUpload(file: File) {
     const fd = new FormData()
     fd.append("file", file)
 
     setUploading(true)
     try {
-      const res = await fetch("/api/upload/project-file", {
-        method: "POST",
-        body: fd
-      })
-
-      if (!res.ok) {
-          throw new Error("Upload failed")
-      }
-
-      const data = await res.json()
-
+      const data = await uploadFile(fd)
+      
       form.setValue(
         "file", {
           fileName: data.fileName as string,
@@ -279,7 +287,7 @@ export function NewProjectDialog({ user } : NewDialogProps) {
                         onChange={async (e) => {
                           const f = e.currentTarget.files?.[0]
                           if (f) {
-                            await uploadFile(f)
+                            await handleFileUpload(f)
                           }
                         }}
                       />
@@ -314,7 +322,7 @@ export function NewProjectDialog({ user } : NewDialogProps) {
                           type="button"
                           variant="ghost"
                           className="h-8 px-2 text-red-600 hover:text-red-700"
-                          onClick={() => {}}
+                          onClick={removeFile}
                           disabled={uploading || isPending}
                           title="Remove file"
                         >

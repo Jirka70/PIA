@@ -18,8 +18,10 @@ import { ProjectFileType, ProjectType } from "@/db/schema"
 import { performDownload, performPreview } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download } from "lucide-react"
+import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download, Upload } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
+import { UploadTranslatedFileDialog } from "./upload-translated-file-dialog"
 
 type ProjectStatus = "NEW" | "IN_PROGRESS" | "UNDER_REVIEW" | "COMPLETED" | "CANCELLED" | "DONE" | "CLOSED"
 
@@ -34,10 +36,24 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
   const [progress, setProgress] = useState(project.progressPercent)
   const [message, setMessage] = useState<string>("")
-  const [isSaving, setIsSaving] = useState(false)
+
+  const trpc = useTRPC();
+  const updateProgressMutation = useMutation(trpc.projects.updateProgress.mutationOptions({
+    onSuccess: () => {
+      toast.success("Progress was successfully updated")
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  }))
 
   async function handleUpdateProgress(progress: number) {
-    
+    await   updateProgressMutation.mutateAsync({
+      projectId: project.id,
+      newProgress: progress
+    })
+
+    setIsProgressDialogOpen(false);
   }
 
 
@@ -59,8 +75,6 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
   async function handleViewFile() {
     await previewFileMutation.mutateAsync()
   }
-
-  const trpc = useTRPC()
 
   const getFileToDownloadQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
     projectId: project.id
@@ -240,8 +254,8 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
                   <Button variant="outline" onClick={() => setIsProgressDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={() => handleUpdateProgress(progress)} disabled={isSaving} className="min-w-[120px]">
-                    {isSaving ? "Saving..." : "Save Progress"}
+                  <Button onClick={async () => {await handleUpdateProgress(progress)}} disabled={updateProgressMutation.isPending} className="min-w-[120px]">
+                    {updateProgressMutation.isPending ? "Saving..." : "Save Progress"}
                   </Button>
                 </div>
               </div>
@@ -315,6 +329,14 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
               
               {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
           </Button>
+          <UploadTranslatedFileDialog
+
+            onConfirm={async () => {
+              // Sem napoj tvoji hotovou upload logiku
+              // např. await uploadTranslatedFile({ projectId: project.id, file })
+              // a pak třeba toast.success("Soubor nahrán")
+            }}
+          />
         </div>
       </CardContent>
     </Card>

@@ -14,6 +14,7 @@ interface UserDashboardProps {
 }
 
 export const UserDashboard = ({ user } : UserDashboardProps) => {
+
     return (
     <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,4 +78,4 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
       </div>
     </div>
   )
-} 
+}

@@ -1,12 +1,11 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import type { ProjectType } from "@/db/schema"
-import { ProjectBadge } from "./project-badge"
-import { Clock, TrendingUp, Download } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Clock, TrendingUp, Download, Calendar, CalendarCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTRPC } from "@/trpc/client"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { toast } from "sonner"
-import { performDownload } from "@/lib/utils"
+import { ProjectType } from "@/db/schema"
+
 
 interface UserProjectProps {
   project: ProjectType
@@ -20,31 +19,48 @@ export const UserProject = ({ project }: UserProjectProps) => {
     return "bg-slate-400"
   }
 
-  const trpc = useTRPC();
-  const sourceFileDownloadQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
-      projectId: project.id
-  }))
-
-  const downloadMutation = useMutation({
-    mutationFn: download
-  })
-
-  async function handleDownload() {
-    await downloadMutation.mutateAsync();
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return "Nenastaveno"
+    const dateObj = typeof date === "string" ? new Date(date) : date
+    return dateObj.toLocaleDateString("cs-CZ", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
   }
 
-  async function download() {
-    const data = sourceFileDownloadQuery.data;
-    if (!data) {
-      toast.error("File cannot be downloaded, because was not found")
-      return;
-    }
+  const getDeadlineColor = (dueDate: Date | string | null | undefined) => {
+    if (!dueDate) return "text-foreground"
 
-    const projectFile = data?.projectFile;
-    await performDownload(projectFile);
+    const deadline = typeof dueDate === "string" ? new Date(dueDate) : dueDate
+    const now = new Date()
+    const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (daysRemaining < 0) return "text-red-600 dark:text-red-400 font-semibold" // Po deadlinu
+    if (daysRemaining <= 3) return "text-orange-600 dark:text-orange-400 font-semibold" // 1-3 dny
+    if (daysRemaining <= 7) return "text-yellow-600 dark:text-yellow-500 font-semibold" // 4-7 dní
+    return "text-foreground" // Více než 7 dní
+  }
+
+  const getStatusBadge = (status: string, progress: number) => {
+    if (progress === 100) {
+      return { variant: "default" as const, label: "Dokončeno" }
+    }
+    if (status === "in_progress") {
+      return { variant: "secondary" as const, label: "Probíhá" }
+    }
+    return { variant: "outline" as const, label: status }
+  }
+
+  const handleDownload = () => {
+    if (project.sourceFileId) {
+      // In real implementation, this would download the file
+      console.log("Downloading source file:", project.sourceFileId)
+    }
   }
 
   const progressColor = getProgressColor(project.progressPercent)
+  const statusBadge = getStatusBadge(project.status, project.progressPercent)
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50 overflow-hidden">
@@ -61,7 +77,7 @@ export const UserProject = ({ project }: UserProjectProps) => {
             </CardDescription>
           </div>
           <div className="flex-shrink-0 self-start">
-            <ProjectBadge projectProgress={project.progressPercent} projectStatus={project.status} />
+            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -85,19 +101,39 @@ export const UserProject = ({ project }: UserProjectProps) => {
             </div>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs text-muted-foreground">Vytvořeno</span>
+              <span className="font-medium truncate">{formatDate(project.createdAt)}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <CalendarCheck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs text-muted-foreground">Deadline</span>
+              <span className={`font-medium truncate ${getDeadlineColor(project.dueAt)}`}>
+                {formatDate(project.dueAt)}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {(project.sourceFileId || project.translatedFileId) && (
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border/50">
             {project.sourceFileId && (
-              <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloadMutation.isPending}>
-                <Download className="mr-2 h-4 w-4" />          
-                  {downloadMutation.isPending ? "Waiting for start donwload..." : "Download Source File"}
-              </Button>            
-            )}         
-            {project.translatedFileId && project.status === "DONE" && (
-              <Button variant="default" size="sm" className="flex-1 min-w-[140px] gap-2" asChild>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4" />
+                Download Source File
+              </Button>
+            )}
+            {project.translatedFileId && (
+              <Button variant="default" size="sm" className="flex min-w-[140px] gap-2" asChild>
                 <a href={project.translatedFileId} download>
                   <Download className="w-4 h-4" />
-                  <span>Přeložený soubor</span>
+                  <span>Translated File</span>
                 </a>
               </Button>
             )}

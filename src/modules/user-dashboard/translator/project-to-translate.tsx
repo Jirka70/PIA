@@ -17,24 +17,23 @@ import { Textarea } from "@/components/ui/textarea"
 import { ProjectFileType, ProjectType } from "@/db/schema"
 import { performDownload, performPreview } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download, Upload } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { UploadTranslatedFileDialog } from "./upload-translated-file-dialog"
-
-type ProjectStatus = "NEW" | "IN_PROGRESS" | "UNDER_REVIEW" | "COMPLETED" | "CANCELLED" | "DONE" | "CLOSED"
-
+import { User } from "better-auth"
 
 interface ProjectToTranslateProps {
-  project: ProjectType
+  project: ProjectType,
+  user: User
   onUpdateProgress?: () => void
   onCompleteProject?: () => void
 }
 
-export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProject }: ProjectToTranslateProps) => {
+export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) => {
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
-  const [progress, setProgress] = useState(project.progressPercent)
+  const [draftProgress, setDraftProgress] = useState(project.progressPercent)
   const [message, setMessage] = useState<string>("")
 
   const trpc = useTRPC();
@@ -47,12 +46,15 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
     }
   }))
 
+  const queryClient = useQueryClient();
   async function handleUpdateProgress(progress: number) {
-    await   updateProgressMutation.mutateAsync({
+    await updateProgressMutation.mutateAsync({
       projectId: project.id,
       newProgress: progress
     })
-
+    await queryClient.invalidateQueries({
+        queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
+      })
     setIsProgressDialogOpen(false);
   }
 
@@ -98,20 +100,6 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
       downloadMutation.mutate();
   }
 
-  const handleMarkCompleted = () => {
-    console.log("[v0] Marking project as completed")
-    if (onCompleteProject) {
-      onCompleteProject()
-    }
-  }
-
-  const handleContactCustomer = () => {
-    console.log("[v0] Contacting customer")
-    if (onUpdateProgress) {
-      onUpdateProgress()
-    }
-  }
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "NEW":
@@ -153,6 +141,7 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
   const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0
 
+
   return (
     <Card className={isOverdue ? "border-red-500/50" : isUrgent ? "border-yellow-500/50" : ""}>
       <CardHeader>
@@ -178,7 +167,7 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
                   {formatDate(project.dueAt)}
                   {daysUntilDue !== null && (
                     <span className="ml-1">
-                      ({isOverdue ? `${Math.abs(daysUntilDue)} days overdue` : `${daysUntilDue} days left`})
+                      ({isOverdue ? `${Math.abs(daysUntilDue)} days overdue` : `${daysUntilDue} day${daysUntilDue > 1 ? "s" : ""} left`})
                     </span>
                   )}
                 </span>
@@ -196,20 +185,20 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground font-medium">Translation Progress</span>
-            <span className="font-bold text-lg">{progress}%</span>
+            <span className="font-bold text-lg">{project.progressPercent}%</span>
           </div>
           <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
             <div
               className={`h-3 transition-all duration-500 rounded-full ${
-                progress === 100
+                project.progressPercent === 100
                   ? "bg-green-500"
-                  : progress >= 75
+                  : project.progressPercent >= 75
                     ? "bg-blue-500"
-                    : progress >= 50
+                    : project.progressPercent >= 50
                       ? "bg-yellow-500"
                       : "bg-orange-500"
               }`}
-              style={{ width: `${progress}%` }}
+              style={{ width: `${project.progressPercent}%` }}
             />
           </div>
           <p className="text-xs text-muted-foreground">Last updated: {new Date(project.updatedAt).toLocaleString()}</p>
@@ -218,7 +207,10 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
         {/* Action Buttons */}
         <div className="flex gap-2 flex-wrap">
           {/* Update Progress Dialog */}
-          <Dialog open={isProgressDialogOpen} onOpenChange={setIsProgressDialogOpen}>
+          <Dialog open={isProgressDialogOpen} onOpenChange={(open) => {
+            setIsProgressDialogOpen(open)
+            if (open) setDraftProgress(project.progressPercent)
+          }}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" disabled={project.status === "DONE" || project.status === "CLOSED"}>
                 Update Progress
@@ -234,11 +226,11 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <Label className="text-base">Progress</Label>
-                      <span className="text-2xl font-bold">{progress}%</span>
+                      <span className="text-2xl font-bold">{draftProgress}%</span>
                     </div>
                     <Slider
-                      value={[progress]}
-                      onValueChange={(value) => setProgress(value[0])}
+                      value={[draftProgress]}
+                      onValueChange={(value) => setDraftProgress(value[0])}
                       max={100}
                       step={5}
                       className="w-full"
@@ -254,26 +246,13 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
                   <Button variant="outline" onClick={() => setIsProgressDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={async () => {await handleUpdateProgress(progress)}} disabled={updateProgressMutation.isPending} className="min-w-[120px]">
+                  <Button onClick={async () => {await handleUpdateProgress(draftProgress)}} disabled={updateProgressMutation.isPending} className="min-w-[120px]">
                     {updateProgressMutation.isPending ? "Saving..." : "Save Progress"}
                   </Button>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
-
-          {/* Complete Project Button */}
-          {project.status === "IN_PROGRESS" && progress === 100 && (
-            <Button
-              size="sm"
-              variant="default"
-              className="bg-green-600 hover:bg-green-700"
-              onClick={handleMarkCompleted}
-            >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Mark as Completed
-            </Button>
-          )}
 
           {/* Message Customer Dialog */}
           <Dialog>
@@ -329,14 +308,18 @@ export const ProjectToTranslate = ({ project, onUpdateProgress, onCompleteProjec
               
               {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
           </Button>
-          <UploadTranslatedFileDialog
-
-            onConfirm={async () => {
-              // Sem napoj tvoji hotovou upload logiku
-              // např. await uploadTranslatedFile({ projectId: project.id, file })
-              // a pak třeba toast.success("Soubor nahrán")
-            }}
-          />
+          <UploadTranslatedFileDialog project={project} user={user} />
+          {project.translatedFileId && (
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => {}}
+              disabled={false}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Translated File
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

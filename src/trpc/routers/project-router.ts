@@ -5,6 +5,8 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { createProjectInput } from "@/lib/validators/create-project-schema";
 import z from "zod";
+import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
+import { dataTagErrorSymbol } from "@tanstack/react-query";
 
 
 export const projectRouter = createTRPCRouter({
@@ -129,6 +131,47 @@ export const projectRouter = createTRPCRouter({
 
             return {
                 projects
+            }
+        }),
+    uploadTranslatedFile: translatorProcedure
+        .input(z.object({
+            file: uploadedFileMeta,
+            projectId: z.string(),
+            setProgressTo100: z.boolean()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            console.log("update? :)", input.setProgressTo100)
+            const [project] = await ctx.db.select()
+                .from(Project)
+                .where(eq(Project.id, input.projectId))
+        
+            if (project.translatorId !== ctx.user?.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "NOT AUTHENTICATED"
+                })
+            }
+
+            await ctx.db
+                .insert(ProjectFile)
+                .values({
+                    id: input.file.fileId,
+                    projectId: project.id,
+                    fileName: input.file.fileName,
+                    contentType: input.file.contentType,
+                    size: input.file.size,
+                    storageKey: input.file.storageKey,
+                    url: input.file.url
+                })
+                
+
+            await ctx.db
+                .update(Project)
+                .set({ translatedFileId: input.file.fileId, progressPercent: input.setProgressTo100 ? 100 : project.progressPercent })
+                .where(eq(Project.id, input.projectId))
+
+            return {
+                message: "File successfully uploaded"
             }
         }),
     getManyAsUser: protectedProcedure

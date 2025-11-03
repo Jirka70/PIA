@@ -14,7 +14,7 @@ export const uploadedFileMeta = z.object({
     storageKey: z.string().min(1),
     url: z.url(), 
 }, {
-    message: "Please upload a file to translate"
+    message: "Please upload a file to translate with a valid extension (.PDF, .DOC, .DOCX or .TXT)"
 })
 
 export type UploadedFileMeta = z.infer<typeof uploadedFileMeta>

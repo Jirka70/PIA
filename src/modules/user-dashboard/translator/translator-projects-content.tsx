@@ -62,28 +62,11 @@ export const ProjectsContent = ( { user } : ProjectsContentProps) => {
                                 project={project}
                                 onUpdateProgress={() => {}}
                                 onCompleteProject={() => {}}
+                                user={user}
                             />
                         ))}
                     </div>
                 )}
         </div>
     )
-
-    /*return (
-        <>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Assigned Projects</h2>
-              
-            </div>
-
-                {projects.map((project) => (
-                    <ProjectToTranslate
-                        key={project.id}
-                        project={project}
-                        onUpdateProgress={() => {}}
-                        onCompleteProject={() => {}}
-                    />
-                ))}
-        </>
-    )*/
 }

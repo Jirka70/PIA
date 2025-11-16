@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Role } from "@/db/schema"
 import { TranslatorDashboard } from "@/modules/user-dashboard/translator/translator-dashboard";
+import AdminDashboard from "@/modules/user-dashboard/admin/admin-dashboard";
 
 export default async function UserDashboardPage() {
     const session = await auth.api.getSession({
@@ -19,6 +20,10 @@ export default async function UserDashboardPage() {
     const role : Role = user.role as Role;
     if (role === "translator") {
         return <TranslatorDashboard user={user as User} />
+    }
+
+    if (role === "admin") {
+        return <AdminDashboard />
     }
 
     return <UserDashboard user={user as User}/>

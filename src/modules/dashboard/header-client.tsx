@@ -19,6 +19,7 @@ export function HeaderClient({ user } : Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const t = useTranslations("nav")
+  console.log("user", user)
 
 
   return (
@@ -124,14 +125,14 @@ export function HeaderClient({ user } : Props) {
             </Link>
             <div className="flex flex-col gap-2 pt-4 border-t">
               <Button variant="ghost" asChild onClick={() => setMobileMenuOpen(false)}>
-                <Link href="/login">{t("login")}</Link>
+                <Link href="/sign-in">{t("login")}</Link>
               </Button>
               <Button
                 asChild
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Link href="/register">{t("getStarted")}</Link>
+                <Link href="/sign-up">{t("getStarted")}</Link>
               </Button>
             </div>
           </nav>

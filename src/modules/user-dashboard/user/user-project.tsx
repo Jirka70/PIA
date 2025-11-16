@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Clock, TrendingUp, Download, Calendar, CalendarCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ProjectType } from "@/db/schema"
+import { ProjectFileType, ProjectType } from "@/db/schema"
+import { performDownload } from "@/lib/utils"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { useTRPC } from "@/trpc/client"
+import { toast } from "sonner"
 
 
 interface UserProjectProps {
@@ -27,6 +31,43 @@ export const UserProject = ({ project }: UserProjectProps) => {
       month: "short",
       year: "numeric",
     })
+  }
+
+  const trpc = useTRPC();
+  const { mutateAsync: getTranslatedFileAsync, isPending: isDownloadPending } = useMutation(trpc.projects.getTranslatedFile.mutationOptions({
+    onSuccess: () => {
+      toast.success("Translated file was successfully obtained")
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Translated file could no be obtained");
+    }
+  }))
+
+
+  const downloadTranslatedFile = async () => {
+    const projectFile = await getTranslatedFileAsync({
+      projectId: project.id
+    })
+
+
+    await performDownload(projectFile.translatedFile)
+  }
+
+  const { mutateAsync: getSourceFileAsync, isPending: isSourceFileDownloadPending } = useMutation(trpc.projects.getSourceProjectFile.mutationOptions({
+    onSuccess: () => {
+      toast.success("Source file was successfully obtained")
+    },
+    onError: () => {
+      toast.error("Source file cannot be obtained")
+    }
+  }))
+
+  const downloadSourceFile = async () => {
+    const projectFile = await getSourceFileAsync({
+      projectId: project.id
+    })
+
+    await performDownload(projectFile.projectFile);
   }
 
   const getDeadlineColor = (dueDate: Date | string | null | undefined) => {
@@ -124,17 +165,17 @@ export const UserProject = ({ project }: UserProjectProps) => {
         {(project.sourceFileId || project.translatedFileId) && (
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border/50">
             {project.sourceFileId && (
-              <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Button variant="outline" disabled={isSourceFileDownloadPending} size="sm" onClick={async () => { await downloadSourceFile()}}>
                 <Download className="mr-2 h-4 w-4" />
-                Download Source File
+                {isSourceFileDownloadPending ? "Getting Source File" : "Download Source File"}
               </Button>
             )}
             {project.translatedFileId && (
-              <Button variant="default" size="sm" className="flex min-w-[140px] gap-2" asChild>
-                <a href={project.translatedFileId} download>
+              <Button variant="default" size="sm" disabled={isDownloadPending} onClick={async () => { downloadTranslatedFile() }}className="flex min-w-[140px] gap-2">
+
+
                   <Download className="w-4 h-4" />
-                  <span>Translated File</span>
-                </a>
+                  {isDownloadPending ? "Getting translated file" : "Translated file"}
               </Button>
             )}
           </div>

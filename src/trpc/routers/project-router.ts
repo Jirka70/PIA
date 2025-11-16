@@ -1,12 +1,13 @@
-import { Project, ProjectFile, translatorLanguage, user } from "@/db/schema";
-import { createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
-import { eq, and } from "drizzle-orm"
+import { Project, ProjectFile, Role, translatorLanguage, user, userActivity } from "@/db/schema";
+import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
+import { eq, and, getTableColumns, sql, inArray } from "drizzle-orm"
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { createProjectInput } from "@/lib/validators/create-project-schema";
 import z from "zod";
 import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
-import { dataTagErrorSymbol } from "@tanstack/react-query";
+import { alias } from "drizzle-orm/pg-core";
+
 
 
 export const projectRouter = createTRPCRouter({
@@ -68,13 +69,30 @@ export const projectRouter = createTRPCRouter({
                 .set({ sourceFileId: projectFile.id})
                 .where(eq(Project.id, project.id))
 
+            await ctx.db
+                .insert(userActivity)
+                .values({
+                    id: nanoid(),
+                    userId: ctx.user?.id,
+                    info: "created a project",
+                    activityStatus: "CREATED_PROJECT",
+                    activitySeverity: "Info",
+                    projectId: project.id
+                })
+
+            /* Increment number of projects in user and translator record */
+            await ctx.db
+                .update(user)
+                .set({ numberOfOpenProjects: sql`${user.numberOfOpenProjects} + 1` })
+                .where(inArray(user.id, [userId!, suitableTranslator[0].id]));
+
             return { project }
         }),
     getSourceProjectFile: protectedProcedure
         .input(z.object({
             projectId: z.string()
         }))
-        .query(async ({ ctx, input }) => {
+        .mutation(async ({ ctx, input }) => {
             const user = ctx.user!;
             const [project] = await ctx.db.select()
                 .from(Project)
@@ -82,6 +100,7 @@ export const projectRouter = createTRPCRouter({
 
             if (project.clientId !== user.id 
                 && project.translatorId !== user.id
+                && user.role as Role !== "admin"
             ) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
@@ -111,7 +130,7 @@ export const projectRouter = createTRPCRouter({
         }))
         .query(async ({ ctx, input }) => {
             const user = ctx.user
-            if (!user || user.id != input.translatorId) {
+            if (user?.role !== "admin" && (!user || user.id != input.translatorId)) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
                     message: `User ${user?.name} is not authorized`
@@ -133,6 +152,7 @@ export const projectRouter = createTRPCRouter({
                 projects
             }
         }),
+
     uploadTranslatedFile: translatorProcedure
         .input(z.object({
             file: uploadedFileMeta,
@@ -140,7 +160,6 @@ export const projectRouter = createTRPCRouter({
             setProgressTo100: z.boolean()
         }))
         .mutation(async ({ ctx, input }) => {
-            console.log("update? :)", input.setProgressTo100)
             const [project] = await ctx.db.select()
                 .from(Project)
                 .where(eq(Project.id, input.projectId))
@@ -163,6 +182,17 @@ export const projectRouter = createTRPCRouter({
                     storageKey: input.file.storageKey,
                     url: input.file.url
                 })
+
+            await ctx.db
+                .insert(userActivity)
+                .values({
+                    id: nanoid(),
+                    userId: ctx.user?.id,
+                    info: `submitted translation`,
+                    activityStatus: "TRANSLATION_SUBMITTED",
+                    activitySeverity: "Info",
+                    projectId: input.projectId
+                })
                 
 
             await ctx.db
@@ -180,7 +210,7 @@ export const projectRouter = createTRPCRouter({
         }))
         .query(async ({ ctx, input }) => {
             const user = ctx.user
-            if (!user || user.id != input.userId) {
+            if (user?.role !== "admin" && (!user || user.id != input.userId)) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
                     message: `User ${user?.name} is not authorized`
@@ -247,5 +277,96 @@ export const projectRouter = createTRPCRouter({
                 project: updated
             }
             
+        }),
+    getTranslatedFile: protectedProcedure
+        .input(z.object({
+            projectId: z.string()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const [project] = await ctx.db.
+                select()
+                .from(Project)
+                .where(eq(Project.id, input.projectId))
+
+            if (project.clientId !== ctx.user?.id 
+                && project.translatorId !== ctx.user?.id
+                && ctx.user?.role as Role !== "admin"
+            ) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authorized"
+                })
+            } 
+            
+            const [projectFile] = await ctx.db.select()
+                .from(ProjectFile)
+                .where(eq(ProjectFile.id, project.translatedFileId!))
+
+            return {
+                translatedFile: projectFile
+            }
+        }),
+    getProjectById: adminProcedure
+        .input(z.object({
+            id: z.string()
+        }))
+        .query(async ({ ctx, input }) => {
+            const db = ctx.db;
+
+            const client = alias(user, "client");
+            const translator = alias(user, "translator");
+
+            const [project] = await db
+                .select()
+                .from(Project)
+                .leftJoin(client, eq(Project.clientId, client.id))
+                .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .where(eq(Project.id, input.id))
+
+            return {
+                project
+            }
+        }),
+    getProjectsByTranslatorId: adminProcedure
+        .input(z.object({
+            userId: z.string()
+        }))
+        .query(async ({ ctx, input }) => {
+            const db = ctx.db;
+
+            const client = alias(user, "client");
+            const translator = alias(user, "translator");
+
+            const project = await db
+                .select()
+                .from(Project)
+                .leftJoin(client, eq(Project.clientId, client.id))
+                .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .where(eq(Project.translatorId, input.userId))
+
+            return {
+                project
+            }
+        }),
+    getProjectsByUserId: adminProcedure
+        .input(z.object({
+            userId: z.string()
+        }))
+        .query(async ({ ctx, input }) => {
+            const db = ctx.db;
+
+            const client = alias(user, "client");
+            const translator = alias(user, "translator");
+
+            const project = await db
+                .select()
+                .from(Project)
+                .leftJoin(client, eq(Project.clientId, client.id))
+                .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .where(eq(Project.clientId, input.userId))
+
+            return {
+                project
+            }
         })
 })

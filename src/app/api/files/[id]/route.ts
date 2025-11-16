@@ -13,7 +13,9 @@ const UPLOAD_DIR = path.join(process.cwd(), "uploads")
 
 export async function GET(
     _req: NextRequest,
-    { params } : { params: { id: string }}) {
+    { params } : { params: Promise<{ id: string }> }) {
+    
+    const { id } = await params
 
     const session = await auth.api.getSession({
         headers: await headers()
@@ -28,7 +30,7 @@ export async function GET(
     const [meta] = await db
         .select()
         .from(ProjectFile)
-        .where(eq(ProjectFile.id, params.id))
+        .where(eq(ProjectFile.id, await id))
         .limit(1)
 
     if (!meta) {

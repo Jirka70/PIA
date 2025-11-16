@@ -7,6 +7,7 @@ import { DropdownMenu,
     DropdownMenuLabel, 
     DropdownMenuSeparator, 
     DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { authClient } from "@/lib/auth-client"
 import { logOutSignedUser } from "@/lib/utils"
 import { LogOut, User as UserIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -22,7 +23,7 @@ export const UserSectionDropdownMenu = ({ username } : UserMenuProps) => {
     const t = useTranslations("nav")
 
     const logout = async () => {
-        await logOutSignedUser()
+        await authClient.signOut();
         router.refresh()
     }
 

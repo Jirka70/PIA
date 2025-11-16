@@ -1,13 +1,14 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { authClient } from "@/lib/auth-client"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 export const LoginSection = () => {
     const t = useTranslations("nav")
     return <>
-        <Button variant="ghost" size="sm" asChild className="text-sm lg:text-base">
+        <Button variant="ghost" size="sm" asChild className="text-sm lg:text-base" >
             <Link href="/sign-in">{t("login")}</Link>
         </Button>
         <Button

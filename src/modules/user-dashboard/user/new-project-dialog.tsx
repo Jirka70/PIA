@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Plus, Upload, X } from "lucide-react"
+import { Loader2, Plus, Upload, X, CalendarX } from "lucide-react"
 import { User } from "better-auth"
 import { CreateProjectFormInput, createProjectInput } from "@/lib/validators/create-project-schema"
 import { useForm } from "react-hook-form"
@@ -29,7 +29,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 
 const languages = [
   { code: "en", name: "English" },
@@ -59,6 +58,8 @@ export function NewProjectDialog({ user } : NewDialogProps) {
     defaultValues: {
       name: "",
       description: "",
+      // 👇 důležité: povolit prázdný deadline
+      dueAt: undefined as unknown as Date | undefined,
     }
   })
 
@@ -133,6 +134,8 @@ export function NewProjectDialog({ user } : NewDialogProps) {
   const onSubmit = async (data: CreateProjectFormInput) => {
     await createProject({
       ...data,
+      // pokud není vybrán deadline, pošleme undefined
+      dueAt: data.dueAt ? new Date(data.dueAt) : undefined,
     })
   }
   const minDate = (() => {
@@ -142,6 +145,9 @@ export function NewProjectDialog({ user } : NewDialogProps) {
   })();
 
   const fileMeta = form.watch("file")
+
+  // Pomocná funkce pro vymazání deadlinu
+  const clearDueDate = () => form.setValue("dueAt", undefined as any, { shouldDirty: true, shouldValidate: true })
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -231,43 +237,67 @@ export function NewProjectDialog({ user } : NewDialogProps) {
           <FormField
             control={form.control}
             name="dueAt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Deadline</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                        "w-[280px] justify-start text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                        )}
-                        >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? (
-                        <span>{format(field.value as Date, "d. MMMM yyyy", { locale: cs })}</span>
-                        ) : (
-                        <span>Vyberte datum</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value as Date}
-                    onSelect={(date) => field.onChange(date)}
-                    disabled={(date) => date < minDate}
-                    fixedWeeks
-                    showOutsideDays
-                    numberOfMonths={1}
-                  />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage /> 
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const selected = field.value ? new Date(field.value as Date) : undefined
+              return (
+                <FormItem>
+                  <FormLabel>Deadline</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "w-[280px] justify-start text-left font-normal",
+                              !selected && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selected ? (
+                              <span>{format(selected, "d. MMMM yyyy", { locale: cs })}</span>
+                            ) : (
+                              <span>Vyberte datum</span>
+                            )}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selected}
+                          // Kliknutí na již vybrané datum jej zruší
+                          onSelect={(date) => {
+                            if (!date) return clearDueDate()
+                            const sameDay = selected && date.toDateString() === selected.toDateString()
+                            field.onChange(sameDay ? undefined : date)
+                          }}
+                          disabled={(date) => date < minDate}
+                          fixedWeeks
+                          showOutsideDays
+                          numberOfMonths={1}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {/* Tlačítko na explicitní vymazání */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="gap-2"
+                      onClick={clearDueDate}
+                      disabled={!selected || isPending}
+                      title="Vymazat deadline"
+                    >
+                      <CalendarX className="h-4 w-4" />
+                      Vymazat
+                    </Button>
+                  </div>
+                  <FormMessage /> 
+                </FormItem>
+              )}
+            }
           />
 
           <FormField

@@ -23,6 +23,8 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { UploadTranslatedFileDialog } from "./upload-translated-file-dialog"
 import { User } from "better-auth"
+import { createTRPCProxyClient } from "@trpc/client"
+import { ChatDialog } from "../chat/chat-dialog"
 
 interface ProjectToTranslateProps {
   project: ProjectType,
@@ -33,8 +35,8 @@ interface ProjectToTranslateProps {
 
 export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) => {
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
-  const [draftProgress, setDraftProgress] = useState(project.progressPercent)
   const [message, setMessage] = useState<string>("")
+  const [draftProgress, setDraftProgress] = useState(project.progressPercent)
 
   const trpc = useTRPC();
   const updateProgressMutation = useMutation(trpc.projects.updateProgress.mutationOptions({
@@ -63,33 +65,34 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
     mutationFn: viewFile
   })
 
+  const { mutateAsync: getSourceFileAsync } = useMutation(trpc.projects.getSourceProjectFile.mutationOptions())
+  const { mutateAsync: getTranslatedFileAsync, isPending: isPendingViewingTranslatedFile } = useMutation(trpc.projects.getTranslatedFile.mutationOptions({
+    onSuccess: () => {
+      toast.success("File was successfully obtained")
+    }, 
+    onError: () => {
+      toast.error("File cannot be obtained")
+    }
+  }));
+
   async function viewFile()  {
-      const data = getFileToDownloadQuery.data;
-      if (!data) {
-        throw new Error("No data provided") // TODO create better error handling
-      }
+      const projectFile = await getSourceFileAsync({
+        projectId: project.id
+      })
 
-      const projectFile: ProjectFileType = data.projectFile
-
-      await performPreview(projectFile)
+      await performPreview(projectFile.projectFile)
   }
 
   async function handleViewFile() {
     await previewFileMutation.mutateAsync()
   }
 
-  const getFileToDownloadQuery = useQuery(trpc.projects.getSourceProjectFile.queryOptions({
-    projectId: project.id
-  }))
-
   async function download() {
-    const data = getFileToDownloadQuery.data;
-    if (!data) {
-      throw new Error("No data provided") // TODO create better error handling
-    }
+    const projectFile = await getSourceFileAsync({
+      projectId: project.id
+    })
 
-    const projectFile: ProjectFileType = data.projectFile
-    await performDownload(projectFile);
+    await performDownload(projectFile.projectFile);
   }
 
   const downloadMutation = useMutation({
@@ -98,6 +101,16 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
   
   const handleDownloadFile = async () => {
       downloadMutation.mutate();
+  }
+
+  const viewTranslatedFile = async () => {
+    const translatedFile = await getTranslatedFileAsync({
+      projectId: project.id
+    })
+
+    console.log("translated file", translatedFile)
+
+    await performPreview(translatedFile.translatedFile)
   }
 
   const getStatusBadge = (status: string) => {
@@ -209,7 +222,6 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
           {/* Update Progress Dialog */}
           <Dialog open={isProgressDialogOpen} onOpenChange={(open) => {
             setIsProgressDialogOpen(open)
-            if (open) setDraftProgress(project.progressPercent)
           }}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" disabled={project.status === "DONE" || project.status === "CLOSED"}>
@@ -253,8 +265,36 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
               </div>
             </DialogContent>
           </Dialog>
+          <ChatDialog />
 
-          {/* Message Customer Dialog */}
+          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!project.sourceFileId || previewFileMutation.isPending}>
+            <Eye className="mr-2 h-4 w-4" />
+            {previewFileMutation.isPending ? "Creating View..." : "View"}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!project.sourceFileId || downloadMutation.isPending}>
+            <Download className="mr-2 h-4 w-4" />
+              
+              {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
+          </Button>
+          <UploadTranslatedFileDialog project={project} user={user} />
+          {project.translatedFileId && (
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={async () => { await viewTranslatedFile()}}
+              disabled={isPendingViewingTranslatedFile}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                {isPendingViewingTranslatedFile ? "Getting Translated File" : "View Translated File"}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/*
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -298,30 +338,4 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
               </div>
             </DialogContent>
           </Dialog>  
-
-          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!project.sourceFileId || previewFileMutation.isPending}>
-            <Eye className="mr-2 h-4 w-4" />
-            {previewFileMutation.isPending ? "Creating View..." : "View"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!project.sourceFileId || getFileToDownloadQuery.isLoading || downloadMutation.isPending}>
-            <Download className="mr-2 h-4 w-4" />
-              
-              {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
-          </Button>
-          <UploadTranslatedFileDialog project={project} user={user} />
-          {project.translatedFileId && (
-            <Button
-              size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              onClick={() => {}}
-              disabled={false}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                View Translated File
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+*/

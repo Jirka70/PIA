@@ -2,6 +2,9 @@ import {NextRequest, NextResponse} from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
 import {getSessionCookie} from 'better-auth/cookies';
+import path from 'path';
+import { auth } from './lib/auth';
+import { headers } from 'next/headers';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -31,47 +34,16 @@ function isPublicRoute(path: string) {
 }
 
 export default async function middleware(request: NextRequest) {
-  const {pathname} = request.nextUrl;
-
   const intlResponse = intlMiddleware(request);
 
-
-  // Pokud už došlo k redirectu/rewritu, vrať to rovnou
-  // (Next používá X-headers k signalizaci – tohle je spolehlivý early-return)
   if (intlResponse.redirected || intlResponse.headers.get('x-middleware-rewrite')) {
     return intlResponse;
   }
 
-  // 2) Tvoje auth logika
-  const sessionCookie = getSessionCookie(request);
-
-  if (!sessionCookie && isPublicRoute(pathname)) {
-    return intlResponse
-  }
-
-
-  if (sessionCookie) {
-    if (isAuthRoute(pathname)) {
-      const homeUrl = new URL("/", request.url)
-      return NextResponse.redirect(homeUrl)
-    }
-  }
-
-  if (!sessionCookie) {
-    const loginUrl = new URL(`/${routing.defaultLocale}/sign-in`, request.url);
-  
-    if (pathname !== loginUrl.pathname) {
-      return NextResponse.redirect(loginUrl);
-    }
-
-    return NextResponse.next()
-    
-  }
 
   return intlResponse;
 }
 
-// Pozor na matcher – nepouštěj middleware na assety
 export const config = {
   matcher: ['/((?!_next|api|favicon.ico|robots.txt|sitemap.xml).*)']
 };

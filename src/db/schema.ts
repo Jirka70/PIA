@@ -2,6 +2,7 @@ import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, intege
 import { User } from "lucide-react";
 
 export const userRole = pgEnum("user_role", ["owner","admin","translator","user"]);
+export const messageStatus = pgEnum("message_status", ["sent", "seen"])
 export type Role = typeof userRole.enumValues[number] | "undefined"
 
 export const user = pgTable("user", {
@@ -16,6 +17,9 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: userRole("role").default("user").notNull(),
+  numberOfOpenProjects: smallint("number_of_open_projects")
+    .default(0)
+    .notNull()
 });
 
 export const session = pgTable("session", {
@@ -82,6 +86,37 @@ export const language = pgTable("language", {
   name: text("name").notNull(),
 });
 
+export const activityStatus = pgEnum("activity_status", [
+  "COMPLETED_PROJECT",
+  "CREATED_PROJECT",
+  "TRANSLATION_SUBMITTED",
+  "REVISION_REQUEST",
+  "PROJECT_CANCELED",
+])
+
+export const activitySeverity = pgEnum("activity_severity", [
+  "Warning",
+  "Info",
+  "Success",
+  "Critical"
+])
+
+export const userActivity = pgTable("activity", {
+  id: text("id").primaryKey().notNull(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "set null" }),
+  projectId: text("project_id")
+    .references(() => Project.id, { onDelete: "set null" }),
+  info: text("info")
+    .default(""),
+  date: timestamp("date")
+    .defaultNow()
+    .notNull(),
+  activityStatus: activityStatus("activity_status")
+    .notNull(),
+  activitySeverity: activitySeverity("activity_severity")
+    .notNull()
+})
 
 export const translatorLanguage = pgTable(
   "translator_language",
@@ -120,6 +155,25 @@ export const ProjectFile = pgTable("project_file", {
     .notNull()
 })
 
+export const Message = pgTable(
+  "message",
+  {
+    id: text("id").primaryKey().notNull(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => Project.id, { onDelete: "cascade" }),
+    senderId: text("sender_id")
+      .references(() => user.id, { onDelete: "set null" }),
+    receiverId: text("receiver_id")
+      .references(() => user.id, { onDelete: "set null" }),
+    content: text("content").notNull(),
+    status: messageStatus("status").default("sent").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  }
+);
+
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -156,9 +210,10 @@ export const Project = pgTable("project", {
   })
 
 export const schema = {
-    user, session, account, verification, userRole, projectStatus, language, ProjectFile, Project
+    user, session, account, verification, userRole, projectStatus, language, ProjectFile, Project, activityStatus, userActivity
 }
 
 export type ProjectType = typeof Project.$inferSelect
 export type ProjectStatusType = typeof projectStatus
 export type ProjectFileType = typeof ProjectFile.$inferSelect
+export type userActivityType = typeof userActivity.$inferInsert

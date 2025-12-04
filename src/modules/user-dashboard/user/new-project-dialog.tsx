@@ -72,6 +72,9 @@ export function NewProjectDialog({ user } : NewDialogProps) {
       queryClient.invalidateQueries(trpc.projects.getManyAsUser.queryOptions({
         userId: user.id
       }));
+      queryClient.invalidateQueries(trpc.projects.getProjectsCreatedLastMonth.queryOptions({
+        id: user.id
+      }))
       
     },
     onError: (err) => {

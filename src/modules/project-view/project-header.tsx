@@ -13,6 +13,13 @@ import {
 import { Edit } from "lucide-react"
 import { useState } from "react"
 import { StatusBadge } from "./status-badge"
+import { useTRPC } from "@/trpc/client"
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SelectLanguagesSkeleton } from "../manage-translator/edit-languages-dialog"
+import { ProjectStatusType, ProjectType } from "@/db/schema"
 
 export function ProjectHeader({
   project,
@@ -22,16 +29,53 @@ export function ProjectHeader({
   setIsStatusDialogOpen,
   isUpdatingStatus,
 }: {
-  project: any
+  project: ProjectType
   isOverdue: boolean
   isUrgent: boolean
   isStatusDialogOpen: boolean
   setIsStatusDialogOpen: (open: boolean) => void
   isUpdatingStatus: boolean
 }) {
-  const [projectStatus, setProjectStatus] = useState<string | undefined>(
-    project?.status
+  const [projectStatus, setProjectStatus] = useState<ProjectStatusType | undefined>(
+    project.status
   )
+
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const updateStatusMutation = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
+    onSuccess: () => {
+      toast.success("Status changed")
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Status cannot be changed")
+    }
+  }))
+
+  const statusesQuery = useQuery(trpc.projects.getProjectStatuses.queryOptions());
+
+
+  const updateStatus = async () => {
+    if (!projectStatus) {
+      toast.error("No status was selected. Select one")
+      return;
+    }
+    
+    await updateStatusMutation.mutateAsync({
+      projectId: project.id,
+      projectStatus: projectStatus
+    })
+
+    queryClient.invalidateQueries(trpc.users.getTranslatorInfo.queryOptions({
+      id: project.translatorId!
+    }))
+    queryClient.invalidateQueries(trpc.projects.getProjectById.queryOptions({
+      id: project.id
+    }))
+
+
+    setIsStatusDialogOpen(false)
+  
+  }
 
   return (
     <CardHeader>
@@ -71,70 +115,32 @@ export function ProjectHeader({
                 Change the status of {project.name}
               </DialogDescription>
             </DialogHeader>
-            <StatusDialogBody
-              projectStatus={projectStatus}
-              onChangeStatus={setProjectStatus}
-              onClose={() => setIsStatusDialogOpen(false)}
-              isUpdating={isUpdatingStatus}
-            />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={projectStatus} onValueChange={(value) => setProjectStatus(value as ProjectStatusType)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusesQuery.data
+                      ? statusesQuery.data?.map((status) => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))
+                      : <SelectLanguagesSkeleton />}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline">
+                  Cancel
+                </Button>
+                <Button disabled={updateStatusMutation.isPending} onClick={async () => { await updateStatus() }}>{updateStatusMutation.isPending ? "Updating..." : "Update status"}</Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
     </CardHeader>
-  )
-}
-
-function StatusDialogBody({
-  projectStatus,
-  onChangeStatus,
-  onClose,
-  isUpdating,
-}: {
-  projectStatus?: string
-  onChangeStatus: (v?: string) => void
-  onClose: () => void
-  isUpdating: boolean
-}) {
-  return (
-    <div className="space-y-4 py-4">
-      <StatusSelect value={projectStatus} onChange={onChangeStatus} />
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button disabled={isUpdating}>Update Status</Button>
-      </div>
-    </div>
-  )
-}
-
-function StatusSelect({
-  value,
-  onChange,
-}: {
-  value?: string
-  onChange: (v?: string) => void
-}) {
-  const { Label } = require("@/components/ui/label")
-  const { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } =
-    require("@/components/ui/select")
-
-  return (
-    <div className="space-y-2">
-      <Label>Status</Label>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="NEW">New</SelectItem>
-          <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-          <SelectItem value="QA">QA Review</SelectItem>
-          <SelectItem value="BLOCKED">Blocked</SelectItem>
-          <SelectItem value="DONE">Done</SelectItem>
-          <SelectItem value="CLOSED">Closed</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
   )
 }

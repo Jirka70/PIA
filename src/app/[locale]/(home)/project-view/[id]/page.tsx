@@ -9,6 +9,7 @@ export default async function ProjectViewPage({
     await requireAdmin()
     const {id} = await params;
 
+
     return (
         <ProjectAdminView id={id} />
     );

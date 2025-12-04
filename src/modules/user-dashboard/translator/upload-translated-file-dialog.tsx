@@ -26,10 +26,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ProjectType } from "@/db/schema"
 import { useTRPC } from "@/trpc/client"
 import { User } from "better-auth"
+import { ProjectClosedTooltip } from "./project-closed-tooltip"
 
 const uploadFileSchema = z.object({
     file: uploadedFileMeta,
-    autoSetProgress: z.boolean()
+    autoSetProgress: z.boolean(),
+    autoSetQAState: z.boolean(),
 })
 
 interface UploadDialogProps {
@@ -52,6 +54,7 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
     defaultValues: {
       file: undefined,
       autoSetProgress: false,
+      autoSetQAState: false,
     },
   })
 
@@ -106,19 +109,26 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
   const trpc = useTRPC()
   const queryClient = useQueryClient()
 
-  const { mutateAsync: uploadTranslatedFile, isPending } = useMutation(trpc.projects.uploadTranslatedFile.mutationOptions({
+  const { mutateAsync: uploadTranslatedFile, isPending } = useMutation(
+  trpc.projects.uploadTranslatedFile.mutationOptions({
     onSuccess: async () => {
       form.reset()
+
       await queryClient.invalidateQueries({
-        queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
+        queryKey: trpc.projects.getManyAsTranslator.queryKey({
+          translatorId: user.id,
+        }),
       })
+
       toast.success("File successfully uploaded")
-      setOpen(false)  
+      setOpen(false)
     },
     onError: (error) => {
       toast.error(error.message)
-    }
-  }))
+    },
+  })
+)
+
 
   type uploadFileSchemaType = z.infer<typeof uploadFileSchema>
 
@@ -127,20 +137,30 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
     await uploadTranslatedFile({
       projectId: project.id,
       setProgressTo100: data.autoSetProgress,
+      setQAState: data.autoSetQAState,
       ...data
     })
 
   }
 
+  const isProjectModifiable = () => {
+    return project.status === "NEW"
+      || project.status === "QA"
+      || project.status === "IN_PROGRESS"
+  }
+
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Upload className="mr-2 h-4 w-4" />
-          Upload translated file
-        </Button>  
-      </DialogTrigger>
+      <ProjectClosedTooltip disabled={!isProjectModifiable()}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" disabled={!isProjectModifiable()}>
+            <Upload className="mr-2 h-4 w-4" />
+            Upload translated file
+          </Button>  
+        </DialogTrigger>
+      </ProjectClosedTooltip>
+
 
       <DialogContent
         className={cn(
@@ -320,6 +340,28 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="autoSetQAState"
+              render={({ field }) => (
+                <FormItem className="pt-1">
+                  <FormControl>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                          id="auto-set-qa-state"
+                          checked={!!field.value}
+                          onCheckedChange={(v) => field.onChange(Boolean(v))}
+                      />
+                      <FormLabel htmlFor="auto-set-qa-state" className="font-normal">
+                        Mark project as Q/A
+                      </FormLabel>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+
+                </FormItem>
+              )}
+              />
 
                 <div className="flex justify-end gap-3 pt-4 border-t mt-6">
                   <Button

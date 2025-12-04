@@ -26,7 +26,7 @@ const t = initTRPC.context<Context>().create({
 });
 
 export const isAuthed = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session) {
+  if (!ctx.session || !ctx.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Not authenticated"
@@ -34,7 +34,13 @@ export const isAuthed = t.middleware(async ({ ctx, next }) => {
   }
 
 
-  return next({ ctx: { ...ctx, session: ctx.session } });
+  return next({
+      ctx: {
+        ...ctx,
+        session: ctx.session,
+        user: ctx.user,
+      },
+    });
 })
 
 export const hasUserPermission = (roles: Role[]) => t.middleware(async ({ ctx, next }) => {

@@ -1,8 +1,6 @@
-import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, customType, AnyPgColumn } from "drizzle-orm/pg-core";
-import { User } from "lucide-react";
+import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const userRole = pgEnum("user_role", ["owner","admin","translator","user"]);
-export const messageStatus = pgEnum("message_status", ["sent", "seen"])
 export type Role = typeof userRole.enumValues[number] | "undefined"
 
 export const user = pgTable("user", {
@@ -17,9 +15,6 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: userRole("role").default("user").notNull(),
-  numberOfOpenProjects: smallint("number_of_open_projects")
-    .default(0)
-    .notNull()
 });
 
 export const session = pgTable("session", {
@@ -133,13 +128,18 @@ export const translatorLanguage = pgTable(
   ]
 );
 
+export const projectFileType = pgEnum("project_file_type", [
+  "SOURCE", "TRANSLATE"
+])
+
 export const ProjectFile = pgTable("project_file", {
   id: text("id")
     .primaryKey(),
   projectId: text("project_id")
     .references(() => Project.id, { onDelete: "cascade" })
     .notNull(),
-  
+  fileType: projectFileType("project_file_type")
+    .notNull(),
   fileName: text("file_name")
     .notNull(),
   contentType: text("content_type")
@@ -155,24 +155,7 @@ export const ProjectFile = pgTable("project_file", {
     .notNull()
 })
 
-export const Message = pgTable(
-  "message",
-  {
-    id: text("id").primaryKey().notNull(),
-    projectId: text("project_id")
-      .notNull()
-      .references(() => Project.id, { onDelete: "cascade" }),
-    senderId: text("sender_id")
-      .references(() => user.id, { onDelete: "set null" }),
-    receiverId: text("receiver_id")
-      .references(() => user.id, { onDelete: "set null" }),
-    content: text("content").notNull(),
-    status: messageStatus("status").default("sent").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  }
-);
+
 
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
@@ -183,37 +166,100 @@ export const Project = pgTable("project", {
   progressPercent: smallint("progress_percent").default(0).notNull(),
   progressNote: text("progress_note"),
   sourceLanguage: text("source_language")
-    .notNull(),
+    .notNull()
+    .references(() => language.code),
+
   targetLanguage: text("target_language")
-    .notNull(),
+    .notNull()
+    .references(() => language.code),
+
   translatorId: text("translator_id")
     .references(() => user.id, {
       onDelete: "set null"
     }),
-  sourceFileId: text("source_file_id")
-    .references((): AnyPgColumn => ProjectFile.id, { onDelete: "cascade" }),
-  translatedFileId: text("translated_file_id")
-    .references((): AnyPgColumn => ProjectFile.id, { onDelete: "cascade" }),
   clientId: text("client_id")
     .references(() => user.id, {
       onDelete: "set null"
     }),
 
-  dueAt: timestamp("due_at", { mode: "date" }),
-  createdAt: timestamp("created_at", { mode: "date" })
+  dueAt: timestamp("due_at"),
+  createdAt: timestamp("created_at")
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp("updated_at", { mode: "date" })
+  updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
   })
 
+export const translatorReview = pgTable("translator_review", {
+  id: text("id").primaryKey().notNull(),
+  clientId: text("client_id")
+    .references(() => user.id, { onDelete: "set null" })
+    .notNull(),
+  translatorId: text("translator_id")
+    .references(() => user.id, { onDelete: "set null"})
+    .notNull(),
+  projectId: text("project_id")
+    .references(() => Project.id, { onDelete: "cascade" })
+    .notNull(),
+  
+  qualityRating: integer("quality_rating"),
+  communicationRating: integer("communication_rating"),
+  punctualityRating: integer("punctuality_rating"),
+  overallRating: integer("overall_rating").notNull(),
+
+  title: text("title").notNull(),
+  comment: text("comment").default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+})
+
+export const companyReview = pgTable("company_review", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id")
+    .references(() => user.id, { onDelete: "set null" })
+    .notNull(),
+  projectId: text("project_id")
+    .references(() => Project.id, { onDelete: "cascade" })
+    .notNull(),
+
+  priceRating: integer("price_rating"),
+  supportRating: integer("support_rating"),
+  wouldRecommend: boolean("would_recommend"),
+  overallRating: integer("overall_rating")
+
+})
+
 export const schema = {
-    user, session, account, verification, userRole, projectStatus, language, ProjectFile, Project, activityStatus, userActivity
+  user,
+  session,
+  account,
+  verification,
+
+  userRole,
+
+  projectStatus,
+  language,
+
+  activityStatus,
+  activitySeverity,
+  userActivity,
+
+  translatorLanguage,
+
+  ProjectFile,
+  projectFileType,
+  Project,
+
+  translatorReview,
+  companyReview,
 }
 
+
 export type ProjectType = typeof Project.$inferSelect
-export type ProjectStatusType = typeof projectStatus
+export type ProjectStatusType = (typeof projectStatus.enumValues)[number];
 export type ProjectFileType = typeof ProjectFile.$inferSelect
 export type userActivityType = typeof userActivity.$inferInsert
+export type CompanyReviewType = typeof companyReview.$inferSelect
+export type TranslatorReviewType = typeof translatorReview.$inferSelect

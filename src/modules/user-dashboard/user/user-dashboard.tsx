@@ -1,19 +1,61 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle, Clock, FileText, Plus } from "lucide-react"
 import { NewProjectDialog } from "./new-project-dialog"
 import { User } from "better-auth"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { UserProjectsContent } from "./user-projects-content"
+import { ProjectListSkeleton } from "../project-list-skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface UserDashboardProps {
   user: User
 }
 
+const StatisticsShimmer = () => {
+  return (
+    <Skeleton className="h-5 w-[22px] pb-2" />
+  )
+}
+
 export const UserDashboard = ({ user } : UserDashboardProps) => {
+
+    const trpc = useTRPC()
+    const { data: projects, isLoading, isError, isFetching, error } = useQuery({
+        ...trpc.projects.getManyAsUser.queryOptions({
+            userId: user.id,
+        }),
+        
+        staleTime: 60_000,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+        refetchInterval: false,
+    });
+
+    if (isError) {
+        return (
+            <div className="text-sm text-red-600">
+                Projects could not be loaded: {error.message}
+            </div>
+        );
+    }
+
+    const { data: lastMonthProjects } = useQuery(trpc.projects.getProjectsCreatedLastMonth.queryOptions({
+      id: user.id
+    }));
+
+
+    const activeProjectsLength = projects?.projects.filter((e) => e.status === "NEW" || e.status === "IN_PROGRESS" || e.status === "QA").length
+    const inProgressProjectsLength = projects?.projects.filter((e) => e.status === "IN_PROGRESS").length
+    const completedProjectsLength = projects?.projects.filter((e) => e.status === "DONE").length
+    const pendingReviewProjectsLength = projects?.projects.filter((e) => e.status === "QA").length
+
+    const activeLastMonthProjectsLength = lastMonthProjects?.projects.filter((e) => e.status === "NEW" || e.status === "IN_PROGRESS" || e.status === "QA").length
+    
+
+    
 
     return (
     <div className="min-h-screen py-12">
@@ -30,8 +72,8 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">+2 from last month</p>
+              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : activeProjectsLength}</div>
+              <p className="text-xs text-muted-foreground">{lastMonthProjects && `+${activeLastMonthProjectsLength} Last Month`}</p>
             </CardContent>
           </Card>
 
@@ -41,7 +83,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5</div>
+              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : inProgressProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Being translated</p>
             </CardContent>
           </Card>
@@ -52,7 +94,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">48</div>
+              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : completedProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Total completed</p>
             </CardContent>
           </Card>
@@ -63,7 +105,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : pendingReviewProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Awaiting approval</p>
             </CardContent>
           </Card>
@@ -73,8 +115,10 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
           <h2 className="text-2xl font-bold">Your Projects</h2>
           <NewProjectDialog user={user}/>
         </div>
-
-        <UserProjectsContent user={user} />
+        {isLoading  || !projects?.projects
+          ? <ProjectListSkeleton /> 
+          : <UserProjectsContent projects={projects.projects} isFetching={isFetching} />
+        }       
       </div>
     </div>
   )

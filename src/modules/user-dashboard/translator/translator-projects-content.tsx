@@ -58,10 +58,8 @@ export const ProjectsContent = ( { user } : ProjectsContentProps) => {
                     <div className="flex flex-col gap-4">
                         {projects.map((project) => (
                             <ProjectToTranslate
-                                key={project.id}
-                                project={project}
-                                onUpdateProgress={() => {}}
-                                onCompleteProject={() => {}}
+                                key={project.project.id}
+                                projectToTranslate={project}
                                 user={user}
                             />
                         ))}

@@ -28,7 +28,7 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
 
   if (isPending) {
     return (
-      <ProjectAdminViewWrapper title="Admin Dashboard" description="">
+      <ProjectAdminViewWrapper title="Project Details" description="">
         <ProjectAdminViewSkeleton />
       </ProjectAdminViewWrapper>
     )
@@ -43,12 +43,12 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
   const translator = data.project.translator
 
   return (
-    <ProjectAdminViewWrapper title="Admin dashboard" description="">
+    <ProjectAdminViewWrapper title="Project Details" description="">
       <div className="space-y-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/user-dashboard">
+          <Link href={`/manage/${translator?.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Manage Translator
           </Link>
         </Button>
 

@@ -1,42 +1,12 @@
-import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
-import { User } from "better-auth"
-import { ProjectListSkeleton } from "../project-list-skeleton"
 import { UserProject } from "./user-project"
+import { ProjectType } from "@/db/schema"
 
 interface UserProjectsProps {
-    user: User
+    projects: ProjectType[],
+    isFetching: boolean,
 }
 
-export const UserProjectsContent = ({ user } : UserProjectsProps) => {    
-    const trpc = useTRPC()
-    const { data, isLoading, isError, isFetching, error } = useQuery({
-        ...trpc.projects.getManyAsUser.queryOptions({
-            userId: user.id,
-        }),
-        
-        staleTime: 60_000,
-        refetchOnWindowFocus: true,
-        refetchOnReconnect: true,
-        refetchInterval: false,
-    });
-
-    if (isLoading || !data) {
-        return <ProjectListSkeleton />;
-    }
-
-    if (isError) {
-        return (
-            <div className="text-sm text-red-600">
-                Projects could not be loaded: {error.message}
-            </div>
-        );
-    }
-
-    const projects = data?.projects
-        ? data?.projects 
-        : []
-
+export const UserProjectsContent = ({ projects, isFetching } : UserProjectsProps) => {    
     return (
         <div>
             <div className="flex justify-between items-center mb-6">

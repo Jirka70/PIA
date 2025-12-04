@@ -1,42 +1,49 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Textarea } from "@/components/ui/textarea"
-import { ProjectFileType, ProjectType } from "@/db/schema"
+import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
 import { performDownload, performPreview } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Calendar, Clock, Languages, MessageSquare, Send, CheckCircle2, Eye, Download } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Calendar, Clock, Languages, Eye, Download } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { UploadTranslatedFileDialog } from "./upload-translated-file-dialog"
 import { User } from "better-auth"
-import { createTRPCProxyClient } from "@trpc/client"
 import { ChatDialog } from "../chat/chat-dialog"
+import { StatusBadge } from "@/modules/project-view/status-badge"
+import { ProjectStatusDialog } from "./status-dialog"
+import { QAStatusDialog } from "./qa-dialog"
+import { ProgressDialog } from "./progress-dialog"
+import { ConfirmProgressDialog, ConfirmProgressFormValues } from "./empty-translator-file-dialog"
 
-interface ProjectToTranslateProps {
+export type TranslatorProjectType = {
   project: ProjectType,
-  user: User
-  onUpdateProgress?: () => void
-  onCompleteProject?: () => void
+  sourceFile: ProjectFileType,
+  targetFile: ProjectFileType,
+  companyReview: CompanyReviewType,
+  translatorReview: TranslatorReviewType
 }
 
-export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) => {
+interface ProjectToTranslateProps {
+  projectToTranslate: TranslatorProjectType,
+  user: User
+}
+
+export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTranslateProps) => {
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
-  const [message, setMessage] = useState<string>("")
-  const [draftProgress, setDraftProgress] = useState(project.progressPercent)
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
+  const [isQADialogOpen, setIsQADialogOpen] = useState(false);
+  const [isEmptyFileDialogOpen, setIsEmptyFileDialogOpen] = useState(false);
+
+  const project = projectToTranslate.project
+  const sourceFile = projectToTranslate.sourceFile
+  const targetFile = projectToTranslate.targetFile
+  const translatorReview = projectToTranslate.translatorReview
+  const companyReview = projectToTranslate.companyReview
+   
+
 
   const trpc = useTRPC();
   const updateProgressMutation = useMutation(trpc.projects.updateProgress.mutationOptions({
@@ -48,18 +55,90 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
     }
   }))
 
-  const queryClient = useQueryClient();
-  async function handleUpdateProgress(progress: number) {
+  const changeStatusMutation = useMutation(trpc.projects.changeProjectStatus.mutationOptions())
+
+  const onEmptyTranslatedFileDialogConfirm = async (values: ConfirmProgressFormValues) => {
+    const markAsQA = values.markAsQA;
+    const progress = 100;
+
     await updateProgressMutation.mutateAsync({
       projectId: project.id,
       newProgress: progress
     })
+
+    if (markAsQA) {
+      await changeStatusMutation.mutateAsync({
+        projectId: project.id,
+        projectStatus: "QA"
+      })
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
+    })
+  }
+
+
+
+  const queryClient = useQueryClient();
+  async function handleUpdateProgress(progress: number) {
+    if (progress === 100 && !targetFile.id) {
+      setIsProgressDialogOpen(false);
+      setIsEmptyFileDialogOpen(true);
+      return;
+    }
+
+    await updateProgressMutation.mutateAsync({
+      projectId: project.id,
+      newProgress: progress
+    })
+
+    if (project.progressPercent === 0 && progress > 0) {
+      await changeStatusMutation.mutateAsync({
+        projectId: project.id,
+        projectStatus: "IN_PROGRESS"
+      })
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
+    })
+
+    if (project.status === "QA" && progress < 100) {
+      setIsProgressDialogOpen(false);
+      setIsStatusDialogOpen(true);
+      return;
+    }
+
+    if (progress === 100 && (
+      project.status === "IN_PROGRESS" || project.status === "NEW")) {
+        setIsQADialogOpen(true)
+        setIsStatusDialogOpen(false)
+        return;
+      }
+  }
+
+  const onQADialogConfirm = async () => {
+    await changeStatusMutation.mutateAsync({
+      projectId: project.id,
+      projectStatus: "QA"
+    })
+
     await queryClient.invalidateQueries({
         queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
       })
-    setIsProgressDialogOpen(false);
   }
 
+  const onStatusDialogConfirm = async () => {
+    await changeStatusMutation.mutateAsync({
+      projectId: project.id,
+      projectStatus: "IN_PROGRESS"
+    })
+
+    await queryClient.invalidateQueries({
+        queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
+      })
+  }
 
   const previewFileMutation = useMutation({
     mutationFn: viewFile
@@ -108,26 +187,7 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
       projectId: project.id
     })
 
-    console.log("translated file", translatedFile)
-
     await performPreview(translatedFile.translatedFile)
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "NEW":
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">New Assignment</Badge>
-      case "IN_PROGRESS":
-        return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">In Progress</Badge>
-      case "UNDER_REVIEW":
-        return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20">Under Review</Badge>
-      case "COMPLETED":
-        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Completed</Badge>
-      case "CANCELLED":
-        return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Cancelled</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
   }
 
   const formatDate = (date: Date | null) => {
@@ -154,6 +214,12 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
   const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0
 
+    const isProjectModifiable = () => {
+    return project.status === "NEW"
+      || project.status === "QA"
+      || project.status === "IN_PROGRESS"
+  }
+
 
   return (
     <Card className={isOverdue ? "border-red-500/50" : isUrgent ? "border-yellow-500/50" : ""}>
@@ -162,7 +228,7 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xl font-semibold">{project.name}</h3>
-              {getStatusBadge(project.status)}
+              <StatusBadge status={project.status} />
             </div>
             {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
@@ -220,64 +286,25 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
         {/* Action Buttons */}
         <div className="flex gap-2 flex-wrap">
           {/* Update Progress Dialog */}
-          <Dialog open={isProgressDialogOpen} onOpenChange={(open) => {
-            setIsProgressDialogOpen(open)
-          }}>
-            <DialogTrigger asChild>
-              <Button variant="default" size="sm" disabled={project.status === "DONE" || project.status === "CLOSED"}>
-                Update Progress
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Update Translation Progress</DialogTitle>
-                <DialogDescription>Adjust the completion percentage for {project.name}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6 py-4">
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-base">Progress</Label>
-                      <span className="text-2xl font-bold">{draftProgress}%</span>
-                    </div>
-                    <Slider
-                      value={[draftProgress]}
-                      onValueChange={(value) => setDraftProgress(value[0])}
-                      max={100}
-                      step={5}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Not Started</span>
-                      <span>In Progress</span>
-                      <span>Complete</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsProgressDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={async () => {await handleUpdateProgress(draftProgress)}} disabled={updateProgressMutation.isPending} className="min-w-[120px]">
-                    {updateProgressMutation.isPending ? "Saving..." : "Save Progress"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <ProgressDialog isOpen={isProgressDialogOpen} 
+              onOpenChange={setIsProgressDialogOpen}
+              onConfirm={handleUpdateProgress}
+              isTooltipDisabled={!isProjectModifiable()} 
+              project={project}              
+          />
           <ChatDialog />
 
-          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!project.sourceFileId || previewFileMutation.isPending}>
+          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!sourceFile || previewFileMutation.isPending}>
             <Eye className="mr-2 h-4 w-4" />
             {previewFileMutation.isPending ? "Creating View..." : "View"}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!project.sourceFileId || downloadMutation.isPending}>
+          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!sourceFile || downloadMutation.isPending}>
             <Download className="mr-2 h-4 w-4" />
               
               {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
           </Button>
           <UploadTranslatedFileDialog project={project} user={user} />
-          {project.translatedFileId && (
+          {!targetFile && (
             <Button
               size="sm"
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -290,52 +317,21 @@ export const ProjectToTranslate = ({ project, user }: ProjectToTranslateProps) =
           )}
         </div>
       </CardContent>
+      <ProjectStatusDialog 
+       open={isStatusDialogOpen}
+       onOpenChange={setIsStatusDialogOpen}
+       onConfirm={onStatusDialogConfirm}
+      />
+      <QAStatusDialog
+        open={isQADialogOpen}
+        onOpenChange={setIsQADialogOpen}
+        onConfirm={onQADialogConfirm}
+      />
+      <ConfirmProgressDialog 
+        isOpen={isEmptyFileDialogOpen}
+        onOpenChange={setIsEmptyFileDialogOpen}
+        onConfirm={onEmptyTranslatedFileDialogConfirm}
+      />
     </Card>
   )
 }
-
-/*
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contact Customer
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Send Message to Customer</DialogTitle>
-                <DialogDescription>Communicate about project: {project.name}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Type your message here..."
-                    rows={6}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This message will be sent to the customer regarding this project
-                  </p>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setMessage("")}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      console.log("[v0] Sending message:", message)
-                      setMessage("")
-                    }}
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>  
-*/

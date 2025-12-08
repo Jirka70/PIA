@@ -1,12 +1,21 @@
+import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
 import { UserProject } from "./user-project"
+import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
 import { ProjectType } from "@/db/schema"
 
 interface UserProjectsProps {
-    projects: ProjectType[],
+    projects: UserProjectViewProps[],
     isFetching: boolean,
+    onTranslatorReviewSubmit: (data: TranslatorFormData, project: ProjectType) => Promise<void>,
+    onCompanyReviewSubmit: (data: CompanyFormData, project: ProjectType) => Promise<void>,
 }
 
-export const UserProjectsContent = ({ projects, isFetching } : UserProjectsProps) => {    
+export const UserProjectsContent = ({ projects: projectsInfo, 
+    isFetching, 
+    onTranslatorReviewSubmit, 
+    onCompanyReviewSubmit } : UserProjectsProps) => {   
+
+    console.log(projectsInfo)
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
@@ -16,17 +25,19 @@ export const UserProjectsContent = ({ projects, isFetching } : UserProjectsProps
                 </span>
                 )}
             </div>
-            {projects.length === 0 
+            {projectsInfo.length === 0 
                 ? (
                     <div className="text-sm text-muted-foreground">
                         Currently, you have no created projects
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
-                        {projects.map((project) => (
+                        {projectsInfo.map((projectInfo) => (
                             <UserProject 
-                                key={project.id}
-                                project={project}
+                                key={projectInfo.project.id}
+                                projectInfo={projectInfo}
+                                onTranslatorReviewSubmit={onTranslatorReviewSubmit}
+                                onCompanyReviewSubmit={onCompanyReviewSubmit}
                             />
                         ))}
                     </div>

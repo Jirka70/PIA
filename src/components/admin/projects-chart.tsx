@@ -22,7 +22,7 @@ export function ProjectsChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer
-
+          id="admin-projects-chart"
           config={{
             created: {
               label: "Created",

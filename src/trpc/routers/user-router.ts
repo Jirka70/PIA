@@ -1,7 +1,7 @@
 import z from "zod";
 import { adminProcedure, createTRPCRouter } from "../init";
 import { language, Project, translatorLanguage, user } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns, or, sql } from "drizzle-orm";
 
 export const userRouter = createTRPCRouter({
     getUserById: adminProcedure
@@ -25,8 +25,20 @@ export const userRouter = createTRPCRouter({
             const db = ctx.db;
 
             const res = await db
-                .select()
+                .select({
+                    ...getTableColumns(user),
+                    numberOfOpenProjects: sql<number>`
+                        count(*) FILTER (
+                            WHERE ${Project.status} IN ('NEW', 'IN_PROGRESS', 'QA')
+                        )
+                    `,
+                })
                 .from(user)
+                .leftJoin(
+                    Project,
+                    or(eq(Project.clientId, user.id), eq(Project.translatorId, user.id))
+                )
+                .groupBy(user.id);
 
             return {
                 users: res
@@ -78,5 +90,33 @@ export const userRouter = createTRPCRouter({
                 projects: Array.from(projectsMap.values()),
                 languages: Array.from(languagesMap.values()),
             };
+        }),
+    getUserStats: adminProcedure
+        .query(async ({ ctx }) => {
+            const db = ctx.db;
+            const [result] = await db
+                .select({
+                    totalUsers: sql<number>`COUNT(*)`,
+                    usersLastMonth: sql<number>`
+                    COUNT(*) FILTER (
+                        WHERE ${user.createdAt} >= NOW() - INTERVAL '1 month'
+                    )
+                    `,
+                    translators: sql<number>`
+                    COUNT(*) FILTER (
+                        WHERE ${user.role} = 'translator'
+                    )
+                    `,
+                    normalUsers: sql<number>`
+                    COUNT(*) FILTER (
+                        WHERE ${user.role} = 'user'
+                    )
+                    `,
+                })
+                .from(user);
+            
+            return {
+                result
+            }
         })
 })

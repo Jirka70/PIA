@@ -10,7 +10,8 @@ import { ProjectsList } from "./projects-list"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { TranslatorDetailsShimmer } from "./translator-details-skeleton"
-import { ProjectStatusType } from "@/db/schema"
+import { ProjectStatusType, ProjectType } from "@/db/schema"
+import { usePathname } from "next/navigation"
 
 
 interface TranslatorDetailProps {
@@ -171,7 +172,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={activeProjects} />
+            <ProjectsList projects={activeProjects}/>
           </CardContent>
         </Card>
 
@@ -184,7 +185,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={completedProjects} />
+            <ProjectsList projects={completedProjects}/>
           </CardContent>
         </Card>
         <Card>
@@ -195,7 +196,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={cancelledProjects} />
+            <ProjectsList projects={cancelledProjects}/>
           </CardContent>
         </Card>
       </div>

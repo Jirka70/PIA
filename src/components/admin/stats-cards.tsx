@@ -1,72 +1,90 @@
 "use client"
 
-import { Users, FileText, CheckCircle2, Clock } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle2, Clock, FileText, Users } from "lucide-react"
+import { StatsCard, StatsCardSkeleton } from "./stats-card"
 
-const stats = [
-  {
-    title: "Total Users",
-    value: "248",
-    change: "+12.5%",
-    changeType: "positive" as const,
-    icon: Users,
-    description: "156 Translators, 92 Customers",
-  },
-  {
-    title: "Active Projects",
-    value: "64",
-    change: "+8.2%",
-    changeType: "positive" as const,
-    icon: Clock,
-    description: "Currently in progress",
-  },
-  {
-    title: "Completed Projects",
-    value: "1,247",
-    change: "+23.1%",
-    changeType: "positive" as const,
-    icon: CheckCircle2,
-    description: "All time total",
-  },
-  {
-    title: "Total Projects",
-    value: "1,311",
-    change: "+18.7%",
-    changeType: "positive" as const,
-    icon: FileText,
-    description: "Created this year",
-  },
-]
+interface UserStats {
+  totalUsers: number,
+  usersLastMonth: number,
+  translators: number,
+  normalUsers: number
+}
 
-export function StatsCards() {
+interface ActiveProjects {
+  total: number,
+  lastMonth: number
+}
+
+interface CompletedProjects {
+  count: number
+}
+
+interface TotalProjects {
+  total: number,
+  lastMonth: number
+}
+
+interface StatsProps {
+  userStats?: UserStats,
+  activeProjects?: ActiveProjects,
+  completedProjects?: CompletedProjects
+  totalProjects?: TotalProjects
+}
+
+
+
+export function StatsCards({ userStats, activeProjects, completedProjects, totalProjects } : StatsProps) {
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card
-          key={stat.title}
-          className="bg-card/50 backdrop-blur-md border-border/50 transition-all hover:shadow-lg hover:bg-card/70"
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <div className="flex items-center gap-2 text-xs">
-              <span
-                className={
-                  stat.changeType === "positive"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-red-600 dark:text-red-400"
-                }
-              >
-                {stat.change}
-              </span>
-              <span className="text-muted-foreground">{stat.description}</span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {userStats ? (
+        <StatsCard
+          title="Total Users"
+          value={userStats.totalUsers}
+          change={`+${(userStats.usersLastMonth / userStats.totalUsers) * 100} % Last month`}
+          description={`${userStats.translators} Translators, ${userStats.normalUsers} Customers`}
+          changeType={(userStats.usersLastMonth / userStats.totalUsers) >= 0 ? "positive" : "negative"}
+          icon={Users}
+        />
+      ) : (
+        <StatsCardSkeleton />
+      )}
+      {activeProjects ? (
+        <StatsCard
+          title="Active Projects"
+          value={activeProjects.total}
+          change={`+${(activeProjects.lastMonth / activeProjects.total) * 100} % Last Month`}
+          description={`Currently in progress`}
+          changeType={"positive"}
+          icon={Clock}
+        />
+      ) : (
+        <StatsCardSkeleton />
+      )}
+      {completedProjects ? (
+        <StatsCard
+          title="Completed Projects"
+          value={completedProjects.count}
+          change={``}
+          description={``}
+          changeType={"positive"}
+          icon={CheckCircle2}
+        />
+      ) : (
+        <StatsCardSkeleton />
+      )}
+      {totalProjects ? (
+        <StatsCard
+          title="Total Projects"
+          value={totalProjects.total}
+          change={`+${(totalProjects.lastMonth / totalProjects.total) * 100} % Last month`}
+          description={``}
+          changeType={"positive"}
+          icon={FileText}
+        />
+      ) : (
+        <StatsCardSkeleton />
+      )}
     </div>
   )
 }

@@ -39,22 +39,35 @@ export const reviewRouter = createTRPCRouter({
                 }
             }
 
-            const [review] = await db
-                .insert(translatorReview)
-                .values({
-                    id: nanoid(),
-                    clientId: user.id,
-                    translatorId: project.translatorId,
-                    projectId: project.id,
-                    qualityRating: reviewData.qualityRating,
-                    communicationRating: reviewData.communicationRating,
-                    punctualityRating: reviewData.punctualityRating,
-                    overallRating: reviewData.overallRating,
+            const existingReview = await db
+                .select()
+                .from(translatorReview)
+                .where(eq(translatorReview.projectId, project.id))
+                .limit(1)
 
-                    title: reviewData.title,
-                    comment: reviewData.comment,
+            if (existingReview.length) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Translator review for this project already exists."
                 })
-                .returning()
+            }
+
+            const [review] = await db
+              .insert(translatorReview)
+              .values({
+                id: nanoid(),
+                clientId: user.id,
+                translatorId: project.translatorId,
+                projectId: project.id,
+                qualityRating: reviewData.qualityRating,
+                communicationRating: reviewData.communicationRating,
+                punctualityRating: reviewData.punctualityRating,
+                overallRating: reviewData.overallRating,
+
+                title: reviewData.title,
+                comment: reviewData.comment,
+              })
+              .returning()
 
             return {
                 translatorReview: review
@@ -98,18 +111,31 @@ export const reviewRouter = createTRPCRouter({
                 }
             }
 
-            const [review] = await db
-                .insert(companyReview)
-                .values({
-                    id: nanoid(),
-                    clientId: project.clientId,
-                    projectId: project.id,
-                    priceRating: reviewData.priceRating,
-                    supportRating: reviewData.supportRating,
-                    wouldRecommend: reviewData.wouldRecommend,
-                    overallRating: reviewData.overallRating,
+            const existingReview = await db
+                .select()
+                .from(companyReview)
+                .where(eq(companyReview.projectId, project.id))
+                .limit(1)
+
+            if (existingReview.length) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Company review for this project already exists."
                 })
-                .returning()
+            }
+
+            const [review] = await db
+              .insert(companyReview)
+              .values({
+                id: nanoid(),
+                clientId: project.clientId,
+                projectId: project.id,
+                priceRating: reviewData.priceRating,
+                supportRating: reviewData.supportRating,
+                wouldRecommend: reviewData.wouldRecommend,
+                overallRating: reviewData.overallRating,
+              })
+              .returning()
 
 
             return {

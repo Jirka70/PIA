@@ -140,7 +140,7 @@ export function UsersManagement() {
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Projects</TableHead>
+                  <TableHead className="text-right">Active Projects</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>

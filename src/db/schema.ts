@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, uniqueIndex, unique } from "drizzle-orm/pg-core";
 
 export const userRole = pgEnum("user_role", ["owner","admin","translator","user"]);
 export type Role = typeof userRole.enumValues[number] | "undefined"
@@ -153,9 +153,9 @@ export const ProjectFile = pgTable("project_file", {
   createdAt: timestamp("created_at")
     .defaultNow()
     .notNull()
-})
-
-
+}, (t) => [
+  unique().on(t.projectId, t.fileType)
+])
 
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
@@ -192,44 +192,51 @@ export const Project = pgTable("project", {
     .notNull(),
   })
 
-export const translatorReview = pgTable("translator_review", {
-  id: text("id").primaryKey().notNull(),
-  clientId: text("client_id")
-    .references(() => user.id, { onDelete: "set null" })
-    .notNull(),
-  translatorId: text("translator_id")
-    .references(() => user.id, { onDelete: "set null"})
-    .notNull(),
-  projectId: text("project_id")
-    .references(() => Project.id, { onDelete: "cascade" })
-    .notNull(),
-  
-  qualityRating: integer("quality_rating"),
-  communicationRating: integer("communication_rating"),
-  punctualityRating: integer("punctuality_rating"),
-  overallRating: integer("overall_rating").notNull(),
+export const translatorReview = pgTable(
+  "translator_review",
+  {
+    id: text("id").primaryKey().notNull(),
+    clientId: text("client_id")
+      .references(() => user.id, { onDelete: "set null" })
+      .notNull(),
+    translatorId: text("translator_id")
+      .references(() => user.id, { onDelete: "set null"})
+      .notNull(),
+    projectId: text("project_id")
+      .references(() => Project.id, { onDelete: "cascade" })
+      .notNull()
+      .unique(),
+    
+    qualityRating: integer("quality_rating"),
+    communicationRating: integer("communication_rating"),
+    punctualityRating: integer("punctuality_rating"),
+    overallRating: integer("overall_rating").notNull(),
 
-  title: text("title").notNull(),
-  comment: text("comment").default(""),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-})
+    title: text("title").notNull(),
+    comment: text("comment").default(""),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull()
+  },
+)
 
-export const companyReview = pgTable("company_review", {
-  id: text("id").primaryKey(),
-  clientId: text("client_id")
-    .references(() => user.id, { onDelete: "set null" })
-    .notNull(),
-  projectId: text("project_id")
-    .references(() => Project.id, { onDelete: "cascade" })
-    .notNull(),
+export const companyReview = pgTable(
+  "company_review",
+  {
+    id: text("id").primaryKey(),
+    clientId: text("client_id")
+      .references(() => user.id, { onDelete: "set null" })
+      .notNull(),
+    projectId: text("project_id")
+      .references(() => Project.id, { onDelete: "cascade" })
+      .notNull()
+      .unique(),
 
-  priceRating: integer("price_rating"),
-  supportRating: integer("support_rating"),
-  wouldRecommend: boolean("would_recommend"),
-  overallRating: integer("overall_rating")
-
-})
+    priceRating: integer("price_rating"),
+    supportRating: integer("support_rating"),
+    wouldRecommend: boolean("would_recommend"),
+    overallRating: integer("overall_rating")
+  },
+)
 
 export const schema = {
   user,

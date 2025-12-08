@@ -1,13 +1,89 @@
 import { companyReview, Project, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity } from "@/db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
-import { eq, and, getTableColumns, sql, inArray, gte, desc } from "drizzle-orm"
+import { eq, and, getTableColumns, sql, inArray, gte, desc, not } from "drizzle-orm"
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { createProjectInput } from "@/lib/validators/create-project-schema";
 import z from "zod";
 import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
 import { alias } from "drizzle-orm/pg-core";
+import type { db } from "@/db/drizzle"
 
+type DB = typeof db
+
+
+
+const getProjectsByUserId = async (db: DB, id: string) => {
+    const sourceFile = alias(ProjectFile, "source_file");
+    const targetFile = alias(ProjectFile, "target_file");
+
+    const projects = await db
+        .select({
+            project: Project,
+            sourceFile,
+            targetFile,
+            companyReview,
+            translatorReview,
+        })
+        .from(Project)
+        .leftJoin(
+            sourceFile,
+            and(
+                eq(sourceFile.projectId, Project.id),
+                eq(sourceFile.fileType, "SOURCE")
+            )
+        )
+        .leftJoin(
+            targetFile,
+            and(
+                eq(targetFile.projectId, Project.id),
+                eq(targetFile.fileType, "TRANSLATE")
+            )
+        )
+        .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
+        .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
+        .where(eq(Project.clientId, id))
+
+    return {
+        projects
+    }
+}
+
+const getProjectsByTranslatorId = async (db: DB, id: string) => {
+    const sourceFile = alias(ProjectFile, "source_file");
+    const targetFile = alias(ProjectFile, "target_file");
+
+    const projects = await db
+        .select({
+            project: Project,
+            sourceFile,
+            targetFile,
+            companyReview,
+            translatorReview,
+        })
+        .from(Project)
+        .leftJoin(
+            sourceFile,
+            and(
+                eq(sourceFile.projectId, Project.id),
+                eq(sourceFile.fileType, "SOURCE")
+            )
+        )
+        .leftJoin(
+            targetFile,
+            and(
+                eq(targetFile.projectId, Project.id),
+                eq(targetFile.fileType, "TRANSLATE")
+            )
+        )
+        .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
+        .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
+        .where(eq(Project.translatorId, id))
+
+    return {
+        projects
+    }
+}
 
 
 export const projectRouter = createTRPCRouter({
@@ -129,55 +205,10 @@ export const projectRouter = createTRPCRouter({
                 })
             }
 
-            const sourceFile = alias(ProjectFile, "source_file");
-            const targetFile = alias(ProjectFile, "target_file");
+            const projects = await getProjectsByTranslatorId(ctx.db, input.translatorId);
 
-            const projects = await ctx.db
-                .select({
-                    project: Project,
-                    sourceFile,
-                    targetFile,
-                    companyReview,
-                    translatorReview
-                })
-                .from(Project)
-                .leftJoin(
-                    sourceFile,
-                    and(
-                        eq(sourceFile.projectId, Project.id),
-                        eq(sourceFile.fileType, "SOURCE")
-                    )
-                )
-                .leftJoin(
-                    targetFile,
-                    and(
-                        eq(targetFile.projectId, Project.id),
-                        eq(targetFile.fileType, "TRANSLATE")
-                    )
-                )
-                .leftJoin(
-                    companyReview,
-                    eq(companyReview.projectId, Project.id)
-                )
-                .leftJoin(
-                    translatorReview,
-                    and(
-                        eq(translatorReview.projectId, Project.id),
-                        eq(translatorReview.translatorId, Project.translatorId)
-                    )
-                )
-                .where(eq(Project.translatorId, input.translatorId))
-                .orderBy(desc(Project.updatedAt))
+            return projects
             
-            if (!projects) {
-                return {
-                    projects: []
-                }
-            }
-
-            return {
-                projects
-            }
         }),
 
     uploadTranslatedFile: translatorProcedure
@@ -199,18 +230,43 @@ export const projectRouter = createTRPCRouter({
                 })
             }
 
+            
+            const translated_file = await ctx.db
+                .select()
+                .from(ProjectFile)
+                .where(and(
+                    eq(ProjectFile.fileType, "TRANSLATE"),
+                    eq(ProjectFile.projectId, project.id)
+                ))
+
+            console.log("translatedFile", translated_file)
+            console.log("input", input.file)
+            
+            const newTranslatedFile = {
+                id: input.file.fileId,
+                projectId: project.id,
+                fileName: input.file.fileName,
+                contentType: input.file.contentType,
+                size: input.file.size,
+                storageKey: input.file.storageKey,
+                fileType: "TRANSLATE" as const,
+                url: input.file.url
+            }
+
+            if (translated_file && translated_file.length > 0) {
+                await ctx.db
+                    .delete(ProjectFile)
+                    .where(
+                        and(
+                            eq(ProjectFile.projectId, project.id),
+                            eq(ProjectFile.fileType, "TRANSLATE")
+                        )
+                    )
+            }
+
             await ctx.db
                 .insert(ProjectFile)
-                .values({
-                    id: input.file.fileId,
-                    projectId: project.id,
-                    fileName: input.file.fileName,
-                    contentType: input.file.contentType,
-                    size: input.file.size,
-                    storageKey: input.file.storageKey,
-                    fileType: "TRANSLATE",
-                    url: input.file.url
-                })
+                .values(newTranslatedFile)
 
             await ctx.db
                 .insert(userActivity)
@@ -223,6 +279,24 @@ export const projectRouter = createTRPCRouter({
                     projectId: input.projectId
                 })
 
+            if (input.setQAState) {
+                await ctx.db
+                    .update(Project)
+                    .set({
+                        status: "QA"
+                    })
+                    .where(eq(Project.id, project.id))
+            }
+
+            if (input.setProgressTo100) {
+                await ctx.db
+                    .update(Project)
+                    .set({
+                        progressPercent: 100
+                    })
+                    .where(eq(Project.id, project.id))
+            }
+            
             return {
                 message: "File successfully uploaded"
             }
@@ -240,20 +314,9 @@ export const projectRouter = createTRPCRouter({
                 })
             }
 
-            const projects = await ctx.db
-                .select()
-                .from(Project)
-                .where(eq(Project.clientId, input.userId))
-            
-            if (!projects) {
-                return {
-                    projects: []
-                }
-            }
+            const projects = await getProjectsByUserId(ctx.db, input.userId);
 
-            return {
-                projects
-            }
+            return projects
         }),
     updateProgress: translatorProcedure
         .input(z.object({
@@ -340,17 +403,48 @@ export const projectRouter = createTRPCRouter({
 
             const client = alias(user, "client");
             const translator = alias(user, "translator");
+            const sourceFile = alias(ProjectFile, "source_file");
+            const translatedFile = alias(ProjectFile, "translated_file");
 
             const [project] = await db
-                .select()
+                .select({
+                    project: Project,
+                    client,
+                    translator,
+                    sourceFile,
+                    translatedFile,
+                    translatorReview,
+                    companyReview
+                })
                 .from(Project)
                 .leftJoin(client, eq(Project.clientId, client.id))
                 .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .leftJoin(
+                    sourceFile,
+                    and(
+                        eq(sourceFile.projectId, Project.id),
+                        eq(sourceFile.fileType, "SOURCE")
+                    )
+                )
+                .leftJoin(
+                    translatedFile,
+                    and(
+                        eq(translatedFile.projectId, Project.id),
+                        eq(translatedFile.fileType, "TRANSLATE")
+                    )
+                )
+                .leftJoin(
+                    translatorReview,
+                    eq(translatorReview.projectId, Project.id)
+                )
+                .leftJoin(
+                    companyReview,
+                    eq(companyReview.projectId, Project.id)
+                )
                 .where(eq(Project.id, input.id))
 
-            return {
-                project
-            }
+            return project
+            
         }),
     getProjectsByTranslatorId: adminProcedure
         .input(z.object({
@@ -362,11 +456,38 @@ export const projectRouter = createTRPCRouter({
             const client = alias(user, "client");
             const translator = alias(user, "translator");
 
+            const sourceFile = alias(ProjectFile, "source_file");
+            const targetFile = alias(ProjectFile, "target_file");
+
             const project = await db
-                .select()
+                .select({
+                    project: Project,
+                    client,
+                    translator,
+                    sourceFile,
+                    targetFile,
+                    companyReview,
+                    translatorReview
+                })
                 .from(Project)
                 .leftJoin(client, eq(Project.clientId, client.id))
                 .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .leftJoin(
+                    sourceFile,
+                    and(
+                        eq(sourceFile.projectId, Project.id),
+                        eq(sourceFile.fileType, "SOURCE")
+                    )
+                )
+                .leftJoin(
+                    targetFile,
+                    and(
+                        eq(targetFile.projectId, Project.id),
+                        eq(targetFile.fileType, "TRANSLATE")
+                    )
+                )
+                .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
+                .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
                 .where(eq(Project.translatorId, input.id))
                 .orderBy(Project.createdAt)
 
@@ -384,11 +505,39 @@ export const projectRouter = createTRPCRouter({
             const client = alias(user, "client");
             const translator = alias(user, "translator");
 
+            const sourceFile = alias(ProjectFile, "source_file");
+            const targetFile = alias(ProjectFile, "target_file");
+
+
             const project = await db
-                .select()
+                .select({
+                    project: Project,
+                    client,
+                    translator,
+                    sourceFile,
+                    targetFile,
+                    companyReview,
+                    translatorReview
+                })
                 .from(Project)
                 .leftJoin(client, eq(Project.clientId, client.id))
                 .leftJoin(translator, eq(Project.translatorId, translator.id))
+                .leftJoin(
+                    sourceFile,
+                    and(
+                        eq(sourceFile.projectId, Project.id),
+                        eq(sourceFile.fileType, "SOURCE")
+                    )
+                )
+                .leftJoin(
+                    targetFile,
+                    and(
+                        eq(targetFile.projectId, Project.id),
+                        eq(targetFile.fileType, "TRANSLATE")
+                    )
+                )
+                .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
+                .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
                 .where(eq(Project.clientId, input.userId))
 
             return {
@@ -438,9 +587,54 @@ export const projectRouter = createTRPCRouter({
             }
 
         }),
-    getProjectStatuses: translatorProcedure
-        .query(async () => {
-            return projectStatus.enumValues;
+    getProjectsStats: adminProcedure
+        .query(async ({ ctx }) => {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+            const excludedStatuses = ["CLOSED", "BLOCKED", "DONE"] as (typeof projectStatus.enumValues)[number][];
+
+            const [stats] = await ctx.db
+                .select({
+                    total: sql<number>`count(*)`,
+                    lastMonth: sql<number>`sum(case when ${Project.createdAt} >= ${oneMonthAgo} then 1 else 0 end)`
+                })
+                .from(Project)
+                .where(not(inArray(Project.status, excludedStatuses)));
+
+            return stats ?? { total: 0, lastMonth: 0 };
+        }),
+    getCompletedProjectsCount: adminProcedure
+        .query(async ({ ctx }) => {
+            const [result] = await ctx.db
+                .select({
+                    count: sql<number>`count(*)`
+                })
+                .from(Project)
+                .where(eq(Project.status, "DONE"));
+
+            return { count: result?.count ?? 0 };
+        }),
+    getProjectsCount: adminProcedure
+        .query(async ({ ctx }) => {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+            const [result] = await ctx.db
+                .select({
+                    total: sql<number>`count(*)`,
+                    lastMonth: sql<number>`sum(case when ${Project.createdAt} >= ${oneMonthAgo} then 1 else 0 end)`
+                })
+                .from(Project);
+
+            return {
+                total: result?.total ?? 0,
+                lastMonth: result?.lastMonth ?? 0,
+            };
+        }),
+    getProjectStatuses: adminProcedure
+        .query(() => {
+            return { statuses: projectStatus.enumValues };
         }),
     getProjectsCreatedLastMonth: protectedProcedure
         .input(z.object({

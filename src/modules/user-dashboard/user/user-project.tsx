@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {  TrendingUp, Download, Calendar, CalendarCheck, Star } from "lucide-react"
+import { TrendingUp, Download, Calendar, CalendarCheck, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { performDownload } from "@/lib/utils"
 import { useMutation } from "@tanstack/react-query"
@@ -11,17 +11,20 @@ import { StatusBadge } from "@/modules/project-view/status-badge"
 import { useState } from "react"
 import { ReviewDialog } from "./review/review-dialog"
 import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
-import { ProjectType } from "@/db/schema"
 import { TranslatorReviewCard } from "./review/translator-review-card"
 import { CompanyReviewCard } from "./review/company-review-card"
-
-
+import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
+import { ProjectType } from "@/db/schema"
+import { ProjectReviewed } from "./project-reviewed"
 
 interface UserProjectProps {
-  project: ProjectType
+  projectInfo: UserProjectViewProps,
+  onTranslatorReviewSubmit: (data: TranslatorFormData, project: ProjectType) => Promise<void>,
+  onCompanyReviewSubmit: (data: CompanyFormData, project: ProjectType) => Promise<void>,
+
 }
 
-export const UserProject = ({ project }: UserProjectProps) => {
+export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyReviewSubmit }: UserProjectProps) => {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const getProgressColor = (progress: number) => {
     if (progress >= 75) return "bg-emerald-500"
@@ -40,80 +43,47 @@ export const UserProject = ({ project }: UserProjectProps) => {
     })
   }
 
-  const trpc = useTRPC();
-  const { mutateAsync: getTranslatedFileAsync, isPending: isDownloadPending } = useMutation(trpc.projects.getTranslatedFile.mutationOptions({
-    onSuccess: () => {
-      toast.success("Translated file was successfully obtained")
-    },
-    onError: (error) => {
-      toast.error(error.message ?? "Translated file could no be obtained");
-    }
-  }))
-
+  const project = projectInfo.project;
+  const translatorReview = projectInfo.translatorReview
+  const companyReview = projectInfo.companyReview
+  const sourceFile = projectInfo.sourceFile
+  const translatedFile = projectInfo.targetFile;
 
   const downloadTranslatedFile = async () => {
-    const projectFile = await getTranslatedFileAsync({
-      projectId: project.id
-    })
-
-
-    await performDownload(projectFile.translatedFile)
-  }
-
-  const { mutateAsync: getSourceFileAsync, isPending: isSourceFileDownloadPending } = useMutation(trpc.projects.getSourceProjectFile.mutationOptions({
-    onSuccess: () => {
-      toast.success("Source file was successfully obtained")
-    },
-    onError: () => {
-      toast.error("Source file cannot be obtained")
+    if (!translatedFile) {
+      throw new Error("Cannot find file to download")
     }
-  }))
 
-  const { mutateAsync: publishTranslatorReviewAsync } = useMutation(trpc.reviews.publishTranslatorReview.mutationOptions({
-    onSuccess: () => {
-      toast.success(`Review was successfully posted for project ${project.name}`)
-    },
 
-    onError: (error) => {
-      toast.error(error?.message || `Review cannot be currently posted for project ${project.name}`)
-    }
-  }))
-
-  const { mutateAsync: publishCompanyReviewAsync } = useMutation(trpc.reviews.publishCompanyReview.mutationOptions({
-    onSuccess: () => {
-      toast.success(`Review was successfully posted for project ${project.name}`)
-    },
-
-    onError: (error) => {
-      toast.error(error?.message || `Review cannot be currently posted for project ${project.name}`)
-    }
-  }))
-
-  const onCompanyReviewSubmit = async (data: CompanyFormData) => {
-    await publishCompanyReviewAsync({
-      projectId: project.id,
-      reviewData: data
-    })
-  }
-
-  const onTranslatorReviewSubmit = async (data: TranslatorFormData) => {
-    await publishTranslatorReviewAsync({
-      projectId: project.id,
-      reviewData: data
-    })
+    await performDownload(translatedFile)
   }
 
   const downloadSourceFile = async () => {
-    const projectFile = await getSourceFileAsync({
-      projectId: project.id
-    })
+    if (!sourceFile) {
+      throw new Error("Cannot find file to download")
+    }
 
-    await performDownload(projectFile.projectFile);
+    await performDownload(sourceFile);
   }
 
-  const hasTranslatorReview = project.translatorReviewId !== null && project.translatorReviewId
-  const hasCompanyReview = project.companyReviewId !== null && project.companyReviewId
+  const { isPending: isDownloadingTranslatedFile } = useMutation({
+    mutationFn: downloadTranslatedFile,
+    onError: (error) => {
+      toast.error(error.message || "Cannot download translated file right now")
+    }
+  })
+
+  const { isPending: isDownloadingSourceFile } = useMutation({
+    mutationFn: downloadSourceFile,
+    onError: (error) => {
+      toast.error(error.message || "Cannot download source file right now")
+    }
+  })
+
+  const hasTranslatorReview = !!translatorReview
+  const hasCompanyReview = !!companyReview
   const hasAnyReview = hasTranslatorReview || hasCompanyReview
+  const hasAllReviews = hasTranslatorReview && hasCompanyReview
 
   const getDeadlineColor = (dueDate: Date | string | null | undefined) => {
     if (!dueDate) return "text-foreground"
@@ -128,11 +98,19 @@ export const UserProject = ({ project }: UserProjectProps) => {
     return "text-foreground"
   }
 
+  const onTranslatorReviewSubmitWrapper = async (data: TranslatorFormData) => {
+    await onTranslatorReviewSubmit(data, project);
+  }
+
+  const onCompanyReviewSubmitWrapper = async (data: CompanyFormData) => {
+    await onCompanyReviewSubmit(data, project)
+  }
 
   const progressColor = getProgressColor(project.progressPercent)
 
   const isProjectActive = project.status === "QA" || project.status === "NEW" || project.status === "IN_PROGRESS";
   const isProjectClosed = project.status === "CLOSED" || project.status === "BLOCKED";
+  
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50 overflow-hidden">
@@ -155,6 +133,9 @@ export const UserProject = ({ project }: UserProjectProps) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {hasAllReviews && (
+          <ProjectReviewed />
+        )}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -200,36 +181,36 @@ export const UserProject = ({ project }: UserProjectProps) => {
               Recenze
             </h4>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {hasTranslatorReview && project.translatorReviewId && (
-                <TranslatorReviewCard projectId={project.id} />
+              {hasTranslatorReview  && (
+                <TranslatorReviewCard translatorReview={translatorReview} />
               )}
-              {hasCompanyReview && project.companyReviewId && <CompanyReviewCard projectId={project.id} />}
+              {hasCompanyReview  && <CompanyReviewCard companyReview={companyReview} />}
             </div>
           </div>
         )}
 
-        {(project.sourceFileId || project.translatedFileId) && (
+        {(sourceFile || translatedFile) && (
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border/50">
-            {project.sourceFileId && (
-              <Button variant="outline" disabled={isSourceFileDownloadPending} size="sm" onClick={async () => { await downloadSourceFile()}}>
+            {sourceFile && (
+              <Button variant="outline" disabled={isDownloadingSourceFile} size="sm" onClick={async () => { await downloadSourceFile()}}>
                 <Download className="mr-2 h-4 w-4" />
-                {isSourceFileDownloadPending ? "Getting Source File" : "Download Source File"}
+                {isDownloadingSourceFile ? "Getting Source File" : "Download Source File"}
               </Button>
             )}
-            {project.translatedFileId && (
-              <Button variant="default" size="sm" disabled={isDownloadPending} onClick={async () => { downloadTranslatedFile() }}className="flex min-w-[140px] gap-2">
+            {translatedFile && (
+              <Button variant="default" size="sm" disabled={isDownloadingTranslatedFile} onClick={async () => { downloadTranslatedFile() }}className="flex min-w-[140px] gap-2">
 
 
                   <Download className="w-4 h-4" />
-                  {isDownloadPending ? "Getting translated file" : "Translated file"}
+                  {isDownloadingTranslatedFile ? "Getting translated file" : "Translated file"}
               </Button>
             )}
             {project.status === "DONE" && (
               <ReviewDialog
                 isOpen={isReviewDialogOpen}
                 onOpenChange={setIsReviewDialogOpen}
-                onTranslatorReviewSubmitted={onTranslatorReviewSubmit}
-                onCompanyReviewSubmitted={onCompanyReviewSubmit}
+                onTranslatorReviewSubmitted={onTranslatorReviewSubmitWrapper}
+                onCompanyReviewSubmitted={onCompanyReviewSubmitWrapper}
                 isTranslatorReviewSubmitted={!!hasTranslatorReview}
                 isCompanyReviewSubmitted={!!hasCompanyReview}
               />

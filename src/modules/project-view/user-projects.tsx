@@ -1,6 +1,6 @@
 "use client"
 
-import { Role } from "@/db/schema"
+import { ProjectStatusType, Role } from "@/db/schema"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
@@ -25,9 +25,9 @@ export const UserProjects = ({ userRole, userId } : UserProjectsProps) => {
 
     const isTranslator = userRole === "translator"
 
-    const { data: projects, isPending: isProjectsPending } = isTranslator
+    const { data: projectsInfo, isPending: isProjectsPending } = isTranslator
     ? useQuery(trpc.projects.getProjectsByTranslatorId.queryOptions({
-        userId
+        id: userId
     })) 
     : useQuery(trpc.projects.getProjectsByUserId.queryOptions({
         userId
@@ -50,6 +50,8 @@ export const UserProjects = ({ userRole, userId } : UserProjectsProps) => {
         notFound();
     }
 
+    const projects = projectsInfo?.project;
+
     return (
         <ProjectAdminViewWrapper title="View projects" description="">
           <div className="space-y-4">
@@ -59,13 +61,16 @@ export const UserProjects = ({ userRole, userId } : UserProjectsProps) => {
                 Back to Dashboard
               </Link>
             </Button>
-            {projects?.project.length === 0
+            {projects?.length === 0
                 ? <p>No projects found</p>
                 : (
-            projects?.project.map((projectEntry) => {
+            projects?.map((projectEntry) => {
                 const project = projectEntry.project;
                 const client = projectEntry.client;
                 const translator = projectEntry.translator
+                const companyReview = projectEntry.companyReview
+                const translatorReview = projectEntry.translatorReview
+                const sourceFile = projectEntry.sourceFile
                 return (
                     <SingleProjectView key={project.id}
                         project={project}
@@ -73,6 +78,11 @@ export const UserProjects = ({ userRole, userId } : UserProjectsProps) => {
                         clientEmail={client?.email}
                         translatorName={translator?.name}
                         translatorEmail={translator?.email}
+                        companyReview={companyReview}
+                        translatorReview={translatorReview}
+                        sourceFile={sourceFile}
+                        isStatusUpdating={false}
+                        onStatusUpdate={async (newStatus: ProjectStatusType) => {}}
                     />
                 )
             }))}

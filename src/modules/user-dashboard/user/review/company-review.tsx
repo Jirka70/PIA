@@ -1,4 +1,3 @@
-// components/reviews/CompanyReview.tsx
 "use client"
 
 import { useForm } from "react-hook-form"

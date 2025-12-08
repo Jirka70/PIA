@@ -13,10 +13,23 @@ import { performDownload, performPreview } from "@/lib/utils"
 import { useMutation } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { SingleProjectViewProps } from "./project-view-props"
+import { TranslatorReviewCard } from "@/modules/user-dashboard/user/review/translator-review-card"
+import { CompanyReviewCard } from "@/modules/user-dashboard/user/review/company-review-card"
 
-export const SingleProjectView = ({ project, clientName, clientEmail, translatorName, translatorEmail } : SingleProjectViewProps) => {
+export const SingleProjectView = ({
+  project,
+  clientName,
+  clientEmail,
+  translatorName,
+  translatorEmail,
+  sourceFile,
+  translatedFile,
+  translatorReview,
+  companyReview,
+  isStatusUpdating,
+  onStatusUpdate
+}: SingleProjectViewProps) => {
     const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
-    const [isUpdatingStatus] = useState(false)
 
     const trpc = useTRPC()
 
@@ -43,6 +56,9 @@ export const SingleProjectView = ({ project, clientName, clientEmail, translator
     const daysUntilDue = getDaysUntilDue(project.dueAt)
     const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
     const isOverdue = daysUntilDue !== null && daysUntilDue < 0
+    const hasTranslatorReview = !!translatorReview
+    const hasCompanyReview = !!companyReview
+    const hasAnyReview = hasTranslatorReview || hasCompanyReview
 
       async function handleViewSourceFile() {
         toast.info("Getting file to view...")
@@ -90,7 +106,8 @@ export const SingleProjectView = ({ project, clientName, clientEmail, translator
             isUrgent={isUrgent}
             isStatusDialogOpen={isStatusDialogOpen}
             setIsStatusDialogOpen={setIsStatusDialogOpen}
-            isUpdatingStatus={isUpdatingStatus}
+            onStatusUpdate={onStatusUpdate}
+            isStatusUpdating={isStatusUpdating}
           />
 
           <div className="space-y-6 px-6 pb-6">
@@ -100,6 +117,8 @@ export const SingleProjectView = ({ project, clientName, clientEmail, translator
               clientEmail={clientEmail}
               translatorName={translatorName}
               translatorEmail={translatorEmail}
+              translatedFile={translatedFile}
+              sourceFile={sourceFile}
             />
 
             <Separator />
@@ -108,9 +127,28 @@ export const SingleProjectView = ({ project, clientName, clientEmail, translator
 
             <Separator />
 
+            {hasAnyReview && (
+              <>
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                    Recenze
+                  </h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {hasTranslatorReview && translatorReview && (
+                      <TranslatorReviewCard translatorReview={translatorReview} />
+                    )}
+                    {hasCompanyReview && companyReview && (
+                      <CompanyReviewCard companyReview={companyReview} />
+                    )}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
             <FilesSection
-              hasSourceFile={!!project.sourceFileId}
-              hasTranslatedFile={!!project.translatedFileId}
+              hasSourceFile={!!sourceFile}
+              hasTranslatedFile={!!translatedFile}
               onViewSource={handleViewSourceFile}
               onDownloadSource={handleDownloadSourceFile}
               onViewTranslated={handleViewTranslatedFile}

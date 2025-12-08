@@ -7,12 +7,13 @@ import { User, Building2, CheckCircle2 } from "lucide-react"
 import { CompanyFormData, ReviewFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
 import { TranslatorReview } from "./translator-review"
 import { CompanyReview } from "./company-review"
+import { ProjectType } from "@/db/schema"
 
 
 
 interface ReviewFormProps {
   onTranslatorReviewSubmit: (data: TranslatorFormData) => Promise<void>
-  onCompanyReviewSubmi: (data: CompanyFormData) => Promise<void>
+  onCompanyReviewSubmit: (data: CompanyFormData) => Promise<void>
   onCancel: () => Promise<void>,
 
   translator: boolean
@@ -20,7 +21,7 @@ interface ReviewFormProps {
   
 }
 
-export function ReviewForm({ onTranslatorReviewSubmit, onCompanyReviewSubmi, onCancel, translator, company }: ReviewFormProps) {
+export function ReviewForm({ onTranslatorReviewSubmit, onCompanyReviewSubmit, onCancel, translator, company }: ReviewFormProps) {
   const [activeTab, setActiveTab] = useState<"translator" | "company">("translator")
 
 
@@ -51,7 +52,7 @@ export function ReviewForm({ onTranslatorReviewSubmit, onCompanyReviewSubmi, onC
 
         <TabsContent value="company" className="mt-4">
           <CompanyReview
-            onSubmit={onCompanyReviewSubmi}
+            onSubmit={onCompanyReviewSubmit}
             onCancel={onCancel}
             isSubmitted={company}
           />

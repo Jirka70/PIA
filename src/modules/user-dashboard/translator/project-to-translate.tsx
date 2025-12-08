@@ -20,10 +20,10 @@ import { ConfirmProgressDialog, ConfirmProgressFormValues } from "./empty-transl
 
 export type TranslatorProjectType = {
   project: ProjectType,
-  sourceFile: ProjectFileType,
-  targetFile: ProjectFileType,
-  companyReview: CompanyReviewType,
-  translatorReview: TranslatorReviewType
+  sourceFile: ProjectFileType | null,
+  targetFile: ProjectFileType | null,
+  companyReview: CompanyReviewType | null,
+  translatorReview: TranslatorReviewType | null
 }
 
 interface ProjectToTranslateProps {
@@ -78,11 +78,13 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
     })
   }
 
+  console.log(projectToTranslate)
+
 
 
   const queryClient = useQueryClient();
   async function handleUpdateProgress(progress: number) {
-    if (progress === 100 && !targetFile.id) {
+    if (progress === 100 && !targetFile?.id) {
       setIsProgressDialogOpen(false);
       setIsEmptyFileDialogOpen(true);
       return;
@@ -304,7 +306,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
               {downloadMutation.isPending ? "Waiting for start donwload..." : "Download"}
           </Button>
           <UploadTranslatedFileDialog project={project} user={user} />
-          {!targetFile && (
+          {targetFile && (
             <Button
               size="sm"
               className="bg-emerald-600 hover:bg-emerald-700 text-white"

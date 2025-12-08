@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { ArrowLeft } from "lucide-react"
 
@@ -14,6 +13,8 @@ import { ProjectAdminViewSkeleton } from "./project-admin-view-skeleton"
 import ProjectNotFound from "./project-not-found"
 
 import { SingleProjectView } from "./single-project-view"
+import { ProjectStatusType } from "@/db/schema"
+import { usePathname } from "next/navigation"
 
 interface ProjectAdminViewProps {
   id: string
@@ -25,6 +26,37 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
   const { data, isPending } = useQuery(
     trpc.projects.getProjectById.queryOptions({ id })
   )
+  const queryClient = useQueryClient()
+
+  const updateStatusMutation = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
+      onSuccess: () => {
+        toast.success("Status changed")
+      },
+      onError: (error) => {
+        toast.error(error?.message || "Status cannot be changed")
+      }
+    }))
+
+  const onStatusUpdate = async (newStatus: ProjectStatusType) => {
+    await updateStatusMutation.mutateAsync({
+      projectId: project.id,
+      projectStatus: newStatus
+    })
+
+    queryClient.setQueryData(
+      trpc.projects.getProjectById.queryKey({ id }),
+      (cached) => {
+        if (!cached?.project) return cached;
+        return {
+          ...cached,
+          project: {
+            ...cached.project,
+            status: newStatus
+          }
+        }
+      }
+    )
+  }
 
   if (isPending) {
     return (
@@ -38,9 +70,13 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
     return <ProjectNotFound />
   }
 
-  const project = data.project.project
-  const client = data.project.client
-  const translator = data.project.translator
+  const project = data.project
+  const client = data.client
+  const translator = data.translator
+  const sourceFile = data.sourceFile
+  const translatedFile = data.translatedFile
+  const translatorReview = data.translatorReview
+  const companyReview = data.companyReview
 
   return (
     <ProjectAdminViewWrapper title="Project Details" description="">
@@ -58,6 +94,12 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
             clientEmail={client?.email}
             translatorEmail={translator?.email}
             translatorName={translator?.name}
+            sourceFile={sourceFile}
+            translatedFile={translatedFile}
+            translatorReview={translatorReview}
+            companyReview={companyReview}
+            onStatusUpdate={onStatusUpdate}
+            isStatusUpdating={updateStatusMutation.isPending}
         />
       </div>
     </ProjectAdminViewWrapper>

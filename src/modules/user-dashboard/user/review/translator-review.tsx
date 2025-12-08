@@ -11,6 +11,7 @@ import { Languages, Clock, MessageSquare } from "lucide-react"
 import { TranslatorFormData, translatorSchema } from "@/lib/validators/review-schemas"
 import { SubmittedState } from "./submitted-state"
 import { StarRating } from "./star-rating"
+import { ProjectType } from "@/db/schema"
 
 
 interface TranslatorReviewProps {

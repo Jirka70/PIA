@@ -60,40 +60,40 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
 
   const handleFileUpload = async (file: File) => {
     const fd = new FormData()
-        fd.append("file", file)
-    
-        setUploading(true)
-        try {
-          const data = await uploadFile(fd)
-          
-          form.setValue(
-            "file", {
-              fileName: data.fileName as string,
-              contentType: data.contentType as string,
-              size: Number(data.size),
-              storageKey: data.storageKey as string,
-              url: data.url as string,
-              fileId: data.id as string
-            },
-            {
-              shouldValidate: true,
-              shouldDirty: true
-            }
-          )
-    
-          toast.success("File uploaded successfully")
-        } catch (err: any) {
-          toast.error(err?.message ?? "Upload failed")
-          form.setValue("file", undefined as any, {
-            shouldValidate: true
-          })
-    
-          if (inputRef.current) {
-            inputRef.current.value = ""
-          }
-        } finally {
-          setUploading(false)
+    fd.append("file", file)
+
+    setUploading(true)
+    try {
+      const data = await uploadFile(fd)
+      
+      form.setValue(
+        "file", {
+          fileName: data.fileName as string,
+          contentType: data.contentType as string,
+          size: Number(data.size),
+          storageKey: data.storageKey as string,
+          url: data.url as string,
+          fileId: data.id as string
+        },
+        {
+          shouldValidate: true,
+          shouldDirty: true
         }
+      )
+
+      toast.success("File uploaded successfully")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Upload failed")
+      form.setValue("file", undefined as any, {
+        shouldValidate: true
+      })
+
+      if (inputRef.current) {
+        inputRef.current.value = ""
+      }
+    } finally {
+      setUploading(false)
+    }
   }
 
   const uploadFileMutation = useMutation({
@@ -134,6 +134,8 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
 
 
   const onSubmit = async (data: uploadFileSchemaType) => {
+    console.log("setQA", data.autoSetQAState)
+    console.log("setProgressTo100", data.autoSetProgress)
     await uploadTranslatedFile({
       projectId: project.id,
       setProgressTo100: data.autoSetProgress,

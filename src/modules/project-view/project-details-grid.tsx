@@ -4,8 +4,21 @@ import { Languages, Calendar, Building2, UserIcon, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "./utils/date"
 import { SingleProjectViewProps } from "./project-view-props"
+import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
 
-export function ProjectDetailsGrid({ project, clientName, clientEmail, translatorName, translatorEmail } : SingleProjectViewProps) {
+export interface ProjectGridProps {
+    project: ProjectType,
+    clientName?: string,
+    clientEmail?: string,
+    translatorName?: string,
+    translatorEmail?: string,
+    sourceFile: ProjectFileType | null,
+    translatedFile?: ProjectFileType | null,
+    translatorReview?: TranslatorReviewType | null,
+    companyReview?: CompanyReviewType | null,
+}
+
+export function ProjectDetailsGrid({ project, clientName, clientEmail, translatorName, translatorEmail } : ProjectGridProps) {
   const daysUntilDue = ((): number | null => {
     if (!project.dueAt) return null
     const now = new Date()

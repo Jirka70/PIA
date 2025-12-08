@@ -14,67 +14,45 @@ import { Edit } from "lucide-react"
 import { useState } from "react"
 import { StatusBadge } from "./status-badge"
 import { useTRPC } from "@/trpc/client"
-import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SelectLanguagesSkeleton } from "../manage-translator/edit-languages-dialog"
 import { ProjectStatusType, ProjectType } from "@/db/schema"
 
-export function ProjectHeader({
-  project,
-  isOverdue,
-  isUrgent,
-  isStatusDialogOpen,
-  setIsStatusDialogOpen,
-  isUpdatingStatus,
-}: {
-  project: ProjectType
+interface ProjectHeaderProps {
+  project: ProjectType,
   isOverdue: boolean
   isUrgent: boolean
   isStatusDialogOpen: boolean
   setIsStatusDialogOpen: (open: boolean) => void
-  isUpdatingStatus: boolean
-}) {
+  isStatusUpdating: boolean,
+  onStatusUpdate?: (newStatus: ProjectStatusType) => Promise<void>
+}
+
+export function ProjectHeader({ project, 
+  isOverdue, 
+  isUrgent, 
+  isStatusDialogOpen, 
+  setIsStatusDialogOpen, 
+  isStatusUpdating,
+  onStatusUpdate} : ProjectHeaderProps) {
   const [projectStatus, setProjectStatus] = useState<ProjectStatusType | undefined>(
     project.status
   )
 
   const trpc = useTRPC()
-  const queryClient = useQueryClient()
-  const updateStatusMutation = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
-    onSuccess: () => {
-      toast.success("Status changed")
-    },
-    onError: (error) => {
-      toast.error(error?.message || "Status cannot be changed")
-    }
-  }))
-
   const statusesQuery = useQuery(trpc.projects.getProjectStatuses.queryOptions());
-
 
   const updateStatus = async () => {
     if (!projectStatus) {
-      toast.error("No status was selected. Select one")
+      toast.error("No status selected")
       return;
     }
-    
-    await updateStatusMutation.mutateAsync({
-      projectId: project.id,
-      projectStatus: projectStatus
-    })
 
-    queryClient.invalidateQueries(trpc.users.getTranslatorInfo.queryOptions({
-      id: project.translatorId!
-    }))
-    queryClient.invalidateQueries(trpc.projects.getProjectById.queryOptions({
-      id: project.id
-    }))
-
-
+    await onStatusUpdate?.(projectStatus);
     setIsStatusDialogOpen(false)
-  
   }
 
   return (
@@ -124,7 +102,7 @@ export function ProjectHeader({
                   </SelectTrigger>
                   <SelectContent>
                     {statusesQuery.data
-                      ? statusesQuery.data?.map((status) => (
+                      ? statusesQuery.data?.statuses.map((status) => (
                       <SelectItem key={status} value={status}>{status}</SelectItem>
                     ))
                       : <SelectLanguagesSkeleton />}
@@ -135,7 +113,7 @@ export function ProjectHeader({
                 <Button variant="outline">
                   Cancel
                 </Button>
-                <Button disabled={updateStatusMutation.isPending} onClick={async () => { await updateStatus() }}>{updateStatusMutation.isPending ? "Updating..." : "Update status"}</Button>
+                <Button disabled={isStatusUpdating} onClick={async () => { await updateStatus() }}>{isStatusUpdating ? "Updating..." : "Update status"}</Button>
               </div>
             </div>
           </DialogContent>

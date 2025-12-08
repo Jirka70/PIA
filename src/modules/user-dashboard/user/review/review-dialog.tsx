@@ -40,19 +40,27 @@ export function ReviewDialog({ isOpen, onOpenChange, onTranslatorReviewSubmitted
     onOpenChange(false)
   }
 
-  const defaultTrigger = <WriteReviewButton />
+
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerTrigger asChild>{defaultTrigger}</DrawerTrigger>
+        <DrawerTrigger asChild>
+           <WriteReviewButton />
+        </DrawerTrigger>
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader className="text-left">
             <DrawerTitle>Napsat recenzi</DrawerTitle>
             <DrawerDescription>Podělte se o svou zkušenost s překladatelskou službou</DrawerDescription>
           </DrawerHeader>
           <div className="overflow-y-auto px-4 pb-6">
-            <ReviewForm onTranslatorReviewSubmit={onTranslatorReviewSubmitted} onCompanyReviewSubmi={onCompanyReviewSubmitted} onCancel={handleCancel} translator={isTranslatorReviewSubmitted} company={isCompanyReviewSubmitted}/>
+            <ReviewForm 
+              onTranslatorReviewSubmit={onTranslatorReviewSubmitted} 
+              onCompanyReviewSubmit={onCompanyReviewSubmitted} 
+              onCancel={handleCancel} 
+              translator={isTranslatorReviewSubmitted} 
+              company={isCompanyReviewSubmitted}
+            />
           </div>
         </DrawerContent>
       </Drawer>
@@ -61,13 +69,19 @@ export function ReviewDialog({ isOpen, onOpenChange, onTranslatorReviewSubmitted
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{defaultTrigger}</DialogTrigger>
+      <DialogTrigger asChild>
+         <WriteReviewButton />
+      </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Napsat recenzi</DialogTitle>
           <DialogDescription>Podělte se o svou zkušenost s překladatelskou službou</DialogDescription>
         </DialogHeader>
-        <ReviewForm onCompanyReviewSubmi={onCompanyReviewSubmitted} onTranslatorReviewSubmit={onTranslatorReviewSubmitted} onCancel={handleCancel} translator={isTranslatorReviewSubmitted} company={isCompanyReviewSubmitted}/>
+      <ReviewForm onCompanyReviewSubmit={onCompanyReviewSubmitted} 
+        onTranslatorReviewSubmit={onTranslatorReviewSubmitted} 
+        onCancel={handleCancel} 
+        translator={isTranslatorReviewSubmitted} 
+        company={isCompanyReviewSubmitted}/>
       </DialogContent>
     </Dialog>
   )

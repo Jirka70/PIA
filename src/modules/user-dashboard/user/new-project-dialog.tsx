@@ -8,7 +8,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { format } from "date-fns"
 import { cs } from "date-fns/locale"
@@ -152,16 +151,23 @@ export function NewProjectDialog({ user } : NewDialogProps) {
   // Pomocná funkce pro vymazání deadlinu
   const clearDueDate = () => form.setValue("dueAt", undefined as any, { shouldDirty: true, shouldValidate: true })
 
+  const dialogContentId = "new-project-dialog-content"
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-          <Plus className="h-4 w-4 mr-2" />
-          New Project
-        </Button>
-      </DialogTrigger>
+      <Button
+        className="bg-accent text-accent-foreground hover:bg-accent/90"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={dialogContentId}
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        New Project
+      </Button>
 
       <DialogContent
+        id={dialogContentId}
         className="
           sm:max-w-[600px]
           w-[95%]

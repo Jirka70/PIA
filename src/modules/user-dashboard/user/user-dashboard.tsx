@@ -5,10 +5,14 @@ import { AlertCircle, CheckCircle, Clock, FileText, Plus } from "lucide-react"
 import { NewProjectDialog } from "./new-project-dialog"
 import { User } from "better-auth"
 import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { UserProjectsContent } from "./user-projects-content"
 import { ProjectListSkeleton } from "../project-list-skeleton"
 import { Skeleton } from "@/components/ui/skeleton"
+import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
+import { ProjectType } from "@/db/schema"
+import { toast } from "sonner"
+import { Row } from "react-day-picker"
 
 interface UserDashboardProps {
   user: User
@@ -23,7 +27,8 @@ const StatisticsShimmer = () => {
 export const UserDashboard = ({ user } : UserDashboardProps) => {
 
     const trpc = useTRPC()
-    const { data: projects, isLoading, isError, isFetching, error } = useQuery({
+    const queryClient = useQueryClient()
+    const { data: projectsInfo, isLoading, isError, isFetching, error } = useQuery({
         ...trpc.projects.getManyAsUser.queryOptions({
             userId: user.id,
         }),
@@ -46,14 +51,86 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
       id: user.id
     }));
 
+    const { mutateAsync: publishTranslatorReviewAsync } = useMutation(trpc.reviews.publishTranslatorReview.mutationOptions({
+        onSuccess: () => {
+          toast.success(`Review was successfully posted for project`)
+        },
+    
+        onError: (error) => {
+          toast.error(error?.message || `Review cannot be currently posted for project`)
+        }
+      }))
 
-    const activeProjectsLength = projects?.projects.filter((e) => e.status === "NEW" || e.status === "IN_PROGRESS" || e.status === "QA").length
-    const inProgressProjectsLength = projects?.projects.filter((e) => e.status === "IN_PROGRESS").length
-    const completedProjectsLength = projects?.projects.filter((e) => e.status === "DONE").length
-    const pendingReviewProjectsLength = projects?.projects.filter((e) => e.status === "QA").length
+    const projects = projectsInfo?.projects;
+
+    const { mutateAsync: publishCompanyReviewAsync } = useMutation(trpc.reviews.publishCompanyReview.mutationOptions({
+      onSuccess: () => {
+        toast.success("Review was successfully posted for project")
+      },
+      onError: (error) => {
+        toast.error(error?.message || "Review cannot be currently posted for project")
+      }
+    }))
+
+
+    const activeProjectsLength = projects?.filter((e) => e.project.status === "NEW" || e.project.status === "IN_PROGRESS" || e.project.status === "QA").length
+    const inProgressProjectsLength = projects?.filter((e) => e.project.status === "IN_PROGRESS").length
+    const completedProjectsLength = projects?.filter((e) => e.project.status === "DONE").length
+    const pendingReviewProjectsLength = projects?.filter((e) => e.project.status === "QA").length
 
     const activeLastMonthProjectsLength = lastMonthProjects?.projects.filter((e) => e.status === "NEW" || e.status === "IN_PROGRESS" || e.status === "QA").length
-    
+
+
+    const onTranslatorReviewSubmit = async (data: TranslatorFormData, project: ProjectType) => {
+      const { translatorReview } = await publishTranslatorReviewAsync({
+        projectId: project.id,
+        reviewData: data
+      })
+
+      if (!translatorReview) {
+        // error was handled already in the trpc procedure
+        return;
+      }
+
+      queryClient.setQueryData(
+        trpc.projects.getManyAsUser.queryKey({ userId: user.id }),
+        (cached) => {
+          if (!cached) return cached
+          return {
+            ...cached,
+            projects: cached.projects.map((row) => row.project.id === project.id 
+              ? {...row, translatorReview }
+              : row 
+              )
+          }
+        }
+      )
+    }
+
+    const onCompanyReviewSubmit = async (data: CompanyFormData, project: ProjectType) => {
+      const { companyReview } = await publishCompanyReviewAsync({
+        projectId: project.id,
+        reviewData: data
+      })
+
+      if (!companyReview) {
+        return;
+      }
+
+      queryClient.setQueryData(
+        trpc.projects.getManyAsUser.queryKey({ userId: user.id }),
+        (cached) => {
+          if (!cached) return cached
+          return {
+            ...cached,
+            projects: cached.projects.map((row) => row.project.id === project.id 
+              ? {...row, companyReview }
+              : row 
+              )
+          }
+        }
+      )
+    }
 
     
 
@@ -72,7 +149,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : activeProjectsLength}</div>
+              <div className="text-2xl font-bold">{isLoading || !projects ? <StatisticsShimmer /> : activeProjectsLength}</div>
               <p className="text-xs text-muted-foreground">{lastMonthProjects && `+${activeLastMonthProjectsLength} Last Month`}</p>
             </CardContent>
           </Card>
@@ -83,7 +160,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : inProgressProjectsLength}</div>
+              <div className="text-2xl font-bold">{isLoading || !projects ? <StatisticsShimmer /> : inProgressProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Being translated</p>
             </CardContent>
           </Card>
@@ -94,7 +171,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : completedProjectsLength}</div>
+              <div className="text-2xl font-bold">{isLoading || !projects ? <StatisticsShimmer /> : completedProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Total completed</p>
             </CardContent>
           </Card>
@@ -105,7 +182,7 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{isLoading || !projects?.projects ? <StatisticsShimmer /> : pendingReviewProjectsLength}</div>
+              <div className="text-2xl font-bold">{isLoading || !projects ? <StatisticsShimmer /> : pendingReviewProjectsLength}</div>
               <p className="text-xs text-muted-foreground">Awaiting approval</p>
             </CardContent>
           </Card>
@@ -115,9 +192,14 @@ export const UserDashboard = ({ user } : UserDashboardProps) => {
           <h2 className="text-2xl font-bold">Your Projects</h2>
           <NewProjectDialog user={user}/>
         </div>
-        {isLoading  || !projects?.projects
+        {isLoading  || !projects
           ? <ProjectListSkeleton /> 
-          : <UserProjectsContent projects={projects.projects} isFetching={isFetching} />
+          : <UserProjectsContent 
+              projects={projects} 
+              isFetching={isFetching}
+              onTranslatorReviewSubmit={onTranslatorReviewSubmit}
+              onCompanyReviewSubmit={onCompanyReviewSubmit}
+            />
         }       
       </div>
     </div>

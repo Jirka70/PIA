@@ -85,10 +85,6 @@ export function UsersManagement() {
               <CardTitle>User Management</CardTitle>
               <CardDescription>Manage translators and customers</CardDescription>
             </div>
-            <Button size="sm">
-              <UserPlus className="mr-2 size-4" />
-              Add User
-            </Button>
           </div>
         </CardHeader>
         <CardContent>

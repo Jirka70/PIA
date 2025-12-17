@@ -30,6 +30,7 @@ import { useQuery } from "@tanstack/react-query"
 import UserShimmer from "./users-shimmer"
 import UsersNotFound from "./users-not-found"
 import { useRouter } from "next/navigation"
+import { SetRoleDialog } from "./set-role-dialog"
 
 
 
@@ -166,34 +167,13 @@ export function UsersManagement() {
         </CardContent>
       </Card>
 
-      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change User Role</DialogTitle>
-            <DialogDescription>Update the role for TODO fill user-name</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="role">New Role</Label>
-              <Select value={newRole} onValueChange={(value) => setNewRole(value)}>
-                <SelectTrigger id="role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">Customer</SelectItem>
-                  <SelectItem value="translator">Translator</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleRoleChange}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SetRoleDialog
+        onOpenChange={setIsRoleDialogOpen}
+        isOpen={isRoleDialogOpen}
+        role={newRole}
+        onRoleChange={setNewRole}
+        onDialogSubmitted={handleRoleChange}
+      /> 
     </>
   )
 }

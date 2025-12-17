@@ -5,10 +5,11 @@ export type Role = typeof userRole.enumValues[number] | "undefined"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  banned: boolean("banned").notNull().default(false), // 👈 DŮLEŽITÉ PRO admin plugin
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

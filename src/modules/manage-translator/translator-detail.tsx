@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Calendar, CheckCircle2, Clock, XCircle, Edit } from 'lucide-react'
+import { ArrowLeft, Calendar, CheckCircle2, Clock, XCircle } from 'lucide-react'
 import Link from "next/link"
 import { EditLanguagesDialog } from "./edit-languages-dialog"
 import { ProjectsList } from "./projects-list"
@@ -11,22 +11,18 @@ import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { TranslatorDetailsShimmer } from "./translator-details-skeleton"
 import { ProjectStatusType, ProjectType } from "@/db/schema"
-import { usePathname } from "next/navigation"
+import UserNotFound from "../error/user-not-found"
 
 
 interface TranslatorDetailProps {
   id: string
 }
 
-export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
-
-
+export default function TranslatorDetail({ id } : TranslatorDetailProps) {
   const trpc = useTRPC()
-
   const { isPending: translatorProjectsPending, data: info } = useQuery(trpc.users.getTranslatorInfo.queryOptions({
     id
   }))
-
 
   if (translatorProjectsPending) {
     return <TranslatorDetailsShimmer />
@@ -34,8 +30,8 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
 
   const translator = info?.translator
 
-  if (!translator) {
-    return <p>Translator not found</p>
+  if (!translator || translator.role !== "translator") {
+    return <UserNotFound />
   }
 
   const projects = info?.projects || []
@@ -67,6 +63,10 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
   const activeProjects = projects.filter(p => isActive(p.status))
   const completedProjects = projects.filter(p => isCompleted(p.status))
   const cancelledProjects = projects.filter(p => isCancelled(p.status))
+
+  const projectUrl = (project: ProjectType) => {
+    return `${id}/projects/${project.id}`
+  }
 
 
   return (
@@ -172,7 +172,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={activeProjects}/>
+            <ProjectsList projects={activeProjects} projectUrl={projectUrl} />
           </CardContent>
         </Card>
 
@@ -185,7 +185,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={completedProjects}/>
+            <ProjectsList projects={completedProjects} projectUrl={projectUrl} />
           </CardContent>
         </Card>
         <Card>
@@ -196,7 +196,7 @@ export default function TranslatorDetailPage({ id } : TranslatorDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectsList projects={cancelledProjects}/>
+            <ProjectsList projects={cancelledProjects} projectUrl={projectUrl}/>
           </CardContent>
         </Card>
       </div>

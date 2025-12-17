@@ -10,18 +10,19 @@ import { toast } from "sonner"
 import { ProjectStatusType } from "@/db/schema"
 
 interface TranslatorProjectProps {
-    translatorId: string,
+    userId: string,
     projectId: string
 }
 
-export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjectProps) => {
+export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
     const trpc = useTRPC()
     const { data: projectInfo, isPending } = useQuery(trpc.projects.getProjectById.queryOptions({
         id: projectId
     }))
-    const queryClient = useQueryClient();
 
     console.log("projectInfo", projectInfo)
+
+    const queryClient = useQueryClient();
 
     const { mutateAsync: updateStatus, isPending: isStatusUpdating } = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
         onSuccess: () => {
@@ -40,7 +41,7 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
         )
     }
 
-    if (projectInfo?.translator?.id !== translatorId) {
+    if (projectInfo?.client?.id !== userId) {
         return <ProjectNotFound />
     }
 
@@ -50,6 +51,7 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
     const translatedFile = projectInfo.translatedFile
     const translatorReview = projectInfo.translatorReview
     const companyReview = projectInfo.companyReview
+    const translator = projectInfo.translator
 
     const onStatusUpdate = async (newStatus: ProjectStatusType) => {
         await updateStatus({
@@ -72,10 +74,9 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
                 }
             )
         
-        // update for translator page
         queryClient.setQueryData(
-            trpc.users.getTranslatorInfo.queryKey({
-                id: project.translatorId!
+            trpc.users.getUserInfo.queryKey({
+                id: project.clientId!
             }),
             (cached) => {
                 if (!cached?.projects) return cached;
@@ -95,13 +96,15 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
             clientName={client?.name}
             clientEmail={client?.email}
             sourceFile={sourceFile}
+            translatorName={translator?.name}
+            translatorEmail={translator?.email}
             translatedFile={translatedFile}
             translatorReview={translatorReview}
             companyReview={companyReview}
             isStatusUpdating={isStatusUpdating}
             onStatusUpdate={onStatusUpdate}
-            backButtonLink={`/admin/translator/${project.translatorId}`}
-            backButtonText="Manage Translator"
+            backButtonLink={`/admin/user/${project.clientId}`}
+            backButtonText="Manage User"
         />
     )
 }

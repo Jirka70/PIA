@@ -3,7 +3,7 @@ import { schema } from "@/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { admin as adminPlugin } from "better-auth/plugins"
+import { admin as adminPlugin, username } from "better-auth/plugins"
 import { ac, owner, admin, user, translator } from "@/modules/roles/permissions"
  
 
@@ -38,6 +38,8 @@ export const auth = betterAuth({
             user,
             translator
         }
-    }), nextCookies()]
+    }), 
+    username(),
+    nextCookies()]
 });
 

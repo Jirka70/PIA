@@ -11,6 +11,7 @@ export async function logOutSignedUser() {
   await authClient.signOut()
 }
 
+
 export async function performDownload(projectFile: ProjectFileType) {
       try {
         const res = await fetch(projectFile.url, {

@@ -31,48 +31,7 @@ import UserShimmer from "./users-shimmer"
 import UsersNotFound from "./users-not-found"
 import { useRouter } from "next/navigation"
 
-const initialUsers = [
-  {
-    id: "1",
-    name: "Maria Garcia",
-    email: "maria.garcia@example.com",
-    role: "translator",
-    status: "active",
-    projects: 23,
-  },
-  {
-    id: "2",
-    name: "John Smith",
-    email: "john.smith@example.com",
-    role: "user",
-    status: "active",
-    projects: 5,
-  },
-  {
-    id: "3",
-    name: "Sophie Chen",
-    email: "sophie.chen@example.com",
-    role: "translator",
-    status: "active",
-    projects: 31,
-  },
-  {
-    id: "4",
-    name: "Ahmed Hassan",
-    email: "ahmed.hassan@example.com",
-    role: "user",
-    status: "active",
-    projects: 8,
-  },
-  {
-    id: "5",
-    name: "Elena Popov",
-    email: "elena.popov@example.com",
-    role: "translator",
-    status: "inactive",
-    projects: 12,
-  },
-]
+
 
 export function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState(null)
@@ -110,11 +69,11 @@ export function UsersManagement() {
 
 
   const viewProjects = (userId: string, role: string) => {
-    router.push(`${role}/${userId}`)
+    router.push(`admin/${role}/${userId}`)
   }
 
   const manageTranslator = (id: string) => {
-    router.push(`manage/${id}`)
+    router.push(`admin/translator/${id}`)
   }
 
   return (

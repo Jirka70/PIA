@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import TranslatorDetailPage from "@/modules/manage-translator/translator-detail";
+import TranslatorDetail from "@/modules/manage-translator/translator-detail";
 
 interface Props {
     params: {
@@ -9,9 +9,9 @@ interface Props {
 
 export default async function TranslatorInfoPage({ params } : Props) {
     await requireAdmin()
-    const { translatorId } = params;
+    const { translatorId } = await params;
 
     return (
-        <TranslatorDetailPage id={translatorId} />
+        <TranslatorDetail id={translatorId} />
     )
 }

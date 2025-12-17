@@ -8,9 +8,10 @@ import { StatusBadge } from "../project-view/status-badge"
 
 interface ProjectsListProps {
   projects: ProjectType[],
+  projectUrl: (project: ProjectType) => string
 }
 
-export function ProjectsList({ projects }: ProjectsListProps) {
+export function ProjectsList({ projects, projectUrl }: ProjectsListProps) {
   if (projects.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
@@ -23,7 +24,7 @@ export function ProjectsList({ projects }: ProjectsListProps) {
     <div className="space-y-6">
       {projects.map((project) => (
         <div key={project.id}>
-          <Link href={`/project-view/${project.id}`}>
+          <Link href={projectUrl(project)}>
             <Card className="p-4 transition-all hover:shadow-md cursor-pointer group">
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-4">

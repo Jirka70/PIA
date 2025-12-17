@@ -1,10 +1,6 @@
-import {NextRequest, NextResponse} from 'next/server';
+import {NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
-import {getSessionCookie} from 'better-auth/cookies';
-import path from 'path';
-import { auth } from './lib/auth';
-import { headers } from 'next/headers';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -35,6 +31,7 @@ function isPublicRoute(path: string) {
 
 export default async function middleware(request: NextRequest) {
   const intlResponse = intlMiddleware(request);
+
 
   if (intlResponse.redirected || intlResponse.headers.get('x-middleware-rewrite')) {
     return intlResponse;

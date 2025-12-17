@@ -1,13 +1,14 @@
 "use client"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, Archive, CheckCircle2, Clock, Eye, Pause } from "lucide-react"
+import { ProjectStatusType } from "@/db/schema"
+import { AlertCircle, Archive, CheckCircle2, Clock, Eye, Languages, Pause } from "lucide-react"
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status }: { status: ProjectStatusType }) {
   const cfg = getStatusConfig(status)
   return cfg.badge
 }
 
-export function getStatusConfig(status: string) {
+export function getStatusConfig(status: ProjectStatusType) {
   switch (status) {
     case "NEW":
       return {
@@ -19,6 +20,17 @@ export function getStatusConfig(status: string) {
         ),
         icon: AlertCircle,
         color: "text-blue-500",
+      }
+    case "ASSIGNED":
+      return {
+        badge: (
+          <Badge className="bg-teal-500/10 text-teal-500 border-teal-500/20">
+            <Languages className="h-3 w-3 mr-1" />
+            Translator Assigned
+          </Badge>
+        ),
+        icon: Languages,
+        color: "text-teal-500",
       }
     case "IN_PROGRESS":
       return {

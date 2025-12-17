@@ -67,7 +67,8 @@ export const verification = pgTable("verification", {
 });
 
 export const projectStatus = pgEnum("project_status", [
-  "NEW",         // založeno, čeká na zpracování
+  "NEW",         // newly created, not assigned to translator yet
+  "ASSIGNED",    // assigned to translator
   "IN_PROGRESS", // překládá se
   "QA",          // kontrola (review/LQA)
   "BLOCKED",     // zablokováno (čeká na podklady apod.)

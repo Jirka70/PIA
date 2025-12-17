@@ -30,7 +30,7 @@ export const userRouter = createTRPCRouter({
                     ...getTableColumns(user),
                     numberOfOpenProjects: sql<number>`
                         count(*) FILTER (
-                            WHERE ${Project.status} IN ('NEW', 'IN_PROGRESS', 'QA')
+                            WHERE ${Project.status} IN ('NEW', 'IN_PROGRESS', 'QA', 'ASSIGNED')
                         )
                     `,
                 })

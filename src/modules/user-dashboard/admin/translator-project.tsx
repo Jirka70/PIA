@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ProjectView } from "./project-view"
 import { toast } from "sonner"
 import { ProjectStatusType } from "@/db/schema"
+import { useRouter } from "next/navigation"
 
 interface TranslatorProjectProps {
     translatorId: string,
@@ -20,8 +21,7 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
         id: projectId
     }))
     const queryClient = useQueryClient();
-
-    console.log("projectInfo", projectInfo)
+    const router = useRouter()
 
     const { mutateAsync: updateStatus, isPending: isStatusUpdating } = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
         onSuccess: () => {
@@ -44,12 +44,20 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
         return <ProjectNotFound />
     }
 
+    const onClientClick = async (clientId: string) => {
+        router.push(`admin/user/${clientId}`)
+    }
+
     const project = projectInfo.project
     const client = projectInfo.client
     const sourceFile = projectInfo.sourceFile
     const translatedFile = projectInfo.translatedFile
     const translatorReview = projectInfo.translatorReview
     const companyReview = projectInfo.companyReview
+    const translator = projectInfo.translator
+    const onTranslatorClick = (translatorId: string) => {
+        router.push(`/admin/translator/${translatorId}`)
+    }
 
     const onStatusUpdate = async (newStatus: ProjectStatusType) => {
         await updateStatus({
@@ -97,11 +105,14 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
             sourceFile={sourceFile}
             translatedFile={translatedFile}
             translatorReview={translatorReview}
+            translatorName={translator.name}
+            translatorEmail={translator.email}
             companyReview={companyReview}
             isStatusUpdating={isStatusUpdating}
             onStatusUpdate={onStatusUpdate}
             backButtonLink={`/admin/translator/${project.translatorId}`}
             backButtonText="Manage Translator"
+            onClientClick={onClientClick}
         />
     )
 }

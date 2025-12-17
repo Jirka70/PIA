@@ -3,8 +3,8 @@
 import { Languages, Calendar, Building2, UserIcon, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "./utils/date"
-import { SingleProjectViewProps } from "./project-view-props"
 import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface ProjectGridProps {
     project: ProjectType,
@@ -16,9 +16,19 @@ export interface ProjectGridProps {
     translatedFile?: ProjectFileType | null,
     translatorReview?: TranslatorReviewType | null,
     companyReview?: CompanyReviewType | null,
+    onClientClick?: (clientId: string) => void,
+    onTranslatorClick?: (translatorId: string) => void,
 }
 
-export function ProjectDetailsGrid({ project, clientName, clientEmail, translatorName, translatorEmail } : ProjectGridProps) {
+export function ProjectDetailsGrid({
+  project,
+  clientName,
+  clientEmail,
+  translatorName,
+  translatorEmail,
+  onClientClick,
+  onTranslatorClick,
+} : ProjectGridProps) {
   const daysUntilDue = ((): number | null => {
     if (!project.dueAt) return null
     const now = new Date()
@@ -70,10 +80,21 @@ export function ProjectDetailsGrid({ project, clientName, clientEmail, translato
       <InfoItem icon={<Building2 className="h-4 w-4" />} label="Client">
         <div className="flex flex-col gap-1">
           {project.clientId ? (
-            <>
-              <span className="font-medium">{clientName}</span>
-              <span className="text-sm text-muted-foreground">{clientEmail}</span>
-            </>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => onClientClick?.(project.clientId!)}
+                >
+                  <span className="font-medium underline-offset-2 hover:underline">
+                    {clientName}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{clientEmail}</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Open client profile</TooltipContent>
+            </Tooltip>
           ) : (
             <span className="text-sm text-muted-foreground italic">
               Not assigned
@@ -85,12 +106,23 @@ export function ProjectDetailsGrid({ project, clientName, clientEmail, translato
       <InfoItem icon={<UserIcon className="h-4 w-4" />} label="Translator">
         <div className="flex flex-col gap-1">
           {project.translatorId ? (
-            <>
-              <span className="font-medium">{translatorName}</span>
-              <span className="text-sm text-muted-foreground">
-                {translatorEmail}
-              </span>
-            </>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => onTranslatorClick?.(project.translatorId!)}
+                >
+                  <span className="font-medium underline-offset-2 hover:underline">
+                    {translatorName}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {translatorEmail}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Open translator profile</TooltipContent>
+            </Tooltip>
           ) : (
             <span className="text-sm text-muted-foreground italic">
               Not assigned

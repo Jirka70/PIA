@@ -27,6 +27,7 @@ import { ProjectType } from "@/db/schema"
 import { useTRPC } from "@/trpc/client"
 import { User } from "better-auth"
 import { ProjectClosedTooltip } from "./project-closed-tooltip"
+import { isActive } from "@/lib/project-status-utils"
 
 const uploadFileSchema = z.object({
     file: uploadedFileMeta,
@@ -146,9 +147,7 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
   }
 
   const isProjectModifiable = () => {
-    return project.status === "NEW"
-      || project.status === "QA"
-      || project.status === "IN_PROGRESS"
+    return isActive(project.status)
   }
 
 

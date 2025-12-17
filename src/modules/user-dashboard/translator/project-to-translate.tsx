@@ -17,6 +17,7 @@ import { ProjectStatusDialog } from "./status-dialog"
 import { QAStatusDialog } from "./qa-dialog"
 import { ProgressDialog } from "./progress-dialog"
 import { ConfirmProgressDialog, ConfirmProgressFormValues } from "./empty-translator-file-dialog"
+import { isInWorkingState } from "@/lib/project-status-utils"
 
 export type TranslatorProjectType = {
   project: ProjectType,
@@ -40,10 +41,6 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const project = projectToTranslate.project
   const sourceFile = projectToTranslate.sourceFile
   const targetFile = projectToTranslate.targetFile
-  const translatorReview = projectToTranslate.translatorReview
-  const companyReview = projectToTranslate.companyReview
-   
-
 
   const trpc = useTRPC();
   const updateProgressMutation = useMutation(trpc.projects.updateProgress.mutationOptions({
@@ -78,10 +75,6 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
     })
   }
 
-  console.log(projectToTranslate)
-
-
-
   const queryClient = useQueryClient();
   async function handleUpdateProgress(progress: number) {
     if (progress === 100 && !targetFile?.id) {
@@ -112,8 +105,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
       return;
     }
 
-    if (progress === 100 && (
-      project.status === "IN_PROGRESS" || project.status === "NEW")) {
+    if (progress === 100 && isInWorkingState(project.status)) {
         setIsQADialogOpen(true)
         setIsStatusDialogOpen(false)
         return;

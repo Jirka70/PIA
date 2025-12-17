@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { TranslatorDetailsShimmer } from "../manage-translator/translator-details-skeleton"
 import UserNotFound from "../error/user-not-found"
 import { ProjectsList } from "../manage-translator/projects-list"
+import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils"
 
 interface CustomerDetailProps {
   id: string
@@ -47,15 +48,6 @@ export default function UserDetail({ id }: CustomerDetailProps) {
   }
 
   const projects = info?.projects ?? []
-
-  const isActive = (status: ProjectStatusType) =>
-    status === "IN_PROGRESS" || status === "QA" || status === "NEW"
-
-  const isCompleted = (status: ProjectStatusType) =>
-    status === "DONE"
-
-  const isCancelled = (status: ProjectStatusType) =>
-    status === "CLOSED" || status === "BLOCKED"
 
   const memberSinceDate = new Date(user.createdAt)
   const formattedDate = memberSinceDate.toLocaleDateString("cs-CZ", {

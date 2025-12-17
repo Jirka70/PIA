@@ -10,8 +10,9 @@ import { ProjectsList } from "./projects-list"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { TranslatorDetailsShimmer } from "./translator-details-skeleton"
-import { ProjectStatusType, ProjectType } from "@/db/schema"
+import { ProjectType } from "@/db/schema"
 import UserNotFound from "../error/user-not-found"
+import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils"
 
 
 interface TranslatorDetailProps {
@@ -37,20 +38,6 @@ export default function TranslatorDetail({ id } : TranslatorDetailProps) {
   const projects = info?.projects || []
   const languages = info?.languages
 
-  const isActive = (status: ProjectStatusType) => {
-    return status === "IN_PROGRESS"
-      || status === "QA"
-      || status === "NEW"
-  }
-
-  const isCompleted = (status: ProjectStatusType) => {
-    return status === "DONE"
-  }
-
-  const isCancelled = (status: ProjectStatusType) => {
-    return status === "CLOSED" 
-      || status === "BLOCKED"
-  }
 
 
   const memberSinceDate = new Date(translator.createdAt)

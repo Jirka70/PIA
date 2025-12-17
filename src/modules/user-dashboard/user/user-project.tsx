@@ -5,7 +5,6 @@ import { TrendingUp, Download, Calendar, CalendarCheck, Star } from "lucide-reac
 import { Button } from "@/components/ui/button"
 import { performDownload } from "@/lib/utils"
 import { useMutation } from "@tanstack/react-query"
-import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
 import { StatusBadge } from "@/modules/project-view/status-badge"
 import { useState } from "react"
@@ -16,6 +15,7 @@ import { CompanyReviewCard } from "./review/company-review-card"
 import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
 import { ProjectType } from "@/db/schema"
 import { ProjectReviewed } from "./project-reviewed"
+import { isActive, isCancelled } from "@/lib/project-status-utils"
 
 interface UserProjectProps {
   projectInfo: UserProjectViewProps,
@@ -107,9 +107,6 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
   }
 
   const progressColor = getProgressColor(project.progressPercent)
-
-  const isProjectActive = project.status === "QA" || project.status === "NEW" || project.status === "IN_PROGRESS";
-  const isProjectClosed = project.status === "CLOSED" || project.status === "BLOCKED";
   
 
   return (
@@ -220,10 +217,10 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
 
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <div className="text-xs font-medium text-muted-foreground">
-            {(project.progressPercent < 100 && !isProjectClosed) && <span> {100 - project.progressPercent}% remaining</span>}
-            {(project.progressPercent === 100 && isProjectActive) &&  <span>Waiting for review</span>}
+            {(project.progressPercent < 100 && !isCancelled(project.status)) && <span> {100 - project.progressPercent}% remaining</span>}
+            {(project.progressPercent === 100 && isActive(project.status)) &&  <span>Waiting for review</span>}
             {(project.progressPercent === 100 && project.status === "DONE" && <span className="text-emerald-600 dark:text-emerald-400">✓ Complete</span>)}
-            {isProjectClosed && <span className="text-red-600 dark:text-red-400">✗ Closed</span>}
+            {isCancelled(project.status) && <span className="text-red-600 dark:text-red-400">✗ Closed</span>}
           </div>
         </div>
       </CardContent>

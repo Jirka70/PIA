@@ -45,7 +45,11 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
     }
 
     const onClientClick = async (clientId: string) => {
-        router.push(`admin/user/${clientId}`)
+        window.open(`/admin/user/${clientId}`, "_blank")
+    }
+
+    const onTranslatorClick = async (translatorId: string) => {
+        window.open(`/admin/translator/${translatorId}`, "_blank")
     }
 
     const project = projectInfo.project
@@ -55,9 +59,7 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
     const translatorReview = projectInfo.translatorReview
     const companyReview = projectInfo.companyReview
     const translator = projectInfo.translator
-    const onTranslatorClick = (translatorId: string) => {
-        router.push(`/admin/translator/${translatorId}`)
-    }
+
 
     const onStatusUpdate = async (newStatus: ProjectStatusType) => {
         await updateStatus({
@@ -113,6 +115,7 @@ export const TranslatorProject = ({ translatorId, projectId } : TranslatorProjec
             backButtonLink={`/admin/translator/${project.translatorId}`}
             backButtonText="Manage Translator"
             onClientClick={onClientClick}
+            onTranslatorClick={onTranslatorClick}
         />
     )
 }

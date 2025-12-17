@@ -27,7 +27,9 @@ export const SingleProjectView = ({
   translatorReview,
   companyReview,
   isStatusUpdating,
-  onStatusUpdate
+  onStatusUpdate,
+  onClientClick,
+  onTranslatorClick
 }: SingleProjectViewProps) => {
     const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
 
@@ -119,6 +121,8 @@ export const SingleProjectView = ({
               translatorEmail={translatorEmail}
               translatedFile={translatedFile}
               sourceFile={sourceFile}
+              onClientClick={onClientClick}
+              onTranslatorClick={onTranslatorClick}
             />
 
             <Separator />

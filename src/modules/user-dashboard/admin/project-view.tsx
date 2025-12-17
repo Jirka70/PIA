@@ -19,7 +19,9 @@ interface ProjectViewProps {
     isStatusUpdating: boolean,
     onStatusUpdate: (newStatus: ProjectStatusType) => Promise<void>,
     backButtonLink: string,
-    backButtonText: string
+    backButtonText: string,
+    onClientClick?: (clientId: string) => Promise<void>,
+    onTranslatorClick?: (translatorId: string) => Promise<void>
 }
 
 export const ProjectView = ({ 
@@ -35,7 +37,9 @@ export const ProjectView = ({
     isStatusUpdating,
     onStatusUpdate,
     backButtonLink,
-    backButtonText
+    backButtonText,
+    onClientClick,
+    onTranslatorClick
 } : ProjectViewProps) => {
 
     return (
@@ -60,6 +64,8 @@ export const ProjectView = ({
                     companyReview={companyReview}
                     onStatusUpdate={onStatusUpdate}
                     isStatusUpdating={isStatusUpdating}
+                    onClientClick={onClientClick}
+                    onTranslatorClick={onTranslatorClick}
                 />
             </div>
         </ProjectAdminViewWrapper>

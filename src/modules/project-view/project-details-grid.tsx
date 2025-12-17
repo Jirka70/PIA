@@ -4,7 +4,6 @@ import { Languages, Calendar, Building2, UserIcon, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "./utils/date"
 import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface ProjectGridProps {
     project: ProjectType,
@@ -39,6 +38,8 @@ export function ProjectDetailsGrid({
 
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0
   const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
+  const isClientInteractive = !!onClientClick && !!project.clientId
+  const isTranslatorInteractive = !!onTranslatorClick && !!project.translatorId
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -80,21 +81,24 @@ export function ProjectDetailsGrid({
       <InfoItem icon={<Building2 className="h-4 w-4" />} label="Client">
         <div className="flex flex-col gap-1">
           {project.clientId ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  onClick={() => onClientClick?.(project.clientId!)}
-                >
-                  <span className="font-medium underline-offset-2 hover:underline">
-                    {clientName}
-                  </span>
-                  <span className="text-sm text-muted-foreground">{clientEmail}</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Open client profile</TooltipContent>
-            </Tooltip>
+            isClientInteractive ? (
+
+                  <button
+                    type="button"
+                    className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onClick={() => onClientClick?.(project.clientId!)}
+                  >
+                    <span className="font-medium underline-offset-2 hover:underline">
+                      {clientName}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{clientEmail}</span>
+                  </button>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <span className="font-medium">{clientName}</span>
+                <span className="text-sm text-muted-foreground">{clientEmail}</span>
+              </div>
+            )
           ) : (
             <span className="text-sm text-muted-foreground italic">
               Not assigned
@@ -106,23 +110,27 @@ export function ProjectDetailsGrid({
       <InfoItem icon={<UserIcon className="h-4 w-4" />} label="Translator">
         <div className="flex flex-col gap-1">
           {project.translatorId ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  onClick={() => onTranslatorClick?.(project.translatorId!)}
-                >
-                  <span className="font-medium underline-offset-2 hover:underline">
-                    {translatorName}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {translatorEmail}
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Open translator profile</TooltipContent>
-            </Tooltip>
+            isTranslatorInteractive ? (
+                  <button
+                    type="button"
+                    className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onClick={() => onTranslatorClick?.(project.translatorId!)}
+                  >
+                    <span className="font-medium underline-offset-2 hover:underline">
+                      {translatorName}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {translatorEmail}
+                    </span>
+                  </button>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <span className="font-medium">{translatorName}</span>
+                <span className="text-sm text-muted-foreground">
+                  {translatorEmail}
+                </span>
+              </div>
+            )
           ) : (
             <span className="text-sm text-muted-foreground italic">
               Not assigned

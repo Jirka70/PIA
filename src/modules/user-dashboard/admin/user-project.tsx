@@ -45,6 +45,14 @@ export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
         return <ProjectNotFound />
     }
 
+    const onClientClick = async (clientId: string) => {
+        window.open(`/admin/user/${clientId}`, "_blank")
+    }
+
+    const onTranslatorClick = async (translatorId: string) => {
+        window.open(`/admin/translator/${translatorId}`, "_blank")
+    }
+
     const project = projectInfo.project
     const client = projectInfo.client
     const sourceFile = projectInfo.sourceFile
@@ -105,6 +113,8 @@ export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
             onStatusUpdate={onStatusUpdate}
             backButtonLink={`/admin/user/${project.clientId}`}
             backButtonText="Manage User"
+            onClientClick={onClientClick}
+            onTranslatorClick={onTranslatorClick}
         />
     )
 }

@@ -1,8 +1,9 @@
 import z from "zod";
 import { adminProcedure, createTRPCRouter } from "../init";
-import { language, Project, translatorLanguage, user } from "@/db/schema";
+import { language, Project, translatorLanguage, user, userRole } from "@/db/schema";
 import { eq, getTableColumns, or, sql } from "drizzle-orm";
 import { id } from "date-fns/locale";
+import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
     getUserById: adminProcedure
@@ -122,5 +123,28 @@ export const userRouter = createTRPCRouter({
             return {
                 result
             }
+        }),
+    changeUserRole: adminProcedure
+        .input(z.object({
+            id: z.string(),
+            role: z.enum(userRole.enumValues),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            if (input.role === "admin") {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Cannot change role to admin"
+                })
+            }
+
+            const [updatedUser] = await ctx.db
+                .update(user)
+                .set({ role: input.role })
+                .where(eq(user.id, input.id))
+                .returning()
+
+            return { 
+                user: updatedUser
+             }
         })
 })

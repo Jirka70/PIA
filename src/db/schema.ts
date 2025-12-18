@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, uniqueIndex, unique } from "drizzle-orm/pg-core";
 
 export const userRole = pgEnum("user_role", ["owner","admin","translator","user"]);
-export type Role = typeof userRole.enumValues[number] | "undefined"
+export type Role = typeof userRole.enumValues[number]
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -272,3 +272,4 @@ export type ProjectFileType = typeof ProjectFile.$inferSelect
 export type userActivityType = typeof userActivity.$inferInsert
 export type CompanyReviewType = typeof companyReview.$inferSelect
 export type TranslatorReviewType = typeof translatorReview.$inferSelect
+export type userType = typeof user.$inferSelect;

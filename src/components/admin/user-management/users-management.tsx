@@ -16,34 +16,47 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MoreHorizontal, Shield, User } from "lucide-react"
 import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import UserShimmer from "./users-shimmer"
 import UsersNotFound from "./users-not-found"
 import { useRouter } from "next/navigation"
 import { SetRoleDialog } from "./set-role-dialog"
-
-
+import { toast } from "sonner"
+import { Role, userType } from "@/db/schema"
 
 export function UsersManagement() {
-  const [selectedUser, setSelectedUser] = useState(null)
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
   const [newRole, setNewRole] = useState("user")
+  const [selectedUser, setSelectedUser] = useState<userType>();
 
   const trpc = useTRPC();
   const { data, isPending } = useQuery(trpc.users.getMany.queryOptions())
   const router = useRouter();
 
-  const handleRoleChange = () => {
-    /*if (selectedUser) {
-      setUsers(users.map((user) => (user.id === selectedUser.id ? { ...user, role: newRole } : user)))
-      setIsRoleDialogOpen(false)
-      setSelectedUser(null)
-    }*/
+  const { mutateAsync: changeRoleAsync, isPending: isChangingRole } = useMutation(trpc.users.changeUserRole.mutationOptions({
+    onSuccess: () => {
+      toast.success("Role changed successfully")
+    },
+
+    onError: (error) => {
+      toast.error(error.message || "Cannot change role")
+    }
+  }))
+
+  const handleRoleChange = async (userId: string, role: string) => {
+    if (role === "undefined") {
+      throw new Error("Select a valid role")
+    }
+
+    await changeRoleAsync({
+      id: userId,
+      role: role as Role
+    })
   }
 
-  const openRoleDialog = (user: any) => {
-    setSelectedUser(user)
+  const openRoleDialog = (user: userType) => {
     setNewRole(user.role)
+    setSelectedUser(user)
     setIsRoleDialogOpen(true)
   }
 
@@ -140,7 +153,7 @@ export function UsersManagement() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => openRoleDialog(user)}>Change Role</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openRoleDialog(user)} disabled={user.role === "admin"}>Change Role</DropdownMenuItem>
                           <DropdownMenuItem>Send Message</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => viewProjects(user.id, user.role)}>View Projects</DropdownMenuItem>
                           {user.role === "translator" && <DropdownMenuItem onClick={() => manageTranslator(user.id)}>Manage Translator</DropdownMenuItem>}
@@ -156,14 +169,16 @@ export function UsersManagement() {
           </div>
         </CardContent>
       </Card>
-
-      <SetRoleDialog
-        onOpenChange={setIsRoleDialogOpen}
-        isOpen={isRoleDialogOpen}
-        role={newRole}
-        onRoleChange={setNewRole}
-        onDialogSubmitted={handleRoleChange}
-      /> 
+      {selectedUser?.id && (
+        <SetRoleDialog
+          onOpenChange={setIsRoleDialogOpen}
+          isOpen={isRoleDialogOpen}
+          role={newRole}
+          userId={selectedUser.id}
+          onRoleChange={setNewRole}
+          onDialogSubmitted={handleRoleChange}
+      />
+      )}
     </>
   )
 }

@@ -2,16 +2,27 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react"
 
 interface SetRoleDialogProps {
     onOpenChange: (v: boolean) => void
     isOpen: boolean
     role: string
+    userId: string
     onRoleChange: (newRole: string) => void
-    onDialogSubmitted: () => void
+    onDialogSubmitted: (userId: string, role: string) => Promise<void>
 }
 
-export const SetRoleDialog = ({ onOpenChange, isOpen, role, onRoleChange, onDialogSubmitted } : SetRoleDialogProps) => {
+export const SetRoleDialog = ({ onOpenChange, isOpen, role, userId, onRoleChange, onDialogSubmitted } : SetRoleDialogProps) => {
+
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const onSubmit = async () => {
+        setIsSubmitting(true)
+        await onDialogSubmitted(userId, role)
+        onOpenChange(false);
+        setIsSubmitting(false)
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -27,7 +38,7 @@ export const SetRoleDialog = ({ onOpenChange, isOpen, role, onRoleChange, onDial
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="user">Customer</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
                         <SelectItem value="translator">Translator</SelectItem>
                     </SelectContent>
                     </Select>
@@ -37,7 +48,13 @@ export const SetRoleDialog = ({ onOpenChange, isOpen, role, onRoleChange, onDial
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
                     Cancel
                 </Button>
-                <Button onClick={onDialogSubmitted}>Save Changes</Button>
+                <Button onClick={async () => { await onSubmit() }} disabled={isSubmitting}>
+                    <span>
+                        {isSubmitting 
+                            ? "Applying changes..."
+                            : "Save changes"}
+                    </span>
+                </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

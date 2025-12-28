@@ -16,7 +16,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MoreHorizontal, Shield, User } from "lucide-react"
 import { useTRPC } from "@/trpc/client"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import UserShimmer from "./users-shimmer"
 import UsersNotFound from "./users-not-found"
 import { useRouter } from "next/navigation"
@@ -30,10 +30,11 @@ export function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<userType>();
 
   const trpc = useTRPC();
+  const queryClient = useQueryClient()
   const { data, isPending } = useQuery(trpc.users.getMany.queryOptions())
   const router = useRouter();
 
-  const { mutateAsync: changeRoleAsync, isPending: isChangingRole } = useMutation(trpc.users.changeUserRole.mutationOptions({
+  const { mutateAsync: changeRoleAsync } = useMutation(trpc.users.changeUserRole.mutationOptions({
     onSuccess: () => {
       toast.success("Role changed successfully")
     },
@@ -52,6 +53,25 @@ export function UsersManagement() {
       id: userId,
       role: role as Role
     })
+
+    queryClient.setQueryData(
+      trpc.users.getMany.queryKey(),
+      (cached) => {
+        if (!cached || !cached.users) return cached
+
+        return {
+          ...cached,
+          users: cached.users.map((user) =>
+            user.id === userId
+              ? {
+                  ...user,
+                  role: role as Role,
+                }
+              : user
+          ),
+        }
+      }
+    )
   }
 
   const openRoleDialog = (user: userType) => {

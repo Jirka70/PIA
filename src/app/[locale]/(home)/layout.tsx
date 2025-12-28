@@ -1,4 +1,3 @@
-import { Footer } from "@/modules/dashboard/footer";
 import { Header } from "@/modules/dashboard/header";
 import { ReactNode } from "react";
 
@@ -10,8 +9,6 @@ export default function HomeLayout({ children } : { children: ReactNode }) {
             <main className="flex-1">
                 {children}
             </main>
-
-            <Footer />
         </div>
     )
 }

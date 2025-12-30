@@ -10,84 +10,94 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { ProjectAdminViewSkeleton } from "./project-admin-view-skeleton"
+import { useTranslations } from "next-intl"
 
 interface UserProjectsProps {
-    userRole: Role,
-    userId: string
+  userRole: Role
+  userId: string
 }
 
-export const UserProjects = ({ userRole, userId } : UserProjectsProps) => {
-    
-    const trpc = useTRPC()
-    const { data: rawUser, isPending: isGettingUser } = useQuery(trpc.users.getUserById.queryOptions({
-        id: userId
-    }))
+export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
+  const t = useTranslations("UserProjects")
 
-    const isTranslator = userRole === "translator"
+  const trpc = useTRPC()
+  const { data: rawUser, isPending: isGettingUser } = useQuery(
+    trpc.users.getUserById.queryOptions({
+      id: userId
+    })
+  )
 
-    const { data: projectsInfo, isPending: isProjectsPending } = isTranslator
-    ? useQuery(trpc.projects.getProjectsByTranslatorId.queryOptions({
-        id: userId
-    })) 
-    : useQuery(trpc.projects.getProjectsByUserId.queryOptions({
-        userId
-    }))
+  const isTranslator = userRole === "translator"
 
-    const user = rawUser?.user
+  const { data: projectsInfo, isPending: isProjectsPending } = isTranslator
+    ? useQuery(
+        trpc.projects.getProjectsByTranslatorId.queryOptions({
+          id: userId
+        })
+      )
+    : useQuery(
+        trpc.projects.getProjectsByUserId.queryOptions({
+          userId
+        })
+      )
 
-    if (isProjectsPending || isGettingUser) {
-        return (
-            <ProjectAdminViewWrapper title="View projects" description="">
-                <ProjectAdminViewSkeleton />
-                <ProjectAdminViewSkeleton />
-                <ProjectAdminViewSkeleton />
-            </ProjectAdminViewWrapper>
-            
-        )
-    }
+  const user = rawUser?.user
 
-    if (!user) {
-        notFound();
-    }
-
-    const projects = projectsInfo?.project;
-
+  if (isProjectsPending || isGettingUser) {
     return (
-        <ProjectAdminViewWrapper title="View projects" description="">
-          <div className="space-y-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/user-dashboard">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Link>
-            </Button>
-            {projects?.length === 0
-                ? <p>No projects found</p>
-                : (
-            projects?.map((projectEntry) => {
-                const project = projectEntry.project;
-                const client = projectEntry.client;
-                const translator = projectEntry.translator
-                const companyReview = projectEntry.companyReview
-                const translatorReview = projectEntry.translatorReview
-                const sourceFile = projectEntry.sourceFile
-                return (
-                    <SingleProjectView key={project.id}
-                        project={project}
-                        clientName={client?.name}
-                        clientEmail={client?.email}
-                        translatorName={translator?.name}
-                        translatorEmail={translator?.email}
-                        companyReview={companyReview}
-                        translatorReview={translatorReview}
-                        sourceFile={sourceFile}
-                        isStatusUpdating={false}
-                        onStatusUpdate={async (newStatus: ProjectStatusType) => {}}
-                    />
-                )
-            }))}
-
-            </div>
-        </ProjectAdminViewWrapper>
+      <ProjectAdminViewWrapper title={t("wrapper.title")} description={t("wrapper.description")}>
+        <ProjectAdminViewSkeleton />
+        <ProjectAdminViewSkeleton />
+        <ProjectAdminViewSkeleton />
+      </ProjectAdminViewWrapper>
     )
+  }
+
+  if (!user) {
+    notFound()
+  }
+
+  const projects = projectsInfo?.project
+
+  return (
+    <ProjectAdminViewWrapper title={t("wrapper.title")} description={t("wrapper.description")}>
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/user-dashboard">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t("actions.backToDashboard")}
+          </Link>
+        </Button>
+
+        {projects?.length === 0 ? (
+          <p>{t("states.noProjects")}</p>
+        ) : (
+          projects?.map((projectEntry) => {
+            const project = projectEntry.project
+            const client = projectEntry.client
+            const translator = projectEntry.translator
+            const companyReview = projectEntry.companyReview
+            const translatorReview = projectEntry.translatorReview
+            const sourceFile = projectEntry.sourceFile
+
+            return (
+              <SingleProjectView
+                key={project.id}
+                project={project}
+                clientName={client?.name}
+                clientEmail={client?.email}
+                translatorName={translator?.name}
+                translatorEmail={translator?.email}
+                companyReview={companyReview}
+                translatorReview={translatorReview}
+                sourceFile={sourceFile}
+                isStatusUpdating={false}
+                onStatusUpdate={async (_newStatus: ProjectStatusType) => {}}
+              />
+            )
+          })
+        )}
+      </div>
+    </ProjectAdminViewWrapper>
+  )
 }

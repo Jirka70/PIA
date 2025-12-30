@@ -1,22 +1,24 @@
 "use client"
 
+import React from "react"
 import { Languages, Calendar, Building2, UserIcon, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "./utils/date"
 import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
+import { useTranslations } from "next-intl"
 
 export interface ProjectGridProps {
-    project: ProjectType,
-    clientName?: string,
-    clientEmail?: string,
-    translatorName?: string,
-    translatorEmail?: string,
-    sourceFile: ProjectFileType | null,
-    translatedFile?: ProjectFileType | null,
-    translatorReview?: TranslatorReviewType | null,
-    companyReview?: CompanyReviewType | null,
-    onClientClick?: (clientId: string) => void,
-    onTranslatorClick?: (translatorId: string) => void,
+  project: ProjectType
+  clientName?: string
+  clientEmail?: string
+  translatorName?: string
+  translatorEmail?: string
+  sourceFile: ProjectFileType | null
+  translatedFile?: ProjectFileType | null
+  translatorReview?: TranslatorReviewType | null
+  companyReview?: CompanyReviewType | null
+  onClientClick?: (clientId: string) => void
+  onTranslatorClick?: (translatorId: string) => void
 }
 
 export function ProjectDetailsGrid({
@@ -26,8 +28,10 @@ export function ProjectDetailsGrid({
   translatorName,
   translatorEmail,
   onClientClick,
-  onTranslatorClick,
-} : ProjectGridProps) {
+  onTranslatorClick
+}: ProjectGridProps) {
+  const t = useTranslations("ProjectDetailsGrid")
+
   const daysUntilDue = ((): number | null => {
     if (!project.dueAt) return null
     const now = new Date()
@@ -41,9 +45,16 @@ export function ProjectDetailsGrid({
   const isClientInteractive = !!onClientClick && !!project.clientId
   const isTranslatorInteractive = !!onTranslatorClick && !!project.translatorId
 
+  const dueLine = () => {
+    if (daysUntilDue === null) return null
+    if (isOverdue) return t("due.daysOverdue", { count: Math.abs(daysUntilDue) })
+    if (daysUntilDue === 1) return t("due.daysRemaining", { count: daysUntilDue })
+    return t("due.daysRemainingPlural", { count: daysUntilDue })
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <InfoItem icon={<Languages className="h-4 w-4" />} label="Languages">
+      <InfoItem icon={<Languages className="h-4 w-4" />} label={t("labels.languages")}>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-base font-semibold">
             {project.sourceLanguage.toUpperCase()}
@@ -55,7 +66,7 @@ export function ProjectDetailsGrid({
         </div>
       </InfoItem>
 
-      <InfoItem icon={<Calendar className="h-4 w-4" />} label="Due Date">
+      <InfoItem icon={<Calendar className="h-4 w-4" />} label={t("labels.dueDate")}>
         <div className="flex flex-col gap-1">
           <span
             className={
@@ -68,31 +79,23 @@ export function ProjectDetailsGrid({
           >
             {formatDate(project.dueAt)}
           </span>
-          {daysUntilDue !== null && (
-            <span className="text-xs text-muted-foreground">
-              {isOverdue
-                ? `${Math.abs(daysUntilDue)} days overdue`
-                : `${daysUntilDue} day${daysUntilDue !== 1 ? "s" : ""} remaining`}
-            </span>
-          )}
+
+          {dueLine() && <span className="text-xs text-muted-foreground">{dueLine()}</span>}
         </div>
       </InfoItem>
 
-      <InfoItem icon={<Building2 className="h-4 w-4" />} label="Client">
+      <InfoItem icon={<Building2 className="h-4 w-4" />} label={t("labels.client")}>
         <div className="flex flex-col gap-1">
           {project.clientId ? (
             isClientInteractive ? (
-
-                  <button
-                    type="button"
-                    className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    onClick={() => onClientClick?.(project.clientId!)}
-                  >
-                    <span className="font-medium underline-offset-2 hover:underline">
-                      {clientName}
-                    </span>
-                    <span className="text-sm text-muted-foreground">{clientEmail}</span>
-                  </button>
+              <button
+                type="button"
+                className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onClick={() => onClientClick?.(project.clientId!)}
+              >
+                <span className="font-medium underline-offset-2 hover:underline">{clientName}</span>
+                <span className="text-sm text-muted-foreground">{clientEmail}</span>
+              </button>
             ) : (
               <div className="flex flex-col gap-1">
                 <span className="font-medium">{clientName}</span>
@@ -100,50 +103,40 @@ export function ProjectDetailsGrid({
               </div>
             )
           ) : (
-            <span className="text-sm text-muted-foreground italic">
-              Not assigned
-            </span>
+            <span className="text-sm text-muted-foreground italic">{t("states.notAssigned")}</span>
           )}
         </div>
       </InfoItem>
 
-      <InfoItem icon={<UserIcon className="h-4 w-4" />} label="Translator">
+      <InfoItem icon={<UserIcon className="h-4 w-4" />} label={t("labels.translator")}>
         <div className="flex flex-col gap-1">
           {project.translatorId ? (
             isTranslatorInteractive ? (
-                  <button
-                    type="button"
-                    className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    onClick={() => onTranslatorClick?.(project.translatorId!)}
-                  >
-                    <span className="font-medium underline-offset-2 hover:underline">
-                      {translatorName}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {translatorEmail}
-                    </span>
-                  </button>
+              <button
+                type="button"
+                className="flex flex-col gap-1 text-left rounded hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onClick={() => onTranslatorClick?.(project.translatorId!)}
+              >
+                <span className="font-medium underline-offset-2 hover:underline">{translatorName}</span>
+                <span className="text-sm text-muted-foreground">{translatorEmail}</span>
+              </button>
             ) : (
               <div className="flex flex-col gap-1">
                 <span className="font-medium">{translatorName}</span>
-                <span className="text-sm text-muted-foreground">
-                  {translatorEmail}
-                </span>
+                <span className="text-sm text-muted-foreground">{translatorEmail}</span>
               </div>
             )
           ) : (
-            <span className="text-sm text-muted-foreground italic">
-              Not assigned
-            </span>
+            <span className="text-sm text-muted-foreground italic">{t("states.notAssigned")}</span>
           )}
         </div>
       </InfoItem>
 
-      <InfoItem icon={<Clock className="h-4 w-4" />} label="Created">
+      <InfoItem icon={<Clock className="h-4 w-4" />} label={t("labels.created")}>
         <span className="text-sm">{formatDate(project.createdAt)}</span>
       </InfoItem>
 
-      <InfoItem icon={<Clock className="h-4 w-4" />} label="Last Updated">
+      <InfoItem icon={<Clock className="h-4 w-4" />} label={t("labels.lastUpdated")}>
         <span className="text-sm">{formatDate(project.updatedAt)}</span>
       </InfoItem>
     </div>
@@ -153,7 +146,7 @@ export function ProjectDetailsGrid({
 function InfoItem({
   icon,
   label,
-  children,
+  children
 }: {
   icon: React.ReactNode
   label: string

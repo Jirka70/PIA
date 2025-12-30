@@ -7,9 +7,10 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl"
 
 interface ProjectStatusDialogProps {
   open: boolean
@@ -17,7 +18,12 @@ interface ProjectStatusDialogProps {
   onConfirm: () => Promise<void>
 }
 
-export function ProjectStatusDialog({ open, onOpenChange, onConfirm }: ProjectStatusDialogProps) {
+export function ProjectStatusDialog({
+  open,
+  onOpenChange,
+  onConfirm
+}: ProjectStatusDialogProps) {
+  const t = useTranslations("ProjectStatusDialog")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleConfirm = async () => {
@@ -43,20 +49,18 @@ export function ProjectStatusDialog({ open, onOpenChange, onConfirm }: ProjectSt
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Change Project Status</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription className="text-pretty">
-            The progress percentage has been reduced below 100%. Would you like to change the project status from{" "}
-            <span className="font-semibold">&quot;Q/A&quot;</span> to{" "}
-            <span className="font-semibold">&quot;In Progress&quot;</span>?
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
+            {t("actions.cancel")}
           </Button>
           <Button onClick={handleConfirm} disabled={isSubmitting}>
-            {isSubmitting ? "Updating..." : "Update Status"}
+            {isSubmitting ? t("actions.updating") : t("actions.update")}
           </Button>
         </DialogFooter>
       </DialogContent>

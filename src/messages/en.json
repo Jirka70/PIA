@@ -887,5 +887,143 @@
       "close": "Close",
       "proceeding": "Proceeding..."
     }
+  },
+  "TranslatorProject": {
+    "wrapper": {
+      "title": "Project Details",
+      "description": ""
+    },
+    "toasts": {
+      "statusUpdated": "Status successfully updated",
+      "statusUpdateError": "Cannot update status right now"
+    },
+    "actions": {
+      "backToTranslator": "Manage Translator"
+    }
+  },
+  "ProjectView": {
+    "wrapper": {
+      "title": "Project Details",
+      "description": ""
+    }
+  },
+  "SingleProjectView": {
+    "reviews": {
+      "title": "Reviews"
+    },
+    "toasts": {
+      "cannotObtainSourceFile": "Cannot obtain source file",
+      "cannotObtainTranslatedFile": "Cannot obtain translated file",
+      "gettingFileToView": "Getting file to view...",
+      "gettingFileToDownload": "Getting file to download...",
+      "docxCannotPreviewPreparingDownload": "File has .docx extension - cannot create a view, preparing downloading..."
+    }
+  },
+  "ProjectHeader": {
+    "badges": {
+      "overdue": "Overdue",
+      "urgent": "Urgent"
+    },
+    "actions": {
+      "changeStatus": "Change Status",
+      "cancel": "Cancel",
+      "updateStatus": "Update status",
+      "updating": "Updating..."
+    },
+    "dialog": {
+      "title": "Update Project Status",
+      "description": "Change the status of {projectName}"
+    },
+    "fields": {
+      "statusLabel": "Status"
+    },
+    "toasts": {
+      "noStatusSelected": "No status selected"
+    }
+  },
+  "ProjectDetailsGrid": {
+    "labels": {
+      "languages": "Languages",
+      "dueDate": "Due Date",
+      "client": "Client",
+      "translator": "Translator",
+      "created": "Created",
+      "lastUpdated": "Last Updated"
+    },
+    "states": {
+      "notAssigned": "Not assigned"
+    },
+    "due": {
+      "daysOverdue": "{count} days overdue",
+      "daysRemaining": "{count} day remaining",
+      "daysRemainingPlural": "{count} days remaining"
+    }
+  },
+  "ProgressSection": {
+    "title": "Translation Progress",
+    "noteLabel": "Progress Note"
+  },
+  "FilesSection": {
+    "title": "Project Files",
+    "files": {
+      "source": "Source File",
+      "translated": "Translated File"
+    },
+    "actions": {
+      "view": "View",
+      "download": "Download"
+    },
+    "states": {
+      "noFile": "No file uploaded",
+      "notUploadedYet": "Not uploaded yet"
+    }
+  },
+  "UserProjects": {
+    "wrapper": {
+      "title": "View projects",
+      "description": ""
+    },
+    "actions": {
+      "backToDashboard": "Back to Dashboard"
+    },
+    "states": {
+      "noProjects": "No projects found"
+    }
+  },
+  "ProjectStatusDialog": {
+    "title": "Change Project Status",
+    "description": "The progress percentage has been reduced below 100%. Would you like to change the project status from \"Q/A\" to \"In Progress\"?",
+    "actions": {
+      "cancel": "Cancel",
+      "update": "Update Status",
+      "updating": "Updating..."
+    }
+  },
+  "QAStatusDialog": {
+    "title": "Change Project Status",
+    "description": "The progress percentage has reached 100%. Would you like to change the project status to \"Q/A\"?",
+    "actions": {
+      "cancel": "Cancel",
+      "update": "Update Status",
+      "updating": "Updating..."
+    }
+  },
+  "ConfirmProgressDialog": {
+    "title": "Confirm 100% progress",
+    "description": "You are about to set the translation progress to \"100%\", but no translated file has been uploaded yet. Are you sure you want to mark this project as fully completed?",
+    "warning": {
+      "title": "Warning:",
+      "noFile": "There is currently no translated file uploaded for this project.",
+      "hint": "Setting the progress to 100% usually means the translation work is done and the file is ready for review."
+    },
+    "checkbox": {
+      "label": "Mark project as QA",
+      "hint": "If checked, the project will be moved to the QA status after saving."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "saving": "Saving..."
+    }
   }
 }

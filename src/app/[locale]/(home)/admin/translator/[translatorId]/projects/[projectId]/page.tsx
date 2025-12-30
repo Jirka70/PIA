@@ -12,7 +12,7 @@ interface Props {
 export default async function TranslatorProjectPage({ params } : Props) {
     await requireAdmin();
 
-    const { translatorId, projectId } = params;
+    const { translatorId, projectId } = await params;
 
     return (
         <TranslatorProject translatorId={translatorId} projectId={projectId} />

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useForm, Controller } from "react-hook-form"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 
 export type ConfirmProgressFormValues = {
   markAsQA: boolean
@@ -17,15 +18,13 @@ interface ConfirmProgressDialogProps {
   onConfirm: (values: ConfirmProgressFormValues) => Promise<void> | void
 }
 
-export const ConfirmProgressDialog = ({
-  isOpen,
-  onOpenChange,
-  onConfirm,
-}: ConfirmProgressDialogProps) => {
+export const ConfirmProgressDialog = ({ isOpen, onOpenChange, onConfirm }: ConfirmProgressDialogProps) => {
+  const t = useTranslations("ConfirmProgressDialog")
+
   const form = useForm<ConfirmProgressFormValues>({
     defaultValues: {
-      markAsQA: false,
-    },
+      markAsQA: false
+    }
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,23 +40,19 @@ export const ConfirmProgressDialog = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Confirm 100% progress</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            You are about to set the translation progress to{" "}
-            <span className="font-semibold">100%</span>, but no translated file has been uploaded yet.
-            Are you sure you want to mark this project as fully completed?
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
             <p>
-              <span className="font-semibold">Warning:</span> There is currently{" "}
-              <span className="font-semibold">no translated file uploaded</span> for this project.
+              <span className="font-semibold">{t("warning.title")}</span>{" "}
+              {t("warning.noFile")}
             </p>
-            <p className="text-muted-foreground">
-              Setting the progress to 100% usually means the translation work is done and the file is ready for review.
-            </p>
+            <p className="text-muted-foreground">{t("warning.hint")}</p>
           </div>
 
           <div className="flex items-start gap-2">
@@ -73,23 +68,18 @@ export const ConfirmProgressDialog = ({
               )}
             />
             <div className="space-y-1">
-              <Label htmlFor="markAsQA">Mark project as QA</Label>
-              <p className="text-xs text-muted-foreground">
-                If checked, the project will be moved to the QA status after saving.
-              </p>
+              <Label htmlFor="markAsQA">{t("checkbox.label")}</Label>
+              <p className="text-xs text-muted-foreground">{t("checkbox.hint")}</p>
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t("actions.cancel")}
             </Button>
+
             <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
-              {isSubmitting ? "Saving..." : "Confirm"}
+              {isSubmitting ? t("actions.saving") : t("actions.confirm")}
             </Button>
           </div>
         </form>

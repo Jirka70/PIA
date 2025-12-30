@@ -1,17 +1,23 @@
 "use client"
+
+import { useTranslations } from "next-intl"
+
 export function ProgressSection({
   progressPercent,
-  progressNote,
+  progressNote
 }: {
   progressPercent: number
   progressNote?: string | null
 }) {
+  const t = useTranslations("ProgressSection")
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold">Translation Progress</h4>
+        <h4 className="text-sm font-semibold">{t("title")}</h4>
         <span className="text-2xl font-bold">{progressPercent}%</span>
       </div>
+
       <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
         <div
           className={`h-3 transition-all duration-500 rounded-full ${
@@ -29,7 +35,7 @@ export function ProgressSection({
 
       {progressNote && (
         <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Progress Note</p>
+          <p className="text-xs font-medium text-muted-foreground">{t("noteLabel")}</p>
           <p className="text-sm">{progressNote}</p>
         </div>
       )}

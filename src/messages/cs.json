@@ -888,6 +888,144 @@
       "close": "Zavřít",
       "proceeding": "Probíhá..."
     }
+  },
+  "TranslatorProject": {
+    "wrapper": {
+      "title": "Detail projektu",
+      "description": ""
+    },
+    "toasts": {
+      "statusUpdated": "Stav byl úspěšně aktualizován",
+      "statusUpdateError": "Stav nyní nelze aktualizovat"
+    },
+    "actions": {
+      "backToTranslator": "Spravovat překladatele"
+    }
+  },
+  "ProjectView": {
+    "wrapper": {
+      "title": "Detail projektu",
+      "description": ""
+    }
+  },
+  "SingleProjectView": {
+    "reviews": {
+      "title": "Recenze"
+    },
+    "toasts": {
+      "cannotObtainSourceFile": "Nelze získat zdrojový soubor",
+      "cannotObtainTranslatedFile": "Nelze získat přeložený soubor",
+      "gettingFileToView": "Načítám soubor pro náhled...",
+      "gettingFileToDownload": "Načítám soubor ke stažení...",
+      "docxCannotPreviewPreparingDownload": "Soubor má příponu .docx – nelze vytvořit náhled, připravuji stažení..."
+    }
+  },
+  "ProjectHeader": {
+    "badges": {
+      "overdue": "Po termínu",
+      "urgent": "Urgentní"
+    },
+    "actions": {
+      "changeStatus": "Změnit stav",
+      "cancel": "Zrušit",
+      "updateStatus": "Aktualizovat stav",
+      "updating": "Aktualizuji..."
+    },
+    "dialog": {
+      "title": "Aktualizovat stav projektu",
+      "description": "Změňte stav projektu {projectName}"
+    },
+    "fields": {
+      "statusLabel": "Stav"
+    },
+    "toasts": {
+      "noStatusSelected": "Není vybrán žádný stav"
+    }
+  },
+  "ProjectDetailsGrid": {
+    "labels": {
+      "languages": "Jazyky",
+      "dueDate": "Termín",
+      "client": "Klient",
+      "translator": "Překladatel",
+      "created": "Vytvořeno",
+      "lastUpdated": "Naposledy upraveno"
+    },
+    "states": {
+      "notAssigned": "Nepřiřazeno"
+    },
+    "due": {
+      "daysOverdue": "po termínu {count} dnů",
+      "daysRemaining": "zbývá {count} den",
+      "daysRemainingPlural": "zbývá {count} dnů"
+    }
+  },
+  "ProgressSection": {
+    "title": "Průběh překladu",
+    "noteLabel": "Poznámka k průběhu"
+  },
+  "FilesSection": {
+    "title": "Soubory projektu",
+    "files": {
+      "source": "Zdrojový soubor",
+      "translated": "Přeložený soubor"
+    },
+    "actions": {
+      "view": "Zobrazit",
+      "download": "Stáhnout"
+    },
+    "states": {
+      "noFile": "Soubor nebyl nahrán",
+      "notUploadedYet": "Zatím nebyl nahrán"
+    }
+  },
+  "UserProjects": {
+    "wrapper": {
+      "title": "Zobrazit projekty",
+      "description": ""
+    },
+    "actions": {
+      "backToDashboard": "Zpět na dashboard"
+    },
+    "states": {
+      "noProjects": "Nebyly nalezeny žádné projekty"
+    }
+  },
+  "ProjectStatusDialog": {
+    "title": "Změnit stav projektu",
+    "description": "Procento průběhu bylo sníženo pod 100 %. Chcete změnit stav projektu z \"Q/A\" na \"Probíhá\"?",
+    "actions": {
+      "cancel": "Zrušit",
+      "update": "Aktualizovat stav",
+      "updating": "Aktualizuji..."
+    }
+  },
+  "QAStatusDialog": {
+    "title": "Změnit stav projektu",
+    "description": "Procento průběhu dosáhlo 100 %. Chcete změnit stav projektu na \"Q/A\"?",
+    "actions": {
+      "cancel": "Zrušit",
+      "update": "Aktualizovat stav",
+      "updating": "Aktualizuji..."
+    }
+  },
+  "ConfirmProgressDialog": {
+    "title": "Potvrdit 100% průběh",
+    "description": "Chystáte se nastavit průběh překladu na \"100%\", ale zatím nebyl nahrán žádný přeložený soubor. Opravdu chcete označit projekt jako plně dokončený?",
+    "warning": {
+      "title": "Upozornění:",
+      "noFile": "Pro tento projekt aktuálně není nahrán žádný přeložený soubor.",
+      "hint": "Nastavení průběhu na 100 % obvykle znamená, že překlad je hotový a soubor je připraven k revizi."
+    },
+    "checkbox": {
+      "label": "Označit projekt jako Q/A",
+      "hint": "Pokud je zaškrtnuto, projekt se po uložení přesune do stavu Q/A."
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "confirm": "Potvrdit",
+      "saving": "Ukládám..."
+    }
   }
 }
 

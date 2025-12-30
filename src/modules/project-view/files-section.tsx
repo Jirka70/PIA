@@ -1,7 +1,9 @@
 "use client"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileText, Eye, Download } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 export function FilesSection({
   hasSourceFile,
@@ -11,7 +13,7 @@ export function FilesSection({
   onViewTranslated,
   onDownloadTranslated,
   isSourceLoading,
-  isTranslatedLoading,
+  isTranslatedLoading
 }: {
   hasSourceFile: boolean
   hasTranslatedFile: boolean
@@ -22,28 +24,31 @@ export function FilesSection({
   isSourceLoading?: boolean
   isTranslatedLoading?: boolean
 }) {
+  const t = useTranslations("FilesSection")
+
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold">Project Files</h4>
+      <h4 className="text-sm font-semibold">{t("title")}</h4>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FileCard
-          title="Source File"
+          title={t("files.source")}
           iconClass="text-blue-500"
           hasFile={hasSourceFile}
           onView={onViewSource}
           onDownload={onDownloadSource}
           isLoading={isSourceLoading}
+          emptyText={t("states.noFile")}
         />
 
         <FileCard
-          title="Translated File"
+          title={t("files.translated")}
           iconClass="text-green-500"
           hasFile={hasTranslatedFile}
           onView={onViewTranslated}
           onDownload={onDownloadTranslated}
           isLoading={isTranslatedLoading}
-          emptyText="Not uploaded yet"
+          emptyText={t("states.notUploadedYet")}
         />
       </div>
     </div>
@@ -57,7 +62,7 @@ function FileCard({
   onView,
   onDownload,
   isLoading,
-  emptyText = "No file uploaded",
+  emptyText
 }: {
   title: string
   iconClass: string
@@ -65,8 +70,10 @@ function FileCard({
   onView: () => void
   onDownload: () => void
   isLoading?: boolean
-  emptyText?: string
+  emptyText: string
 }) {
+  const t = useTranslations("FilesSection")
+
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-4 space-y-3">
@@ -74,6 +81,7 @@ function FileCard({
           <FileText className={`h-5 w-5 ${iconClass}`} />
           <span className="font-medium">{title}</span>
         </div>
+
         {hasFile ? (
           <div className="flex gap-2">
             <Button
@@ -84,8 +92,9 @@ function FileCard({
               disabled={isLoading}
             >
               <Eye className="h-4 w-4 mr-2" />
-              View
+              {t("actions.view")}
             </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -94,7 +103,7 @@ function FileCard({
               disabled={isLoading}
             >
               <Download className="h-4 w-4 mr-2" />
-              Download
+              {t("actions.download")}
             </Button>
           </div>
         ) : (

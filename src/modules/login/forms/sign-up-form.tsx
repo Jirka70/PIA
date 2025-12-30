@@ -1,7 +1,8 @@
 "use client"
+
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,29 +14,37 @@ import { signUp } from "@/server/users"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-
-const formSchema = z
-  .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  })
+import { useTranslations } from "next-intl"
 
 export function SignupForm() {
+  const t = useTranslations("auth.signup")
+
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          name: z.string().min(2, t("validation.nameMin")),
+          email: z.string().email(t("validation.emailInvalid")),
+          password: z.string().min(8, t("validation.passwordMin")),
+          confirmPassword: z.string().min(8, t("validation.passwordMin"))
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("validation.passwordsDontMatch"),
+          path: ["confirmPassword"]
+        }),
+    [t]
+  )
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
-    },
+      confirmPassword: ""
+    }
   })
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -44,16 +53,19 @@ export function SignupForm() {
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
 
-    const response = await signUp(values.name, values.email, values.password)
-    const message = response.message
-    if (response.success) {
+    try {
+      const response = await signUp(values.name, values.email, values.password)
+      const message = response.message
+
+      if (response.success) {
         toast.success(message)
         router.replace("/dashboard")
-    } else {
+      } else {
         toast.error(message)
+      }
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
   return (
@@ -70,17 +82,18 @@ export function SignupForm() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-balance">Create your account</h1>
-          <p className="text-muted-foreground text-balance">Sign up to get started with your new account</p>
+          <h1 className="text-3xl font-bold tracking-tight text-balance">{t("header.title")}</h1>
+          <p className="text-muted-foreground text-balance">{t("header.subtitle")}</p>
         </div>
       </div>
 
       {/* Signup Card */}
       <Card className="border-0 shadow-2xl shadow-black/5">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-xl font-semibold">Sign up</CardTitle>
-          <CardDescription>Enter your information to create your account</CardDescription>
+          <CardTitle className="text-xl font-semibold">{t("card.title")}</CardTitle>
+          <CardDescription>{t("card.description")}</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -90,11 +103,16 @@ export function SignupForm() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full name</FormLabel>
+                      <FormLabel>{t("fields.name.label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input type="text" placeholder="Enter your full name" className="pl-10 h-11" {...field} />
+                          <Input
+                            type="text"
+                            placeholder={t("fields.name.placeholder")}
+                            className="pl-10 h-11"
+                            {...field}
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -109,11 +127,16 @@ export function SignupForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email address</FormLabel>
+                      <FormLabel>{t("fields.email.label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input type="email" placeholder="Enter your email" className="pl-10 h-11" {...field} />
+                          <Input
+                            type="email"
+                            placeholder={t("fields.email.placeholder")}
+                            className="pl-10 h-11"
+                            {...field}
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -129,14 +152,14 @@ export function SignupForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="password" className="text-sm font-medium">
-                        Password
+                        {t("fields.password.label")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Create a password"
+                            placeholder={t("fields.password.placeholder")}
                             className="pl-10 pr-10 h-11"
                             {...field}
                           />
@@ -144,6 +167,7 @@ export function SignupForm() {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label={showPassword ? t("a11y.hidePassword") : t("a11y.showPassword")}
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
@@ -162,14 +186,14 @@ export function SignupForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="confirmPassword" className="text-sm font-medium">
-                        Confirm password
+                        {t("fields.confirmPassword.label")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm your password"
+                            placeholder={t("fields.confirmPassword.placeholder")}
                             className="pl-10 pr-10 h-11"
                             {...field}
                           />
@@ -177,6 +201,9 @@ export function SignupForm() {
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label={
+                              showConfirmPassword ? t("a11y.hideConfirmPassword") : t("a11y.showConfirmPassword")
+                            }
                           >
                             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
@@ -192,11 +219,11 @@ export function SignupForm() {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Creating account...
+                    {t("actions.creatingAccount")}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    Create account
+                    {t("actions.createAccount")}
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 )}
@@ -209,12 +236,12 @@ export function SignupForm() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("divider.orContinueWith")}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-11 bg-transparent">
+            <Button variant="outline" className="h-11 bg-transparent" type="button">
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -233,21 +260,22 @@ export function SignupForm() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Google
+              {t("providers.google")}
             </Button>
-            <Button variant="outline" className="h-11 bg-transparent">
+
+            <Button variant="outline" className="h-11 bg-transparent" type="button">
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.024-.105-.949-.199-2.403.041-3.439.219-.937 1.404-5.965 1.404-5.965s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12C24.007 5.367 18.641.001 12.017.001z" />
               </svg>
-              GitHub
+              {t("providers.github")}
             </Button>
           </div>
 
           <div className="text-center text-sm text-muted-foreground">
-            {"Already have an account? "}
-                <Link href="/sign-in" className="text-accent">
-                    Sign in
-                </Link>
+            {t("footer.alreadyHaveAccount")}
+            <Link href="/sign-in" className="text-accent">
+              {t("footer.signIn")}
+            </Link>
           </div>
         </CardContent>
       </Card>

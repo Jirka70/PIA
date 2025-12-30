@@ -1,12 +1,14 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Star } from "lucide-react"
 import { ComponentProps } from "react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
-export function WriteReviewButton({
-  className,
-  ...props
-}: ComponentProps<typeof Button>) {
+export function WriteReviewButton({ className, ...props }: ComponentProps<typeof Button>) {
+  const t = useTranslations("WriteReviewButton")
+
   return (
     <Button
       {...props}
@@ -23,7 +25,7 @@ export function WriteReviewButton({
       )}
     >
       <Star className="h-4 w-4 fill-yellow-300 text-yellow-300 drop-shadow-sm" />
-      Write a review
+      {t("label")}
     </Button>
   )
 }

@@ -7,7 +7,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -28,26 +28,27 @@ import { useTRPC } from "@/trpc/client"
 import { User } from "better-auth"
 import { ProjectClosedTooltip } from "./project-closed-tooltip"
 import { isActive } from "@/lib/project-status-utils"
+import { useTranslations } from "next-intl"
 
 const uploadFileSchema = z.object({
-    file: uploadedFileMeta,
-    autoSetProgress: z.boolean(),
-    autoSetQAState: z.boolean(),
+  file: uploadedFileMeta,
+  autoSetProgress: z.boolean(),
+  autoSetQAState: z.boolean()
 })
 
 interface UploadDialogProps {
-  project: ProjectType,
+  project: ProjectType
   user: User
 }
 
+export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps) {
+  const t = useTranslations("UploadTranslatedFileDialog")
 
-export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState<boolean>();
-  const dragCounter = useRef(0);
-
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState<boolean>()
+  const dragCounter = useRef(0)
 
   const form = useForm<z.infer<typeof uploadFileSchema>>({
     resolver: zodResolver(uploadFileSchema),
@@ -55,8 +56,8 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
     defaultValues: {
       file: undefined,
       autoSetProgress: false,
-      autoSetQAState: false,
-    },
+      autoSetQAState: false
+    }
   })
 
   const handleFileUpload = async (file: File) => {
@@ -66,9 +67,10 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
     setUploading(true)
     try {
       const data = await uploadFile(fd)
-      
+
       form.setValue(
-        "file", {
+        "file",
+        {
           fileName: data.fileName as string,
           contentType: data.contentType as string,
           size: Number(data.size),
@@ -82,16 +84,14 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
         }
       )
 
-      toast.success("File uploaded successfully")
+      toast.success(t("toast.fileUploaded"))
     } catch (err: any) {
-      toast.error(err?.message ?? "Upload failed")
+      toast.error(err?.message ?? t("toast.uploadFailed"))
       form.setValue("file", undefined as any, {
         shouldValidate: true
       })
 
-      if (inputRef.current) {
-        inputRef.current.value = ""
-      }
+      if (inputRef.current) inputRef.current.value = ""
     } finally {
       setUploading(false)
     }
@@ -103,65 +103,52 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
 
   const fileMeta = form.watch("file")
 
-  const handleOpenChange = (v: boolean) => {
-    setOpen(v)
-  }
-
   const trpc = useTRPC()
   const queryClient = useQueryClient()
 
   const { mutateAsync: uploadTranslatedFile, isPending } = useMutation(
-  trpc.projects.uploadTranslatedFile.mutationOptions({
-    onSuccess: async () => {
-      form.reset()
+    trpc.projects.uploadTranslatedFile.mutationOptions({
+      onSuccess: async () => {
+        form.reset()
 
-      await queryClient.invalidateQueries({
-        queryKey: trpc.projects.getManyAsTranslator.queryKey({
-          translatorId: user.id,
-        }),
-      })
+        await queryClient.invalidateQueries({
+          queryKey: trpc.projects.getManyAsTranslator.queryKey({
+            translatorId: user.id
+          })
+        })
 
-      toast.success("File successfully uploaded")
-      setOpen(false)
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
-)
+        toast.success(t("toast.fileSuccessfullyUploaded"))
+        setOpen(false)
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      }
+    })
+  )
 
+  type UploadFileSchemaType = z.infer<typeof uploadFileSchema>
 
-  type uploadFileSchemaType = z.infer<typeof uploadFileSchema>
-
-
-  const onSubmit = async (data: uploadFileSchemaType) => {
-    console.log("setQA", data.autoSetQAState)
-    console.log("setProgressTo100", data.autoSetProgress)
+  const onSubmit = async (data: UploadFileSchemaType) => {
     await uploadTranslatedFile({
       projectId: project.id,
       setProgressTo100: data.autoSetProgress,
       setQAState: data.autoSetQAState,
       ...data
     })
-
   }
 
-  const isProjectModifiable = () => {
-    return isActive(project.status)
-  }
-
+  const isProjectModifiable = () => isActive(project.status)
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <ProjectClosedTooltip disabled={!isProjectModifiable()}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" disabled={!isProjectModifiable()}>
             <Upload className="mr-2 h-4 w-4" />
-            Upload translated file
-          </Button>  
+            {t("trigger")}
+          </Button>
         </DialogTrigger>
       </ProjectClosedTooltip>
-
 
       <DialogContent
         className={cn(
@@ -170,8 +157,8 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
         )}
       >
         <DialogHeader className="space-y-2">
-          <DialogTitle>Upload file</DialogTitle>
-          <DialogDescription>Description -- prepis to pak</DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -180,44 +167,42 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
               control={form.control}
               name="file"
               render={() => {
-                  const onDragEnter = (e: React.DragEvent) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    dragCounter.current += 1
-                    setIsDragOver(true)
-                  }
+                const onDragEnter = (e: React.DragEvent) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dragCounter.current += 1
+                  setIsDragOver(true)
+                }
 
-                  const onDragLeave = (e: React.DragEvent) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    dragCounter.current -= 1
-                    if (dragCounter.current <= 0) {
-                      setIsDragOver(false)
-                      dragCounter.current = 0
-                    }
-                  }
-
-                  const onDrop = (e: React.DragEvent) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    dragCounter.current = 0
+                const onDragLeave = (e: React.DragEvent) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dragCounter.current -= 1
+                  if (dragCounter.current <= 0) {
                     setIsDragOver(false)
-
-                    if (uploadFileMutation.isPending) return
-                    const droppedFile = e.dataTransfer.files?.[0]
-                    if (droppedFile) {
-                      handleFileUpload(droppedFile)
-                    }
+                    dragCounter.current = 0
                   }
+                }
 
-                  const onDragOver = (e: React.DragEvent) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }
+                const onDrop = (e: React.DragEvent) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dragCounter.current = 0
+                  setIsDragOver(false)
 
-                  return (
+                  if (uploadFileMutation.isPending) return
+                  const droppedFile = e.dataTransfer.files?.[0]
+                  if (droppedFile) handleFileUpload(droppedFile)
+                }
+
+                const onDragOver = (e: React.DragEvent) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }
+
+                return (
                   <FormItem>
-                    <FormLabel>Translated file</FormLabel>
+                    <FormLabel>{t("fields.fileLabel")}</FormLabel>
                     <FormControl>
                       <div className="space-y-2">
                         <motion.label
@@ -231,20 +216,17 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                           transition={{ type: "spring", stiffness: 260, damping: 20 }}
                           className={cn(
                             "relative flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 sm:p-8 text-center transition-colors cursor-pointer",
-                            // běžný stav
                             !isDragOver && "hover:border-foreground/30",
-                            // DRAG stav: zvýraznění
                             isDragOver &&
                               [
-                                "border-solid",                 // z dashed na solid
-                                "ring-2 ring-offset-2",         // prstenec
+                                "border-solid",
+                                "ring-2 ring-offset-2",
                                 "ring-foreground/30",
-                                "bg-foreground/[0.04]",         // jemné podbarvení
-                                "border-foreground/50",
+                                "bg-foreground/[0.04]",
+                                "border-foreground/50"
                               ].join(" ")
                           )}
                         >
-                          {/* „glow“ pseudo-layer */}
                           {isDragOver && (
                             <span
                               aria-hidden
@@ -255,10 +237,10 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                           <div className="pointer-events-none relative z-10 flex flex-col items-center gap-2">
                             <Upload className="h-8 w-8 sm:h-10 sm:w-10 opacity-70" />
                             <div className="text-sm">
-                              <span className="font-medium">Přetáhni soubor</span> nebo{" "}
-                              <span className="underline">vyber</span>
+                              <span className="font-medium">{t("fields.dropzone.headline")}</span> {t("fields.dropzone.or")}{" "}
+                              <span className="underline">{t("fields.dropzone.choose")}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground">Povolené: PDF, DOC, DOCX, TXT</p>
+                            <p className="text-xs text-muted-foreground">{t("fields.dropzone.allowed")}</p>
                           </div>
 
                           <Input
@@ -269,13 +251,12 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                             className="sr-only"
                             onChange={async (e) => {
                               const f = e.currentTarget.files?.[0]
-                              if (f) {
-                                await handleFileUpload(f)
-                              }
+                              if (f) await handleFileUpload(f)
                             }}
                             disabled={uploading || uploadFileMutation.isPending}
                           />
                         </motion.label>
+
                         {fileMeta ? (
                           <div className="flex items-center justify-between rounded-md border p-3 text-sm">
                             <div className="flex flex-col">
@@ -293,21 +274,20 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                                 form.setValue("file", undefined as any)
                                 if (inputRef.current) inputRef.current.value = ""
                               }}
-                              
-                              title="Remove file"
+                              title={t("fields.removeFile")}
                             >
-                              {(uploading) ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                             </Button>
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">PDF, DOC, DOCX nebo TXT. Max ~20 MB.</p>
+                          <p className="text-sm text-muted-foreground">{t("fields.dropzone.hint")}</p>
                         )}
+
                         {uploading && (
                           <div className="absolute inset-0 z-20 grid place-items-center rounded-xl bg-background/70 backdrop-blur-sm">
                             <div className="flex flex-col items-center gap-3 w-10/12 max-w-sm">
                               <Loader2 className="h-5 w-5 animate-spin" />
-                              <div className="text-sm font-medium">Nahrávám…</div>
-                              {/* indeterminate bar */}
+                              <div className="text-sm font-medium">{t("fields.uploadingOverlay")}</div>
                               <div className="relative w-full h-1 rounded bg-muted overflow-hidden">
                                 <div className="absolute inset-y-0 left-[-40%] w-2/5 bg-primary animate-[indeterminate_1.2s_infinite]" />
                               </div>
@@ -317,9 +297,11 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                       </div>
                     </FormControl>
                     <FormMessage />
-                  </FormItem>)
+                  </FormItem>
+                )
               }}
             />
+
             <FormField
               control={form.control}
               name="autoSetProgress"
@@ -333,7 +315,7 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                         onCheckedChange={(v) => field.onChange(Boolean(v))}
                       />
                       <FormLabel htmlFor="auto-set-progress" className="font-normal">
-                        Set progress to 100 % automatically
+                        {t("fields.autoSetProgress")}
                       </FormLabel>
                     </div>
                   </FormControl>
@@ -341,6 +323,7 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="autoSetQAState"
@@ -349,51 +332,41 @@ export function UploadTranslatedFileDialog({ project, user } : UploadDialogProps
                   <FormControl>
                     <div className="flex items-center space-x-2">
                       <Checkbox
-                          id="auto-set-qa-state"
-                          checked={!!field.value}
-                          onCheckedChange={(v) => field.onChange(Boolean(v))}
+                        id="auto-set-qa-state"
+                        checked={!!field.value}
+                        onCheckedChange={(v) => field.onChange(Boolean(v))}
                       />
                       <FormLabel htmlFor="auto-set-qa-state" className="font-normal">
-                        Mark project as Q/A
+                        {t("fields.autoSetQAState")}
                       </FormLabel>
                     </div>
                   </FormControl>
                   <FormMessage />
-
                 </FormItem>
               )}
-              />
+            />
 
-                <div className="flex justify-end gap-3 pt-4 border-t mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                    disabled={isPending || uploading}
-                  >
-                    Cancel
-                  </Button>
+            <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending || uploading}>
+                {t("actions.cancel")}
+              </Button>
 
-                  <Button
-                    type="submit"
-                    disabled={!fileMeta || isPending || uploading}
-                  >
-                    {(isPending || uploading) ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading…
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload
-                      </>
-                    )}
-                  </Button>
-                </div>
+              <Button type="submit" disabled={!fileMeta || isPending || uploading}>
+                {isPending || uploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("actions.uploading")}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("actions.upload")}
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
   )

@@ -10,35 +10,37 @@ import { MessagingPanel } from "@/components/admin/messaging-panel"
 import { RecentActivity } from "@/components/admin/recent-activity"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 
 export default function AdminDashboard() {
+  const t = useTranslations("admin.dashboard")
+
   const [activeTab, setActiveTab] = useState("overview")
 
   const trpc = useTRPC()
   const userStats = useQuery(trpc.users.getUserStats.queryOptions())
-  const activeProjects = useQuery(trpc.projects.getProjectsStats.queryOptions());
+  const activeProjects = useQuery(trpc.projects.getProjectsStats.queryOptions())
   const completedProjects = useQuery(trpc.projects.getCompletedProjectsCount.queryOptions())
   const totalProjects = useQuery(trpc.projects.getProjectsCount.queryOptions())
 
   const tabIds = {
     overview: {
       trigger: "admin-dashboard-tab-overview",
-      content: "admin-dashboard-panel-overview",
+      content: "admin-dashboard-panel-overview"
     },
     users: {
       trigger: "admin-dashboard-tab-users",
-      content: "admin-dashboard-panel-users",
+      content: "admin-dashboard-panel-users"
     },
     messaging: {
       trigger: "admin-dashboard-tab-messaging",
-      content: "admin-dashboard-panel-messaging",
+      content: "admin-dashboard-panel-messaging"
     },
     activity: {
       trigger: "admin-dashboard-tab-activity",
-      content: "admin-dashboard-panel-activity",
-    },
+      content: "admin-dashboard-panel-activity"
+    }
   } as const
-
 
   return (
     <div className="min-h-screen py-8 sm:py-12">
@@ -48,14 +50,12 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
-                Admin Dashboard
+                {t("header.title")}
               </h1>
               <p className="text-pretty text-sm text-muted-foreground sm:text-base mt-2">
-                Manage translators, customers, and projects from one central location.
+                {t("header.subtitle")}
               </p>
             </div>
-
-            
           </div>
         </div>
 
@@ -69,8 +69,9 @@ export default function AdminDashboard() {
               aria-controls={tabIds.overview.content}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
+              <span className="hidden sm:inline">{t("tabs.overview")}</span>
             </TabsTrigger>
+
             <TabsTrigger
               value="users"
               className="gap-2"
@@ -78,8 +79,9 @@ export default function AdminDashboard() {
               aria-controls={tabIds.users.content}
             >
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
+              <span className="hidden sm:inline">{t("tabs.users")}</span>
             </TabsTrigger>
+
             <TabsTrigger
               value="messaging"
               className="gap-2"
@@ -87,8 +89,9 @@ export default function AdminDashboard() {
               aria-controls={tabIds.messaging.content}
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Messaging</span>
+              <span className="hidden sm:inline">{t("tabs.messaging")}</span>
             </TabsTrigger>
+
             <TabsTrigger
               value="activity"
               className="gap-2"
@@ -96,7 +99,7 @@ export default function AdminDashboard() {
               aria-controls={tabIds.activity.content}
             >
               <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Activity</span>
+              <span className="hidden sm:inline">{t("tabs.activity")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -107,7 +110,7 @@ export default function AdminDashboard() {
             id={tabIds.overview.content}
             aria-labelledby={tabIds.overview.trigger}
           >
-            <StatsCards 
+            <StatsCards
               userStats={userStats.data?.result}
               activeProjects={activeProjects.data}
               completedProjects={completedProjects.data}
@@ -125,29 +128,17 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Users Tab */}
-          <TabsContent
-            value="users"
-            id={tabIds.users.content}
-            aria-labelledby={tabIds.users.trigger}
-          >
+          <TabsContent value="users" id={tabIds.users.content} aria-labelledby={tabIds.users.trigger}>
             <UsersManagement />
           </TabsContent>
 
           {/* Messaging Tab */}
-          <TabsContent
-            value="messaging"
-            id={tabIds.messaging.content}
-            aria-labelledby={tabIds.messaging.trigger}
-          >
+          <TabsContent value="messaging" id={tabIds.messaging.content} aria-labelledby={tabIds.messaging.trigger}>
             <MessagingPanel />
           </TabsContent>
 
           {/* Activity Tab */}
-          <TabsContent
-            value="activity"
-            id={tabIds.activity.content}
-            aria-labelledby={tabIds.activity.trigger}
-          >
+          <TabsContent value="activity" id={tabIds.activity.content} aria-labelledby={tabIds.activity.trigger}>
             <RecentActivity onViewAll={() => {}} />
           </TabsContent>
         </Tabs>

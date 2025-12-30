@@ -134,5 +134,760 @@
     "portuguese": "Portugalština",
     "italian": "Italština",
     "czech": "Čeština"
+  },
+  "LanguagesSection": {
+    "badge": "Jazyky a odbornost",
+    "title": {
+      "part1": "100+ jazyků",
+      "part2": "s oborovou",
+      "accent": "odborností"
+    },
+    "description": {
+      "p1": "Naši",
+      "certified": "certifikovaní překladatelé",
+      "p2": "se specializují na různé obory a dodávají",
+      "culturallyAccurate": "kulturně přesné",
+      "p3": "překlady."
+    },
+    "popularLanguages": "Nejčastější jazyky",
+    "speakersLabel": "mluvčích",
+    "moreLanguagesBadge": "+ {count} dalších jazyků",
+    "industrySpecializations": "Oborové specializace",
+    "needSpecificLanguageTitle": "Potřebujete konkrétní jazyk?",
+    "needSpecificLanguageDescription": "Spolupracujeme s rodilými mluvčími a certifikovanými překladateli po celém světě.",
+    "contactBadge": "Kontaktujte nás s požadavky na míru",
+    "languages": {
+      "list": [
+        { "name": "Angličtina", "code": "EN", "speakers": "1,5B+", "color": "bg-blue-500" },
+        { "name": "Španělština", "code": "ES", "speakers": "500M+", "color": "bg-red-500" },
+        { "name": "Francouzština", "code": "FR", "speakers": "280M+", "color": "bg-indigo-500" },
+        { "name": "Němčina", "code": "DE", "speakers": "100M+", "color": "bg-amber-500" },
+        { "name": "Čínština", "code": "ZH", "speakers": "1,1B+", "color": "bg-rose-500" },
+        { "name": "Japonština", "code": "JA", "speakers": "125M+", "color": "bg-pink-500" },
+        { "name": "Korejština", "code": "KO", "speakers": "77M+", "color": "bg-cyan-500" },
+        { "name": "Arabština", "code": "AR", "speakers": "400M+", "color": "bg-emerald-500" },
+        { "name": "Portugalština", "code": "PT", "speakers": "260M+", "color": "bg-green-500" },
+        { "name": "Italština", "code": "IT", "speakers": "65M+", "color": "bg-lime-500" },
+        { "name": "Ruština", "code": "RU", "speakers": "150M+", "color": "bg-violet-500" },
+        { "name": "Nizozemština", "code": "NL", "speakers": "24M+", "color": "bg-orange-500" }
+      ]
+    },
+    "specializations": {
+      "list": [
+        "Medicína a zdravotnictví",
+        "Právo a compliance",
+        "Technické a inženýrské obory",
+        "Finanční služby",
+        "Marketing a reklama",
+        "Akademická a vědecká sféra"
+      ]
+    }
+  },
+  "ContactSection": {
+    "badge": "Kontaktujte nás",
+    "title": {
+      "prefix": "Jste připraveni začít svůj",
+      "accent": "překladatelský",
+      "suffix": "projekt?"
+    },
+    "description": {
+      "p1": "Získejte",
+      "freeQuote": "nezávaznou nabídku zdarma",
+      "p2": "do 30 minut. Naši specialisté vám pomohou",
+      "breakBarriers": "překonat jazykové bariéry",
+      "p3": "."
+    },
+
+    "form": {
+      "cardTitle": "Získejte nabídku zdarma",
+      "cardDescription": "Vyplňte formulář a ozveme se vám do 30 minut",
+
+      "firstNameLabel": "Jméno",
+      "firstNamePlaceholder": "Jan",
+      "lastNameLabel": "Příjmení",
+      "lastNamePlaceholder": "Novák",
+
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "jan@firma.cz",
+
+      "sourceLanguageLabel": "Zdrojový jazyk",
+      "targetLanguageLabel": "Cílový jazyk",
+      "languageSelectPlaceholder": "Vyberte jazyk",
+
+      "serviceTypeLabel": "Typ služby",
+      "serviceSelectPlaceholder": "Vyberte službu",
+
+      "projectDetailsLabel": "Detaily projektu",
+      "projectDetailsPlaceholder": "Popište projekt, počet slov, termín a případné specifické požadavky...",
+
+      "submitButton": "Získat nabídku zdarma"
+    },
+
+    "languages": {
+      "list": [
+        { "value": "en", "label": "Angličtina" },
+        { "value": "es", "label": "Španělština" },
+        { "value": "fr", "label": "Francouzština" },
+        { "value": "de", "label": "Němčina" },
+        { "value": "zh", "label": "Čínština" },
+        { "value": "ja", "label": "Japonština" }
+      ]
+    },
+
+    "services": {
+      "list": [
+        { "value": "document", "label": "Překlad dokumentů" },
+        { "value": "website", "label": "Lokalizace webu" },
+        { "value": "audio", "label": "Překlad audia/videa" },
+        { "value": "legal", "label": "Právní překlady" },
+        { "value": "medical", "label": "Zdravotnické překlady" },
+        { "value": "technical", "label": "Technické překlady" }
+      ]
+    },
+
+    "infoCards": {
+      "email": {
+        "title": "Napište nám",
+        "value": "hello@lingualink.com",
+        "hint": "Odpověď do 30 minut"
+      },
+      "phone": {
+        "title": "Zavolejte nám",
+        "value": "+1 (555) 123-4567",
+        "hint": "Podpora 24/7"
+      },
+      "visit": {
+        "title": "Navštivte nás",
+        "line1": "123 Translation Ave",
+        "line2": "New York, NY 10001"
+      },
+      "hours": {
+        "title": "Otevírací doba",
+        "line1": "Po–Pá: 8:00–20:00 (EST)",
+        "line2": "Víkend: 10:00–18:00 (EST)"
+      }
+    },
+
+    "urgent": {
+      "title": "Potřebujete urgentní překlad?",
+      "description": "Expresní služba může dodat překlad už do 12 hodin.",
+      "button": "Požádat o expresní službu"
+    }
+  },
+  "UserDashboard": {
+    "header": {
+      "welcome": "Vítejte zpět, {name}!",
+      "subtitle": "Spravujte své překladatelské projekty a sledujte průběh"
+    },
+    "stats": {
+      "activeProjects": "Aktivní projekty",
+      "inProgress": "V průběhu",
+      "completed": "Dokončeno",
+      "pendingReview": "Čeká na kontrolu",
+      "activeLastMonth": "+{count} minulý měsíc",
+      "beingTranslated": "Probíhá překlad",
+      "totalCompleted": "Celkem dokončeno",
+      "awaitingApproval": "Čeká na schválení"
+    },
+    "projects": {
+      "title": "Vaše projekty"
+    },
+    "errors": {
+      "projectsCouldNotBeLoaded": "Projekty se nepodařilo načíst: {message}"
+    },
+    "toast": {
+      "reviewPosted": "Hodnocení bylo úspěšně zveřejněno u projektu",
+      "reviewCannotBePosted": "Hodnocení nyní nelze u projektu zveřejnit"
+    }
+  },
+  "NewProjectDialog": {
+    "button": {
+      "newProject": "Nový projekt"
+    },
+    "dialog": {
+      "title": "Vytvořit nový překladatelský projekt",
+      "description": "Vyplňte údaje níže a založte nový překladatelský projekt."
+    },
+    "form": {
+      "projectName": {
+        "label": "Název projektu",
+        "placeholder": "např. Překlad smlouvy"
+      },
+      "targetLanguage": {
+        "label": "Cílový jazyk",
+        "placeholder": "Vyberte jazyk"
+      },
+      "description": {
+        "label": "Popis projektu",
+        "placeholder": "Uveďte kontext, rozsah a případné specifické požadavky..."
+      },
+      "deadline": {
+        "label": "Deadline",
+        "pickDate": "Vyberte datum",
+        "clear": "Vymazat",
+        "clearTitle": "Vymazat deadline"
+      },
+      "sourceFile": {
+        "label": "Zdrojový soubor",
+        "hint": "PDF, DOC, DOCX nebo TXT. Max ~20 MB.",
+        "upload": "Nahrát",
+        "uploading": "Nahrávání…",
+        "removeTitle": "Odebrat soubor"
+      },
+      "actions": {
+        "cancel": "Zrušit",
+        "creating": "Vytvářím...",
+        "create": "Vytvořit projekt"
+      }
+    },
+    "languages": {
+      "list": [
+        { "code": "en", "name": "Angličtina" },
+        { "code": "es", "name": "Španělština" },
+        { "code": "fr", "name": "Francouzština" },
+        { "code": "de", "name": "Němčina" },
+        { "code": "it", "name": "Italština" },
+        { "code": "pt", "name": "Portugalština" },
+        { "code": "zh", "name": "Čínština" },
+        { "code": "ja", "name": "Japonština" },
+        { "code": "ko", "name": "Korejština" },
+        { "code": "ar", "name": "Arabština" }
+      ]
+    },
+    "toast": {
+      "projectCreated": "Projekt byl úspěšně vytvořen",
+      "fileRemoved": "Soubor byl odebrán",
+      "fileUploaded": "Soubor byl úspěšně nahrán",
+      "uploadFailed": "Nahrávání se nezdařilo"
+    }
+  },
+  "UserProjectsContent": {
+    "updating": "Aktualizuji...",
+    "empty": "Aktuálně nemáte vytvořené žádné projekty"
+  },
+  "UserProject": {
+    "progress": "Průběh",
+    "created": "Vytvořeno",
+    "deadline": "Deadline",
+    "notSet": "Nenastaveno",
+    "reviews": "Recenze",
+
+    "downloads": {
+      "gettingSource": "Načítám zdrojový soubor…",
+      "downloadSource": "Stáhnout zdrojový soubor",
+      "gettingTranslated": "Načítám přeložený soubor…",
+      "translatedFile": "Přeložený soubor"
+    },
+
+    "statusFooter": {
+      "remaining": "Zbývá {percent} %",
+      "waitingForReview": "Čeká na kontrolu",
+      "complete": "✓ Hotovo",
+      "closed": "✗ Uzavřeno"
+    },
+
+    "errors": {
+      "cannotFindFileToDownload": "Soubor ke stažení nebyl nalezen",
+      "cannotDownloadTranslated": "Přeložený soubor nyní nelze stáhnout",
+      "cannotDownloadSource": "Zdrojový soubor nyní nelze stáhnout"
+    }
+  },
+  "ProjectReviewed": {
+    "title": "Projekt kompletně ohodnocen",
+    "badge": "{done}/{total}",
+    "description": "Děkujeme za vaše hodnocení! Vaše zpětná vazba nám pomáhá zlepšovat naše služby.",
+    "translatorReview": "Hodnocení překladatele",
+    "companyReview": "Hodnocení společnosti"
+  },
+  "TranslatorReviewCard": {
+    "title": "Hodnocení překladatele",
+    "overallTooltip": "Celkové hodnocení",
+    "labels": {
+      "quality": "Kvalita",
+      "communication": "Komunikace",
+      "punctuality": "Dochvilnost"
+    }
+  },
+  "CompanyReviewCard": {
+    "title": "Hodnocení firmy",
+    "overallTooltip": "Celkové hodnocení",
+    "labels": {
+      "price": "Cena",
+      "support": "Podpora"
+    },
+    "recommendation": {
+      "recommend": "Doporučuje",
+      "notRecommend": "Nedoporučuje"
+    }
+  },
+  "ReviewDialog": {
+    "title": "Napsat recenzi",
+    "description": "Podělte se o svou zkušenost s překladatelskou službou"
+  },
+  "ReviewForm": {
+    "tabs": {
+      "translatorDesktop": "Překladatel",
+      "translatorMobile": "Překlad.",
+      "company": "Firma"
+    }
+  },
+  "TranslatorReview": {
+    "fields": {
+      "translatorName": {
+        "label": "Jméno překladatele *",
+        "placeholder": "Jan Novák"
+      },
+      "languagePair": {
+        "label": "Jazykový pár",
+        "placeholder": "EN → CZ",
+        "description": "Např. angličtina do češtiny"
+      },
+      "ratings": {
+        "quality": "Kvalita",
+        "communication": "Komunikace",
+        "punctuality": "Dochvilnost"
+      },
+      "overallRating": {
+        "label": "Celkové hodnocení *",
+        "selectRating": "Vyberte hodnocení"
+      },
+      "title": {
+        "label": "Titulek recenze *",
+        "placeholder": "Shrňte svou zkušenost jednou větou"
+      },
+      "comment": {
+        "label": "Vaše recenze *",
+        "placeholder": "Popište podrobněji svou zkušenost s překladem...",
+        "counter": "{count}/1000 znaků"
+      }
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "submitting": "Odesílám...",
+      "submit": "Odeslat recenzi"
+    }
+  },
+  "CompanyReview": {
+    "fields": {
+      "companyName": {
+        "label": "Název firmy *",
+        "placeholder": "Překladatelská agentura s.r.o."
+      },
+      "ratings": {
+        "priceQuality": "Cena/kvalita",
+        "support": "Zákaznická podpora"
+      },
+      "wouldRecommend": {
+        "label": "Doporučil/a bych tuto firmu"
+      },
+      "overallRating": {
+        "label": "Celkové hodnocení *",
+        "selectRating": "Vyberte hodnocení"
+      },
+      "title": {
+        "label": "Titulek recenze *",
+        "placeholder": "Shrňte svou zkušenost jednou větou"
+      },
+      "comment": {
+        "label": "Vaše recenze *",
+        "placeholder": "Popište podrobněji svou zkušenost s překladem...",
+        "counter": "{count}/1000 znaků"
+      }
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "submitting": "Odesílám...",
+      "submit": "Odeslat recenzi"
+    }
+  },
+  "WriteReviewButton": {
+    "label": "Napsat recenzi"
+  },
+  "SubmittedState": {
+    "translatorTitle": "Překladatel ohodnocen",
+    "companyTitle": "Firma ohodnocena",
+    "description": "Děkujeme za vaši recenzi! Vaše hodnocení pomáhá ostatním uživatelům."
+  },
+  "ProjectToTranslate": {
+    "toast": {
+      "progressUpdated": "Průběh byl úspěšně aktualizován",
+      "fileObtained": "Soubor byl úspěšně získán",
+      "fileCannotBeObtained": "Soubor nelze získat"
+    },
+    "meta": {
+      "created": "Vytvořeno {date}"
+    },
+    "deadline": {
+      "noDeadline": "Bez deadlinu",
+      "daysOverdue": "{days} dní po termínu",
+      "dayLeft": "Zbývá {days} den",
+      "daysLeft": "Zbývá {days} dní"
+    },
+    "progress": {
+      "title": "Průběh překladu",
+      "lastUpdated": "Naposledy aktualizováno: {dateTime}"
+    },
+    "actions": {
+      "creatingView": "Vytvářím náhled...",
+      "view": "Zobrazit",
+      "waitingDownload": "Čekám na spuštění stahování...",
+      "download": "Stáhnout",
+      "gettingTranslated": "Načítám přeložený soubor...",
+      "viewTranslated": "Zobrazit přeložený soubor"
+    }
+  },
+  "TranslatorDashboard": {
+    "header": {
+      "welcome": "Vítejte zpět, {name}!",
+      "subtitle": "Spravujte své překladatelské zakázky a sledujte svůj výkon",
+      "fallbackName": "Překladatel"
+    },
+    "cards": {
+      "translatorRating": "Hodnocení překladatele",
+      "basedOnReviews": "Na základě {count} recenzí",
+      "completedProjects": "Dokončené projekty",
+      "incomplete": "{count} nedokončené",
+      "activeProjects": "Aktivní projekty",
+      "currentlyAssigned": "Aktuálně přiřazené",
+      "avgCompletionTime": "Prům. doba dokončení",
+      "perProject": "Na projekt"
+    },
+    "tabs": {
+      "projects": "Moje projekty",
+      "feedback": "Zpětná vazba",
+      "performance": "Výkon"
+    },
+    "feedback": {
+      "title": "Zpětná vazba zákazníků",
+      "subtitle": "Podívejte se, co zákazníci říkají o vaší práci"
+    },
+    "performance": {
+      "title": "Přehled výkonu",
+      "subtitle": "Sledujte statistiky a úspěchy",
+      "qualityMetrics": "Metry kvality",
+      "productivityMetrics": "Metry produktivity",
+      "averageRating": "Průměrné hodnocení",
+      "totalReviews": "Celkem recenzí",
+      "successRate": "Úspěšnost",
+      "completedProjects": "Dokončené projekty",
+      "avgCompletionTime": "Prům. doba dokončení",
+      "activeProjects": "Aktivní projekty",
+      "ratingDistribution": "Rozložení hodnocení"
+    }
+  },
+  "TranslatorProjectsContent": {
+    "title": "Přiřazené projekty",
+    "updating": "Aktualizuji...",
+    "empty": "Aktuálně nemáte přiřazené žádné projekty",
+    "error": "Projekty se nepodařilo načíst: {message}"
+  },
+  "ProjectStatus": {
+    "NEW": "Nový",
+    "ASSIGNED": "Překladatel přiřazen",
+    "IN_PROGRESS": "Probíhá",
+    "QA": "Kontrola kvality",
+    "BLOCKED": "Pozastaveno",
+    "DONE": "Dokončeno",
+    "CLOSED": "Uzavřeno",
+    "UNKNOWN": "Neznámý stav"
+  },
+  "ProgressDialog": {
+    "trigger": "Upravit průběh",
+    "title": "Upravit průběh překladu",
+    "description": "Nastavte procento dokončení pro {projectName}",
+    "progressLabel": "Průběh",
+    "scale": {
+      "notStarted": "Nezahájeno",
+      "inProgress": "Probíhá",
+      "complete": "Hotovo"
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "saving": "Ukládám...",
+      "save": "Uložit"
+    }
+  },
+  "UploadTranslatedFileDialog": {
+    "trigger": "Nahrát přeložený soubor",
+    "title": "Nahrát přeložený soubor",
+    "description": "Nahrajte přeložený soubor k tomuto projektu. Volitelně můžete automaticky upravit stav projektu.",
+    "fields": {
+      "fileLabel": "Přeložený soubor",
+      "dropzone": {
+        "headline": "Přetáhněte soubor",
+        "or": "nebo",
+        "choose": "vyberte",
+        "allowed": "Povolené: PDF, DOC, DOCX, TXT",
+        "hint": "PDF, DOC, DOCX nebo TXT. Max ~20 MB."
+      },
+      "removeFile": "Odebrat soubor",
+      "uploadingOverlay": "Nahrávám…",
+      "autoSetProgress": "Nastavit průběh automaticky na 100 %",
+      "autoSetQAState": "Označit projekt jako QA"
+    },
+    "toast": {
+      "fileUploaded": "Soubor byl úspěšně nahrán",
+      "uploadFailed": "Nahrávání se nezdařilo",
+      "fileSuccessfullyUploaded": "Soubor byl úspěšně odeslán"
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "upload": "Nahrát",
+      "uploading": "Nahrávám…"
+    }
+  },
+  "auth": {
+    "login": {
+      "header": {
+        "title": "Vítejte zpět",
+        "subtitle": "Přihlaste se ke svému účtu a pokračujte"
+      },
+      "card": {
+        "title": "Přihlášení",
+        "description": "Zadejte své údaje pro přístup k účtu"
+      },
+      "fields": {
+        "email": {
+          "label": "E-mailová adresa",
+          "placeholder": "Zadejte e-mail"
+        },
+        "password": {
+          "label": "Heslo",
+          "placeholder": "Zadejte heslo"
+        }
+      },
+      "actions": {
+        "signIn": "Přihlásit se",
+        "signingIn": "Přihlašuji..."
+      },
+      "divider": {
+        "orContinueWith": "Nebo pokračujte pomocí"
+      },
+      "providers": {
+        "google": "Google",
+        "github": "GitHub"
+      },
+      "footer": {
+        "noAccount": "Nemáte účet? ",
+        "signUp": "Zaregistrovat se"
+      },
+      "toasts": {
+        "genericError": "Momentálně se nelze přihlásit. Zkuste to prosím znovu."
+      },
+      "validation": {
+        "emailInvalid": "Zadejte platnou e-mailovou adresu.",
+        "passwordMin": "Heslo musí mít alespoň 8 znaků."
+      }
+    },
+    "signup": {
+      "header": {
+        "title": "Vytvořte si účet",
+        "subtitle": "Zaregistrujte se a začněte používat svůj nový účet"
+      },
+      "card": {
+        "title": "Registrace",
+        "description": "Zadejte své údaje pro vytvoření účtu"
+      },
+      "fields": {
+        "name": {
+          "label": "Celé jméno",
+          "placeholder": "Zadejte celé jméno"
+        },
+        "email": {
+          "label": "E-mailová adresa",
+          "placeholder": "Zadejte e-mail"
+        },
+        "password": {
+          "label": "Heslo",
+          "placeholder": "Vytvořte heslo"
+        },
+        "confirmPassword": {
+          "label": "Potvrzení hesla",
+          "placeholder": "Potvrďte heslo"
+        }
+      },
+      "actions": {
+        "createAccount": "Vytvořit účet",
+        "creatingAccount": "Vytvářím účet..."
+      },
+      "divider": {
+        "orContinueWith": "Nebo pokračujte pomocí"
+      },
+      "providers": {
+        "google": "Google",
+        "github": "GitHub"
+      },
+      "footer": {
+        "alreadyHaveAccount": "Už máte účet? ",
+        "signIn": "Přihlásit se"
+      },
+      "validation": {
+        "nameMin": "Jméno musí mít alespoň 2 znaky.",
+        "emailInvalid": "Zadejte platnou e-mailovou adresu.",
+        "passwordMin": "Heslo musí mít alespoň 8 znaků.",
+        "passwordsDontMatch": "Hesla se neshodují."
+      },
+      "a11y": {
+        "showPassword": "Zobrazit heslo",
+        "hidePassword": "Skrýt heslo",
+        "showConfirmPassword": "Zobrazit potvrzení hesla",
+        "hideConfirmPassword": "Skrýt potvrzení hesla"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "header": {
+        "title": "Administrátorský panel",
+        "subtitle": "Spravujte překladatele, zákazníky a projekty z jednoho centrálního místa."
+      },
+      "tabs": {
+        "overview": "Přehled",
+        "users": "Uživatelé",
+        "messaging": "Zprávy",
+        "activity": "Aktivita"
+      }
+    }
+  },
+  "StatsCards": {
+    "totalUsers": {
+      "title": "Celkem uživatelů",
+      "description": "{translators} překladatelů, {customers} zákazníků"
+    },
+    "activeProjects": {
+      "title": "Aktivní projekty",
+      "description": "Aktuálně probíhá"
+    },
+    "completedProjects": {
+      "title": "Dokončené projekty",
+      "description": ""
+    },
+    "totalProjects": {
+      "title": "Celkem projektů",
+      "description": ""
+    },
+    "change": {
+      "lastMonth": "{value}% minulý měsíc"
+    }
+  },
+  "RecentActivity": {
+    "header": {
+      "title": "Nedávná aktivita",
+      "description": "Zobrazit dnešní poslední aktivity"
+    },
+    "labels": {
+      "system": "Systém",
+      "project": "projekt"
+    },
+    "actions": {
+      "viewOtherActivities": "Zobrazit další aktivity"
+    },
+    "time": {
+      "justNow": "právě teď",
+      "minutesAgo": "před {count} min",
+      "hoursAgo": "před {count} hod",
+      "daysAgo": "před {count} dny",
+      "weeksAgo": "před {count} týd.",
+      "monthsAgo": "před {count} měs.",
+      "yearsAgo": "před {count} roky"
+    }
+  },
+  "UsersManagement": {
+    "header": {
+      "title": "Správa uživatelů",
+      "description": "Spravujte překladatele a zákazníky"
+    },
+    "table": {
+      "user": "Uživatel",
+      "role": "Role",
+      "status": "Stav",
+      "activeProjects": "Aktivní projekty"
+    },
+    "badges": {
+      "statusActive": "aktivní"
+    },
+    "menu": {
+      "label": "Akce",
+      "changeRole": "Změnit roli",
+      "sendMessage": "Poslat zprávu",
+      "viewProjects": "Zobrazit projekty",
+      "manageTranslator": "Spravovat překladatele",
+      "banUser": "Zablokovat uživatele"
+    },
+    "toasts": {
+      "roleChanged": "Role byla úspěšně změněna",
+      "cannotChangeRole": "Roli nelze změnit"
+    },
+    "errors": {
+      "invalidRole": "Vyberte platnou roli"
+    }
+  },
+  "SetRoleDialog": {
+    "header": {
+      "title": "Změnit roli uživatele",
+      "description": "Aktualizujte roli pro "
+    },
+    "fields": {
+      "roleLabel": "Nová role"
+    },
+    "roles": {
+      "user": "Uživatel",
+      "translator": "Překladatel"
+    },
+    "actions": {
+      "cancel": "Zrušit",
+      "save": "Uložit změny",
+      "applying": "Aplikuji změny..."
+    }
+  },
+  "TranslatorDetail": {
+    "actions": {
+      "backToDashboard": "Zpět na dashboard"
+    },
+    "profile": {
+      "memberSince": "Překladatel od {date}"
+    },
+    "stats": {
+      "completed": "Dokončené projekty",
+      "active": "Aktivní projekty",
+      "cancelled": "Zrušené projekty"
+    },
+    "languages": {
+      "title": "Jazyky",
+      "description": "Jazyky, které překladatel ovládá"
+    },
+    "sections": {
+      "activeProjectsTitle": "Aktivní projekty ({count})",
+      "activeProjectsDescription": "Projekty, na kterých překladatel právě pracuje",
+      "completedProjectsTitle": "Dokončené projekty ({count})",
+      "completedProjectsDescription": "Historie dokončených projektů",
+      "cancelledProjectsTitle": "Zrušené projekty ({count})",
+      "cancelledProjectsDescription": "Historie zrušených projektů"
+    }
+  },
+  "EditLanguagesDialog": {
+    "trigger": {
+      "edit": "Upravit"
+    },
+    "header": {
+      "title": "Upravit jazyky",
+      "description": "Přidejte nebo odeberte jazyky, které překladatel ovládá"
+    },
+    "select": {
+      "placeholder": "Vyberte jazyk",
+      "empty": "Žádné jazyky nejsou přidány"
+    },
+    "toasts": {
+      "addSuccess": "Jazyk byl úspěšně přidán překladateli",
+      "addError": "Jazyk nelze překladateli nastavit",
+      "removeSuccess": "Jazyk byl úspěšně odebrán překladateli",
+      "removeError": "Jazyk nelze překladateli odebrat",
+      "languageNotFound": "Jazyk nebyl nalezen"
+    },
+    "actions": {
+      "close": "Zavřít",
+      "proceeding": "Probíhá..."
+    }
   }
 }
+

@@ -16,16 +16,20 @@ import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
 import { ProjectType } from "@/db/schema"
 import { ProjectReviewed } from "./project-reviewed"
 import { isActive, isCancelled } from "@/lib/project-status-utils"
+import { useLocale, useTranslations } from "next-intl"
 
 interface UserProjectProps {
-  projectInfo: UserProjectViewProps,
-  onTranslatorReviewSubmit: (data: TranslatorFormData, project: ProjectType) => Promise<void>,
-  onCompanyReviewSubmit: (data: CompanyFormData, project: ProjectType) => Promise<void>,
-
+  projectInfo: UserProjectViewProps
+  onTranslatorReviewSubmit: (data: TranslatorFormData, project: ProjectType) => Promise<void>
+  onCompanyReviewSubmit: (data: CompanyFormData, project: ProjectType) => Promise<void>
 }
 
 export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyReviewSubmit }: UserProjectProps) => {
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const t = useTranslations("UserProject")
+  const locale = useLocale()
+
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
+
   const getProgressColor = (progress: number) => {
     if (progress >= 75) return "bg-emerald-500"
     if (progress >= 50) return "bg-blue-500"
@@ -34,49 +38,50 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
   }
 
   const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return "Nenastaveno"
+    if (!date) return t("notSet")
     const dateObj = typeof date === "string" ? new Date(date) : date
-    return dateObj.toLocaleDateString("cs-CZ", {
+
+    const resolvedLocale =
+      locale === "cs" ? "cs-CZ" : locale === "en" ? "en-US" : locale
+
+    return dateObj.toLocaleDateString(resolvedLocale, {
       day: "numeric",
       month: "short",
-      year: "numeric",
+      year: "numeric"
     })
   }
 
-  const project = projectInfo.project;
+  const project = projectInfo.project
   const translatorReview = projectInfo.translatorReview
   const companyReview = projectInfo.companyReview
   const sourceFile = projectInfo.sourceFile
-  const translatedFile = projectInfo.targetFile;
+  const translatedFile = projectInfo.targetFile
 
   const downloadTranslatedFile = async () => {
     if (!translatedFile) {
-      throw new Error("Cannot find file to download")
+      throw new Error(t("errors.cannotFindFileToDownload"))
     }
-
-
     await performDownload(translatedFile)
   }
 
   const downloadSourceFile = async () => {
     if (!sourceFile) {
-      throw new Error("Cannot find file to download")
+      throw new Error(t("errors.cannotFindFileToDownload"))
     }
-
-    await performDownload(sourceFile);
+    await performDownload(sourceFile)
   }
 
   const { isPending: isDownloadingTranslatedFile } = useMutation({
     mutationFn: downloadTranslatedFile,
     onError: (error) => {
-      toast.error(error.message || "Cannot download translated file right now")
+      toast.error(error.message || t("errors.cannotDownloadTranslated"))
     }
   })
 
   const { isPending: isDownloadingSourceFile } = useMutation({
     mutationFn: downloadSourceFile,
     onError: (error) => {
-      toast.error(error.message || "Cannot download source file right now")
+      toast.error(error.message || t("errors.cannotDownloadSource"))
     }
   })
 
@@ -92,22 +97,23 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
     const now = new Date()
     const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (daysRemaining < 0) return "text-red-600 dark:text-red-400 font-semibold" // Po deadlinu
-    if (daysRemaining <= 3) return "text-orange-600 dark:text-orange-400 font-semibold" // 1-3 dny
-    if (daysRemaining <= 7) return "text-yellow-600 dark:text-yellow-500 font-semibold" // 4-7 dní
+    if (daysRemaining < 0) return "text-red-600 dark:text-red-400 font-semibold"
+    if (daysRemaining <= 3) return "text-orange-600 dark:text-orange-400 font-semibold"
+    if (daysRemaining <= 7) return "text-yellow-600 dark:text-yellow-500 font-semibold"
     return "text-foreground"
   }
 
   const onTranslatorReviewSubmitWrapper = async (data: TranslatorFormData) => {
-    await onTranslatorReviewSubmit(data, project);
+    await onTranslatorReviewSubmit(data, project)
   }
 
-  const onCompanyReviewSubmitWrapper = async (data: CompanyFormData) => {
+  const onCompanyReviewSubmitWrapper = async (data: CompanyFormData) => {
     await onCompanyReviewSubmit(data, project)
   }
 
   const progressColor = getProgressColor(project.progressPercent)
-  
+
+  const remainingPercent = 100 - project.progressPercent
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50 overflow-hidden">
@@ -117,11 +123,9 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight group-hover:text-primary transition-colors truncate">
-              {project.name}  
+              {project.name}
             </CardTitle>
-            <CardDescription className="mt-1.5 text-sm sm:text-base line-clamp-2">
-              {project.description}
-            </CardDescription>
+            <CardDescription className="mt-1.5 text-sm sm:text-base line-clamp-2">{project.description}</CardDescription>
           </div>
           <div className="flex-shrink-0 self-start">
             <StatusBadge status={project.status} />
@@ -130,14 +134,13 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {hasAllReviews && (
-          <ProjectReviewed />
-        )}
+        {hasAllReviews && <ProjectReviewed />}
+
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <TrendingUp className="w-4 h-4" />
-              <span className="font-medium">Progress</span>
+              <span className="font-medium">{t("progress")}</span>
             </div>
             <span className="font-bold text-base tabular-nums">{project.progressPercent}%</span>
           </div>
@@ -156,17 +159,16 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="text-xs text-muted-foreground">Vytvořeno</span>
+              <span className="text-xs text-muted-foreground">{t("created")}</span>
               <span className="font-medium truncate">{formatDate(project.createdAt)}</span>
             </div>
           </div>
+
           <div className="flex items-center gap-2 text-sm">
             <CalendarCheck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="text-xs text-muted-foreground">Deadline</span>
-              <span className={`font-medium truncate ${getDeadlineColor(project.dueAt)}`}>
-                {formatDate(project.dueAt)}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("deadline")}</span>
+              <span className={`font-medium truncate ${getDeadlineColor(project.dueAt)}`}>{formatDate(project.dueAt)}</span>
             </div>
           </div>
         </div>
@@ -175,13 +177,11 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
           <div className="pt-4 border-t border-border/50 space-y-3">
             <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
               <Star className="w-4 h-4" />
-              Recenze
+              {t("reviews")}
             </h4>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {hasTranslatorReview  && (
-                <TranslatorReviewCard translatorReview={translatorReview} />
-              )}
-              {hasCompanyReview  && <CompanyReviewCard companyReview={companyReview} />}
+              {hasTranslatorReview && <TranslatorReviewCard translatorReview={translatorReview} />}
+              {hasCompanyReview && <CompanyReviewCard companyReview={companyReview} />}
             </div>
           </div>
         )}
@@ -189,27 +189,42 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
         {(sourceFile || translatedFile) && (
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border/50">
             {sourceFile && (
-              <Button variant="outline" disabled={isDownloadingSourceFile} size="sm" onClick={async () => { await downloadSourceFile()}}>
+              <Button
+                variant="outline"
+                disabled={isDownloadingSourceFile}
+                size="sm"
+                onClick={async () => {
+                  await downloadSourceFile()
+                }}
+              >
                 <Download className="mr-2 h-4 w-4" />
-                {isDownloadingSourceFile ? "Getting Source File" : "Download Source File"}
+                {isDownloadingSourceFile ? t("downloads.gettingSource") : t("downloads.downloadSource")}
               </Button>
             )}
+
             {translatedFile && (
-              <Button variant="default" size="sm" disabled={isDownloadingTranslatedFile} onClick={async () => { downloadTranslatedFile() }}className="flex min-w-[140px] gap-2">
-
-
-                  <Download className="w-4 h-4" />
-                  {isDownloadingTranslatedFile ? "Getting translated file" : "Translated file"}
+              <Button
+                variant="default"
+                size="sm"
+                disabled={isDownloadingTranslatedFile}
+                onClick={async () => {
+                  await downloadTranslatedFile()
+                }}
+                className="flex min-w-[140px] gap-2"
+              >
+                <Download className="w-4 h-4" />
+                {isDownloadingTranslatedFile ? t("downloads.gettingTranslated") : t("downloads.translatedFile")}
               </Button>
             )}
+
             {project.status === "DONE" && (
               <ReviewDialog
                 isOpen={isReviewDialogOpen}
                 onOpenChange={setIsReviewDialogOpen}
                 onTranslatorReviewSubmitted={onTranslatorReviewSubmitWrapper}
                 onCompanyReviewSubmitted={onCompanyReviewSubmitWrapper}
-                isTranslatorReviewSubmitted={!!hasTranslatorReview}
-                isCompanyReviewSubmitted={!!hasCompanyReview}
+                isTranslatorReviewSubmitted={hasTranslatorReview}
+                isCompanyReviewSubmitted={hasCompanyReview}
               />
             )}
           </div>
@@ -217,14 +232,22 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
 
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <div className="text-xs font-medium text-muted-foreground">
-            {(project.progressPercent < 100 && !isCancelled(project.status)) && <span> {100 - project.progressPercent}% remaining</span>}
-            {(project.progressPercent === 100 && isActive(project.status)) &&  <span>Waiting for review</span>}
-            {(project.progressPercent === 100 && project.status === "DONE" && <span className="text-emerald-600 dark:text-emerald-400">✓ Complete</span>)}
-            {isCancelled(project.status) && <span className="text-red-600 dark:text-red-400">✗ Closed</span>}
+            {project.progressPercent < 100 && !isCancelled(project.status) && (
+              <span>{t("statusFooter.remaining", { percent: remainingPercent })}</span>
+            )}
+
+            {project.progressPercent === 100 && isActive(project.status) && <span>{t("statusFooter.waitingForReview")}</span>}
+
+            {project.progressPercent === 100 && project.status === "DONE" && (
+              <span className="text-emerald-600 dark:text-emerald-400">{t("statusFooter.complete")}</span>
+            )}
+
+            {isCancelled(project.status) && (
+              <span className="text-red-600 dark:text-red-400">{t("statusFooter.closed")}</span>
+            )}
           </div>
         </div>
       </CardContent>
-      
     </Card>
   )
 }

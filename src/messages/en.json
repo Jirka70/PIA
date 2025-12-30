@@ -133,5 +133,759 @@
     "portuguese": "Portuguese",
     "italian": "Italian",
     "czech": "Czech"
+  },
+  "LanguagesSection": {
+    "badge": "Languages & Expertise",
+    "title": {
+      "part1": "100+ Languages",
+      "part2": "with Industry",
+      "accent": "Expertise"
+    },
+    "description": {
+      "p1": "Our",
+      "certified": "certified translators",
+      "p2": "specialize in various industries and deliver",
+      "culturallyAccurate": "culturally accurate",
+      "p3": "translations."
+    },
+    "popularLanguages": "Popular Languages",
+    "speakersLabel": "speakers",
+    "moreLanguagesBadge": "+ {count} more languages available",
+    "industrySpecializations": "Industry Specializations",
+    "needSpecificLanguageTitle": "Need a specific language?",
+    "needSpecificLanguageDescription": "We work with native speakers and certified translators worldwide.",
+    "contactBadge": "Contact us for custom requirements",
+    "languages": {
+      "list": [
+        { "name": "English", "code": "EN", "speakers": "1.5B+", "color": "bg-blue-500" },
+        { "name": "Spanish", "code": "ES", "speakers": "500M+", "color": "bg-red-500" },
+        { "name": "French", "code": "FR", "speakers": "280M+", "color": "bg-indigo-500" },
+        { "name": "German", "code": "DE", "speakers": "100M+", "color": "bg-amber-500" },
+        { "name": "Chinese", "code": "ZH", "speakers": "1.1B+", "color": "bg-rose-500" },
+        { "name": "Japanese", "code": "JA", "speakers": "125M+", "color": "bg-pink-500" },
+        { "name": "Korean", "code": "KO", "speakers": "77M+", "color": "bg-cyan-500" },
+        { "name": "Arabic", "code": "AR", "speakers": "400M+", "color": "bg-emerald-500" },
+        { "name": "Portuguese", "code": "PT", "speakers": "260M+", "color": "bg-green-500" },
+        { "name": "Italian", "code": "IT", "speakers": "65M+", "color": "bg-lime-500" },
+        { "name": "Russian", "code": "RU", "speakers": "150M+", "color": "bg-violet-500" },
+        { "name": "Dutch", "code": "NL", "speakers": "24M+", "color": "bg-orange-500" }
+      ]
+    },
+    "specializations": {
+      "list": [
+        "Medical & Healthcare",
+        "Legal & Compliance",
+        "Technical & Engineering",
+        "Financial Services",
+        "Marketing & Advertising",
+        "Academic & Research"
+      ]
+    }
+  },
+  "ContactSection": {
+    "badge": "Get In Touch",
+    "title": {
+      "prefix": "Ready to Start Your",
+      "accent": "Translation",
+      "suffix": "Project?"
+    },
+    "description": {
+      "p1": "Get a",
+      "freeQuote": "free quote",
+      "p2": "within 30 minutes. Our experts are ready to help you",
+      "breakBarriers": "break language barriers",
+      "p3": "."
+    },
+
+    "form": {
+      "cardTitle": "Get Free Quote",
+      "cardDescription": "Fill out the form and we'll get back to you within 30 minutes",
+
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "John",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "Doe",
+
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "john@company.com",
+
+      "sourceLanguageLabel": "Source Language",
+      "targetLanguageLabel": "Target Language",
+      "languageSelectPlaceholder": "Select language",
+
+      "serviceTypeLabel": "Service Type",
+      "serviceSelectPlaceholder": "Select service",
+
+      "projectDetailsLabel": "Project Details",
+      "projectDetailsPlaceholder": "Tell us about your project, word count, deadline, and any special requirements...",
+
+      "submitButton": "Get Free Quote"
+    },
+
+    "languages": {
+      "list": [
+        { "value": "en", "label": "English" },
+        { "value": "es", "label": "Spanish" },
+        { "value": "fr", "label": "French" },
+        { "value": "de", "label": "German" },
+        { "value": "zh", "label": "Chinese" },
+        { "value": "ja", "label": "Japanese" }
+      ]
+    },
+
+    "services": {
+      "list": [
+        { "value": "document", "label": "Document Translation" },
+        { "value": "website", "label": "Website Localization" },
+        { "value": "audio", "label": "Audio/Video Translation" },
+        { "value": "legal", "label": "Legal Translation" },
+        { "value": "medical", "label": "Medical Translation" },
+        { "value": "technical", "label": "Technical Translation" }
+      ]
+    },
+
+    "infoCards": {
+      "email": {
+        "title": "Email Us",
+        "value": "hello@lingualink.com",
+        "hint": "Response within 30 minutes"
+      },
+      "phone": {
+        "title": "Call Us",
+        "value": "+1 (555) 123-4567",
+        "hint": "24/7 Support Available"
+      },
+      "visit": {
+        "title": "Visit Us",
+        "line1": "123 Translation Ave",
+        "line2": "New York, NY 10001"
+      },
+      "hours": {
+        "title": "Business Hours",
+        "line1": "Mon-Fri: 8AM - 8PM EST",
+        "line2": "Weekend: 10AM - 6PM EST"
+      }
+    },
+
+    "urgent": {
+      "title": "Need Urgent Translation?",
+      "description": "Our rush service can deliver your translation in as little as 12 hours.",
+      "button": "Request Rush Service"
+    }
+  },
+  "UserDashboard": {
+    "header": {
+      "welcome": "Welcome back, {name}!",
+      "subtitle": "Manage your translation projects and track progress"
+    },
+    "stats": {
+      "activeProjects": "Active Projects",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "pendingReview": "Pending Review",
+      "activeLastMonth": "+{count} Last Month",
+      "beingTranslated": "Being translated",
+      "totalCompleted": "Total completed",
+      "awaitingApproval": "Awaiting approval"
+    },
+    "projects": {
+      "title": "Your Projects"
+    },
+    "errors": {
+      "projectsCouldNotBeLoaded": "Projects could not be loaded: {message}"
+    },
+    "toast": {
+      "reviewPosted": "Review was successfully posted for project",
+      "reviewCannotBePosted": "Review cannot be currently posted for project"
+    }
+  },
+  "NewProjectDialog": {
+    "button": {
+      "newProject": "New Project"
+    },
+    "dialog": {
+      "title": "Create New Translation Project",
+      "description": "Fill in the details below to start a new translation project."
+    },
+    "form": {
+      "projectName": {
+        "label": "Project Name",
+        "placeholder": "e.g., Legal Contract Translation"
+      },
+      "targetLanguage": {
+        "label": "Target Language",
+        "placeholder": "Select language"
+      },
+      "description": {
+        "label": "Project Description",
+        "placeholder": "Provide details about the content, context and any specific requirements..."
+      },
+      "deadline": {
+        "label": "Deadline",
+        "pickDate": "Select date",
+        "clear": "Clear",
+        "clearTitle": "Clear deadline"
+      },
+      "sourceFile": {
+        "label": "Source file",
+        "hint": "PDF, DOC, DOCX, or TXT. Max ~20 MB.",
+        "upload": "Upload",
+        "uploading": "Uploading…",
+        "removeTitle": "Remove file"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create Project"
+      }
+    },
+    "languages": {
+      "list": [
+        { "code": "en", "name": "English" },
+        { "code": "es", "name": "Spanish" },
+        { "code": "fr", "name": "French" },
+        { "code": "de", "name": "German" },
+        { "code": "it", "name": "Italian" },
+        { "code": "pt", "name": "Portuguese" },
+        { "code": "zh", "name": "Chinese" },
+        { "code": "ja", "name": "Japanese" },
+        { "code": "ko", "name": "Korean" },
+        { "code": "ar", "name": "Arabic" }
+      ]
+    },
+    "toast": {
+      "projectCreated": "Project was successfully created",
+      "fileRemoved": "File removed",
+      "fileUploaded": "File uploaded successfully",
+      "uploadFailed": "Upload failed"
+    }
+  },
+  "UserProjectsContent": {
+    "updating": "Updating...",
+    "empty": "Currently, you have no created projects"
+  },
+  "UserProject": {
+    "progress": "Progress",
+    "created": "Created",
+    "deadline": "Deadline",
+    "notSet": "Not set",
+    "reviews": "Reviews",
+
+    "downloads": {
+      "gettingSource": "Getting source file…",
+      "downloadSource": "Download source file",
+      "gettingTranslated": "Getting translated file…",
+      "translatedFile": "Translated file"
+    },
+
+    "statusFooter": {
+      "remaining": "{percent}% remaining",
+      "waitingForReview": "Waiting for review",
+      "complete": "✓ Complete",
+      "closed": "✗ Closed"
+    },
+
+    "errors": {
+      "cannotFindFileToDownload": "Cannot find file to download",
+      "cannotDownloadTranslated": "Cannot download translated file right now",
+      "cannotDownloadSource": "Cannot download source file right now"
+    }
+  },
+  "ProjectReviewed": {
+    "title": "Project fully reviewed",
+    "badge": "{done}/{total}",
+    "description": "Thank you for your review! Your feedback helps us improve our services.",
+    "translatorReview": "Translator review",
+    "companyReview": "Company review"
+  },
+  "TranslatorReviewCard": {
+    "title": "Translator review",
+    "overallTooltip": "Overall rating",
+    "labels": {
+      "quality": "Quality",
+      "communication": "Communication",
+      "punctuality": "Punctuality"
+    }
+  },
+  "CompanyReviewCard": {
+    "title": "Company review",
+    "overallTooltip": "Overall rating",
+    "labels": {
+      "price": "Price",
+      "support": "Support"
+    },
+    "recommendation": {
+      "recommend": "Recommends",
+      "notRecommend": "Does not recommend"
+    }
+  },
+  "ReviewDialog": {
+    "title": "Write a review",
+    "description": "Share your experience with the translation service"
+  },
+  "ReviewForm": {
+    "tabs": {
+      "translatorDesktop": "Translator",
+      "translatorMobile": "Transl.",
+      "company": "Company"
+    }
+  },
+  "TranslatorReview": {
+    "fields": {
+      "translatorName": {
+        "label": "Translator name *",
+        "placeholder": "John Smith"
+      },
+      "languagePair": {
+        "label": "Language pair",
+        "placeholder": "EN → CS",
+        "description": "E.g., English to Czech"
+      },
+      "ratings": {
+        "quality": "Quality",
+        "communication": "Communication",
+        "punctuality": "Punctuality"
+      },
+      "overallRating": {
+        "label": "Overall rating *",
+        "selectRating": "Select a rating"
+      },
+      "title": {
+        "label": "Review title *",
+        "placeholder": "Summarize your experience in one sentence"
+      },
+      "comment": {
+        "label": "Your review *",
+        "placeholder": "Describe your experience with the translation in more detail...",
+        "counter": "{count}/1000 characters"
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "submit": "Submit review"
+    }
+  },
+  "CompanyReview": {
+    "fields": {
+      "companyName": {
+        "label": "Company name *",
+        "placeholder": "Translation Agency Ltd."
+      },
+      "ratings": {
+        "priceQuality": "Price / value",
+        "support": "Customer support"
+      },
+      "wouldRecommend": {
+        "label": "I would recommend this company"
+      },
+      "overallRating": {
+        "label": "Overall rating *",
+        "selectRating": "Select a rating"
+      },
+      "title": {
+        "label": "Review title *",
+        "placeholder": "Summarize your experience in one sentence"
+      },
+      "comment": {
+        "label": "Your review *",
+        "placeholder": "Describe your experience in more detail...",
+        "counter": "{count}/1000 characters"
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "submit": "Submit review"
+    }
+  },
+  "WriteReviewButton": {
+    "label": "Write a review"
+  },
+  "SubmittedState": {
+    "translatorTitle": "Translator reviewed",
+    "companyTitle": "Company reviewed",
+    "description": "Thank you for your review! Your feedback helps other users."
+  },
+  "ProjectToTranslate": {
+    "toast": {
+      "progressUpdated": "Progress was successfully updated",
+      "fileObtained": "File was successfully obtained",
+      "fileCannotBeObtained": "File cannot be obtained"
+    },
+    "meta": {
+      "created": "Created {date}"
+    },
+    "deadline": {
+      "noDeadline": "No deadline",
+      "daysOverdue": "{days} days overdue",
+      "dayLeft": "{days} day left",
+      "daysLeft": "{days} days left"
+    },
+    "progress": {
+      "title": "Translation Progress",
+      "lastUpdated": "Last updated: {dateTime}"
+    },
+    "actions": {
+      "creatingView": "Creating view...",
+      "view": "View",
+      "waitingDownload": "Waiting to start download...",
+      "download": "Download",
+      "gettingTranslated": "Getting translated file...",
+      "viewTranslated": "View translated file"
+    }
+  },
+  "TranslatorDashboard": {
+    "header": {
+      "welcome": "Welcome back, {name}!",
+      "subtitle": "Manage your translation assignments and track your performance",
+      "fallbackName": "Translator"
+    },
+    "cards": {
+      "translatorRating": "Translator Rating",
+      "basedOnReviews": "Based on {count} reviews",
+      "completedProjects": "Completed Projects",
+      "incomplete": "{count} incomplete",
+      "activeProjects": "Active Projects",
+      "currentlyAssigned": "Currently assigned",
+      "avgCompletionTime": "Avg. Completion Time",
+      "perProject": "Per project"
+    },
+    "tabs": {
+      "projects": "My Projects",
+      "feedback": "Customer Feedback",
+      "performance": "Performance"
+    },
+    "feedback": {
+      "title": "Customer Feedback",
+      "subtitle": "See what customers are saying about your work"
+    },
+    "performance": {
+      "title": "Performance Overview",
+      "subtitle": "Track your statistics and achievements",
+      "qualityMetrics": "Quality Metrics",
+      "productivityMetrics": "Productivity Metrics",
+      "averageRating": "Average Rating",
+      "totalReviews": "Total Reviews",
+      "successRate": "Success Rate",
+      "completedProjects": "Completed Projects",
+      "avgCompletionTime": "Avg. Completion Time",
+      "activeProjects": "Active Projects",
+      "ratingDistribution": "Rating Distribution"
+    }
+  },
+  "TranslatorProjectsContent": {
+    "title": "Assigned Projects",
+    "updating": "Updating...",
+    "empty": "Currently, you have no assigned projects",
+    "error": "Projects could not be loaded: {message}"
+  },
+  "ProjectStatus": {
+    "NEW": "New",
+    "ASSIGNED": "Translator Assigned",
+    "IN_PROGRESS": "In Progress",
+    "QA": "QA Review",
+    "BLOCKED": "Blocked",
+    "DONE": "Done",
+    "CLOSED": "Closed",
+    "UNKNOWN": "Unknown"
+  },
+  "ProgressDialog": {
+    "trigger": "Update Progress",
+    "title": "Update Translation Progress",
+    "description": "Adjust the completion percentage for {projectName}",
+    "progressLabel": "Progress",
+    "scale": {
+      "notStarted": "Not Started",
+      "inProgress": "In Progress",
+      "complete": "Complete"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Progress"
+    }
+  },
+  "UploadTranslatedFileDialog": {
+    "trigger": "Upload translated file",
+    "title": "Upload translated file",
+    "description": "Upload the translated file for this project. You can also update the project status automatically.",
+    "fields": {
+      "fileLabel": "Translated file",
+      "dropzone": {
+        "headline": "Drop a file",
+        "or": "or",
+        "choose": "choose",
+        "allowed": "Allowed: PDF, DOC, DOCX, TXT",
+        "hint": "PDF, DOC, DOCX or TXT. Max ~20 MB."
+      },
+      "removeFile": "Remove file",
+      "uploadingOverlay": "Uploading…",
+      "autoSetProgress": "Set progress to 100% automatically",
+      "autoSetQAState": "Mark project as QA"
+    },
+    "toast": {
+      "fileUploaded": "File uploaded successfully",
+      "uploadFailed": "Upload failed",
+      "fileSuccessfullyUploaded": "File successfully uploaded"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "upload": "Upload",
+      "uploading": "Uploading…"
+    }
+  },
+  "auth": {
+    "login": {
+      "header": {
+        "title": "Welcome back",
+        "subtitle": "Sign in to your account to continue"
+      },
+      "card": {
+        "title": "Sign in",
+        "description": "Enter your credentials to access your account"
+      },
+      "fields": {
+        "email": {
+          "label": "Email address",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter your password"
+        }
+      },
+      "actions": {
+        "signIn": "Sign in",
+        "signingIn": "Signing in..."
+      },
+      "divider": {
+        "orContinueWith": "Or continue with"
+      },
+      "providers": {
+        "google": "Google",
+        "github": "GitHub"
+      },
+      "footer": {
+        "noAccount": "Don't have an account? ",
+        "signUp": "Sign up"
+      },
+      "toasts": {
+        "genericError": "Unable to sign in right now. Please try again."
+      },
+      "validation": {
+        "emailInvalid": "Please enter a valid email address.",
+        "passwordMin": "Password must be at least 8 characters."
+      }
+    },
+    "signup": {
+      "header": {
+        "title": "Create your account",
+        "subtitle": "Sign up to get started with your new account"
+      },
+      "card": {
+        "title": "Sign up",
+        "description": "Enter your information to create your account"
+      },
+      "fields": {
+        "name": {
+          "label": "Full name",
+          "placeholder": "Enter your full name"
+        },
+        "email": {
+          "label": "Email address",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Create a password"
+        },
+        "confirmPassword": {
+          "label": "Confirm password",
+          "placeholder": "Confirm your password"
+        }
+      },
+      "actions": {
+        "createAccount": "Create account",
+        "creatingAccount": "Creating account..."
+      },
+      "divider": {
+        "orContinueWith": "Or continue with"
+      },
+      "providers": {
+        "google": "Google",
+        "github": "GitHub"
+      },
+      "footer": {
+        "alreadyHaveAccount": "Already have an account? ",
+        "signIn": "Sign in"
+      },
+      "validation": {
+        "nameMin": "Name must be at least 2 characters.",
+        "emailInvalid": "Please enter a valid email address.",
+        "passwordMin": "Password must be at least 8 characters.",
+        "passwordsDontMatch": "Passwords don't match."
+      },
+      "a11y": {
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "showConfirmPassword": "Show confirm password",
+        "hideConfirmPassword": "Hide confirm password"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "header": {
+        "title": "Admin Dashboard",
+        "subtitle": "Manage translators, customers, and projects from one central location."
+      },
+      "tabs": {
+        "overview": "Overview",
+        "users": "Users",
+        "messaging": "Messaging",
+        "activity": "Activity"
+      }
+    }
+  },
+  "StatsCards": {
+    "totalUsers": {
+      "title": "Total Users",
+      "description": "{translators} Translators, {customers} Customers"
+    },
+    "activeProjects": {
+      "title": "Active Projects",
+      "description": "Currently in progress"
+    },
+    "completedProjects": {
+      "title": "Completed Projects",
+      "description": ""
+    },
+    "totalProjects": {
+      "title": "Total Projects",
+      "description": ""
+    },
+    "change": {
+      "lastMonth": "{value}% last month"
+    }
+  },
+  "RecentActivity": {
+    "header": {
+      "title": "Recent Activity",
+      "description": "See today's latest activities"
+    },
+    "labels": {
+      "system": "System",
+      "project": "project"
+    },
+    "actions": {
+      "viewOtherActivities": "View Other Activities"
+    },
+    "time": {
+      "justNow": "just now",
+      "minutesAgo": "{count} min ago",
+      "hoursAgo": "{count} hour(s) ago",
+      "daysAgo": "{count} day(s) ago",
+      "weeksAgo": "{count} week(s) ago",
+      "monthsAgo": "{count} month(s) ago",
+      "yearsAgo": "{count} year(s) ago"
+    }
+  },
+  "UsersManagement": {
+    "header": {
+      "title": "User Management",
+      "description": "Manage translators and customers"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "activeProjects": "Active Projects"
+    },
+    "badges": {
+      "statusActive": "active"
+    },
+    "menu": {
+      "label": "Actions",
+      "changeRole": "Change Role",
+      "sendMessage": "Send Message",
+      "viewProjects": "View Projects",
+      "manageTranslator": "Manage Translator",
+      "banUser": "Ban User"
+    },
+    "toasts": {
+      "roleChanged": "Role changed successfully",
+      "cannotChangeRole": "Cannot change role"
+    },
+    "errors": {
+      "invalidRole": "Select a valid role"
+    }
+  },
+  "SetRoleDialog": {
+    "header": {
+      "title": "Change User Role",
+      "description": "Update the role for "
+    },
+    "fields": {
+      "roleLabel": "New Role"
+    },
+    "roles": {
+      "user": "User",
+      "translator": "Translator"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "applying": "Applying changes..."
+    }
+  },
+  "TranslatorDetail": {
+    "actions": {
+      "backToDashboard": "Back To Dashboard"
+    },
+    "profile": {
+      "memberSince": "Translator since {date}"
+    },
+    "stats": {
+      "completed": "Completed projects",
+      "active": "Active projects",
+      "cancelled": "Cancelled projects"
+    },
+    "languages": {
+      "title": "Languages",
+      "description": "Languages the translator knows"
+    },
+    "sections": {
+      "activeProjectsTitle": "Active projects ({count})",
+      "activeProjectsDescription": "Projects the translator is currently working on",
+      "completedProjectsTitle": "Completed projects ({count})",
+      "completedProjectsDescription": "History of completed projects",
+      "cancelledProjectsTitle": "Cancelled projects ({count})",
+      "cancelledProjectsDescription": "History of cancelled projects"
+    }
+  },
+  "EditLanguagesDialog": {
+    "trigger": {
+      "edit": "Edit"
+    },
+    "header": {
+      "title": "Edit languages",
+      "description": "Add or remove languages that the translator knows"
+    },
+    "select": {
+      "placeholder": "Select a language",
+      "empty": "No languages added"
+    },
+    "toasts": {
+      "addSuccess": "Language was successfully added to translator",
+      "addError": "Language cannot be set to translator",
+      "removeSuccess": "Language was successfully removed from translator",
+      "removeError": "Language cannot be removed from translator",
+      "languageNotFound": "Language was not found"
+    },
+    "actions": {
+      "close": "Close",
+      "proceeding": "Proceeding..."
+    }
   }
 }

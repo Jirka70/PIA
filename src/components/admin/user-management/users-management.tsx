@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MoreHorizontal, Shield, User } from "lucide-react"
@@ -23,30 +23,34 @@ import { useRouter } from "next/navigation"
 import { SetRoleDialog } from "./set-role-dialog"
 import { toast } from "sonner"
 import { Role, userType } from "@/db/schema"
+import { useTranslations } from "next-intl"
 
 export function UsersManagement() {
+  const t = useTranslations("UsersManagement")
+
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
   const [newRole, setNewRole] = useState("user")
-  const [selectedUser, setSelectedUser] = useState<userType>();
+  const [selectedUser, setSelectedUser] = useState<userType>()
 
-  const trpc = useTRPC();
+  const trpc = useTRPC()
   const queryClient = useQueryClient()
   const { data, isPending } = useQuery(trpc.users.getMany.queryOptions())
-  const router = useRouter();
+  const router = useRouter()
 
-  const { mutateAsync: changeRoleAsync } = useMutation(trpc.users.changeUserRole.mutationOptions({
-    onSuccess: () => {
-      toast.success("Role changed successfully")
-    },
-
-    onError: (error) => {
-      toast.error(error.message || "Cannot change role")
-    }
-  }))
+  const { mutateAsync: changeRoleAsync } = useMutation(
+    trpc.users.changeUserRole.mutationOptions({
+      onSuccess: () => {
+        toast.success(t("toasts.roleChanged"))
+      },
+      onError: (error) => {
+        toast.error(error.message || t("toasts.cannotChangeRole"))
+      }
+    })
+  )
 
   const handleRoleChange = async (userId: string, role: string) => {
     if (role === "undefined") {
-      throw new Error("Select a valid role")
+      throw new Error(t("errors.invalidRole"))
     }
 
     await changeRoleAsync({
@@ -54,24 +58,21 @@ export function UsersManagement() {
       role: role as Role
     })
 
-    queryClient.setQueryData(
-      trpc.users.getMany.queryKey(),
-      (cached) => {
-        if (!cached || !cached.users) return cached
+    queryClient.setQueryData(trpc.users.getMany.queryKey(), (cached) => {
+      if (!cached || !cached.users) return cached
 
-        return {
-          ...cached,
-          users: cached.users.map((user) =>
-            user.id === userId
-              ? {
-                  ...user,
-                  role: role as Role,
-                }
-              : user
-          ),
-        }
+      return {
+        ...cached,
+        users: cached.users.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                role: role as Role
+              }
+            : user
+        )
       }
-    )
+    })
   }
 
   const openRoleDialog = (user: userType) => {
@@ -84,13 +85,11 @@ export function UsersManagement() {
     return <UserShimmer />
   }
 
-  const users = data?.users;
-
+  const users = data?.users
 
   if (!users) {
     return <UsersNotFound />
   }
-
 
   const viewProjects = (userId: string, role: string) => {
     router.push(`admin/${role}/${userId}`)
@@ -106,23 +105,25 @@ export function UsersManagement() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage translators and customers</CardDescription>
+              <CardTitle>{t("header.title")}</CardTitle>
+              <CardDescription>{t("header.description")}</CardDescription>
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Active Projects</TableHead>
+                  <TableHead>{t("table.user")}</TableHead>
+                  <TableHead>{t("table.role")}</TableHead>
+                  <TableHead>{t("table.status")}</TableHead>
+                  <TableHead className="text-right">{t("table.activeProjects")}</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id}>
@@ -143,27 +144,25 @@ export function UsersManagement() {
                         </div>
                       </div>
                     </TableCell>
+
                     <TableCell>
                       <Badge variant={user.role === "translator" ? "default" : "secondary"} className="gap-1">
                         {user.role === "translator" ? <Shield className="size-3" /> : <User className="size-3" />}
                         {user.role}
                       </Badge>
                     </TableCell>
+
                     <TableCell>
                       <Badge
-                        variant={"default"}
-                        /*variant={user.status === "active" ? "default" : "outline"}*/
-                        /*className={
-                          user.status === "active"
-                            ? "bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400"
-                            : ""
-                        }*/
-                       className={"bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400"}
+                        variant="default"
+                        className={"bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400"}
                       >
-                        {/*user.status*/ "active"}
+                        {t("badges.statusActive")}
                       </Badge>
                     </TableCell>
+
                     <TableCell className="text-right">{user.numberOfOpenProjects}</TableCell>
+
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -171,14 +170,29 @@ export function UsersManagement() {
                             <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
+
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => openRoleDialog(user)} disabled={user.role === "admin"}>Change Role</DropdownMenuItem>
-                          <DropdownMenuItem>Send Message</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => viewProjects(user.id, user.role)}>View Projects</DropdownMenuItem>
-                          {user.role === "translator" && <DropdownMenuItem onClick={() => manageTranslator(user.id)}>Manage Translator</DropdownMenuItem>}
+                          <DropdownMenuLabel>{t("menu.label")}</DropdownMenuLabel>
+
+                          <DropdownMenuItem onClick={() => openRoleDialog(user)} disabled={user.role === "admin"}>
+                            {t("menu.changeRole")}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem>{t("menu.sendMessage")}</DropdownMenuItem>
+
+                          <DropdownMenuItem onClick={() => viewProjects(user.id, user.role)}>
+                            {t("menu.viewProjects")}
+                          </DropdownMenuItem>
+
+                          {user.role === "translator" && (
+                            <DropdownMenuItem onClick={() => manageTranslator(user.id)}>
+                              {t("menu.manageTranslator")}
+                            </DropdownMenuItem>
+                          )}
+
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Ban User</DropdownMenuItem>
+
+                          <DropdownMenuItem className="text-destructive" disabled={user.role === "admin"}>{t("menu.banUser")}</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -189,6 +203,7 @@ export function UsersManagement() {
           </div>
         </CardContent>
       </Card>
+
       {selectedUser?.id && (
         <SetRoleDialog
           onOpenChange={setIsRoleDialogOpen}
@@ -197,7 +212,7 @@ export function UsersManagement() {
           userId={selectedUser.id}
           onRoleChange={setNewRole}
           onDialogSubmitted={handleRoleChange}
-      />
+        />
       )}
     </>
   )

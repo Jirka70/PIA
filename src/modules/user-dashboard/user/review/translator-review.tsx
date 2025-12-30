@@ -1,4 +1,3 @@
-// components/reviews/TranslatorReview.tsx
 "use client"
 
 import { useForm } from "react-hook-form"
@@ -11,8 +10,7 @@ import { Languages, Clock, MessageSquare } from "lucide-react"
 import { TranslatorFormData, translatorSchema } from "@/lib/validators/review-schemas"
 import { SubmittedState } from "./submitted-state"
 import { StarRating } from "./star-rating"
-import { ProjectType } from "@/db/schema"
-
+import { useTranslations } from "next-intl"
 
 interface TranslatorReviewProps {
   onSubmit: (data: TranslatorFormData & { reviewType: "translator" }) => void
@@ -21,6 +19,8 @@ interface TranslatorReviewProps {
 }
 
 export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: TranslatorReviewProps) {
+  const t = useTranslations("TranslatorReview")
+
   const form = useForm<TranslatorFormData>({
     resolver: zodResolver(translatorSchema),
     defaultValues: {
@@ -31,8 +31,8 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
       punctualityRating: 0,
       overallRating: 0,
       title: "",
-      comment: "",
-    },
+      comment: ""
+    }
   })
 
   const handleFormSubmit = async (data: TranslatorFormData) => {
@@ -51,9 +51,9 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
           name="translatorName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Jméno překladatele *</FormLabel>
+              <FormLabel>{t("fields.translatorName.label")}</FormLabel>
               <FormControl>
-                <Input placeholder="Jan Novák" {...field} />
+                <Input placeholder={t("fields.translatorName.placeholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,12 +67,12 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 <Languages className="h-4 w-4" />
-                Jazykový pár
+                {t("fields.languagePair.label")}
               </FormLabel>
               <FormControl>
-                <Input placeholder="EN → CZ" {...field} />
+                <Input placeholder={t("fields.languagePair.placeholder")} {...field} />
               </FormControl>
-              <FormDescription>Např. angličtina do češtiny</FormDescription>
+              <FormDescription>{t("fields.languagePair.description")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -84,13 +84,14 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             name="qualityRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm text-muted-foreground">Kvalita</FormLabel>
+                <FormLabel className="text-sm text-muted-foreground">{t("fields.ratings.quality")}</FormLabel>
                 <FormControl>
                   <StarRating rating={field.value || 0} onRatingChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="communicationRating"
@@ -98,7 +99,7 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
               <FormItem>
                 <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
                   <MessageSquare className="h-3 w-3" />
-                  Komunikace
+                  {t("fields.ratings.communication")}
                 </FormLabel>
                 <FormControl>
                   <StarRating rating={field.value || 0} onRatingChange={field.onChange} />
@@ -106,6 +107,7 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="punctualityRating"
@@ -113,7 +115,7 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
               <FormItem>
                 <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  Dochvilnost
+                  {t("fields.ratings.punctuality")}
                 </FormLabel>
                 <FormControl>
                   <StarRating rating={field.value || 0} onRatingChange={field.onChange} />
@@ -129,13 +131,13 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             name="overallRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-medium">Celkové hodnocení *</FormLabel>
+                <FormLabel className="text-base font-medium">{t("fields.overallRating.label")}</FormLabel>
                 <div className="flex items-center gap-3">
                   <FormControl>
                     <StarRating rating={field.value} onRatingChange={field.onChange} />
                   </FormControl>
                   <span className="text-sm text-muted-foreground">
-                    {field.value > 0 ? `${field.value}/5` : "Vyberte hodnocení"}
+                    {field.value > 0 ? `${field.value}/5` : t("fields.overallRating.selectRating")}
                   </span>
                 </div>
                 <FormMessage />
@@ -148,9 +150,9 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Titulek recenze *</FormLabel>
+                <FormLabel>{t("fields.title.label")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Shrňte svou zkušenost jednou větou" {...field} />
+                  <Input placeholder={t("fields.title.placeholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -162,11 +164,11 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             name="comment"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Vaše recenze *</FormLabel>
+                <FormLabel>{t("fields.comment.label")}</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Popište podrobněji svou zkušenost s překladem..." rows={4} {...field} />
+                  <Textarea placeholder={t("fields.comment.placeholder")} rows={4} {...field} />
                 </FormControl>
-                <FormDescription>{field.value?.length || 0}/1000 znaků</FormDescription>
+                <FormDescription>{t("fields.comment.counter", { count: field.value?.length || 0 })}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -174,10 +176,10 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
 
           <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Zrušit
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Odesílám..." : "Odeslat recenzi"}
+              {form.formState.isSubmitting ? t("actions.submitting") : t("actions.submit")}
             </Button>
           </div>
         </div>

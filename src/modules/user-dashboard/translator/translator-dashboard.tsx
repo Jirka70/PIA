@@ -1,20 +1,19 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Award, CheckCircle, FileText, Star, TrendingUp } from "lucide-react"
 import type { User } from "better-auth"
 import { ProjectsContent } from "./translator-projects-content"
+import { useTranslations } from "next-intl"
 
 interface TranslatorDashboardProps {
   user: User
 }
 
 export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
-  const userName = user?.name || "Translator"
-
+  const t = useTranslations("TranslatorDashboard")
+  const userName = user?.name || t("header.fallbackName")
 
   const translatorStats = {
     rating: 4.8,
@@ -23,7 +22,7 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
     failedProjects: 2,
     activeProjects: 5,
     averageCompletionTime: "3.2 days",
-    totalEarnings: "$12,450",
+    totalEarnings: "$12,450"
   }
 
   const recentFeedback = [
@@ -33,7 +32,7 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
       customerName: "Sarah Johnson",
       rating: 5,
       comment: "Excellent work! Very accurate and delivered on time.",
-      date: "2025-10-15",
+      date: "2025-10-15"
     },
     {
       id: "2",
@@ -41,23 +40,24 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
       customerName: "E-commerce Store",
       rating: 4,
       comment: "Good translation, minor adjustments needed.",
-      date: "2025-10-12",
-    },
+      date: "2025-10-12"
+    }
   ]
 
   return (
     <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">Welcome back, {userName}!</h1>
-          <p className="text-muted-foreground">Manage your translation assignments and track your performance</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+            {t("header.welcome", { name: userName })}
+          </h1>
+          <p className="text-muted-foreground">{t("header.subtitle")}</p>
         </div>
 
-        {/* Analytics Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Translator Rating</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("cards.translatorRating")}</CardTitle>
               <Star className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
@@ -65,61 +65,61 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
                 {translatorStats.rating}
                 <span className="text-yellow-500">★</span>
               </div>
-              <p className="text-xs text-muted-foreground">Based on {translatorStats.totalRatings} reviews</p>
+              <p className="text-xs text-muted-foreground">
+                {t("cards.basedOnReviews", { count: translatorStats.totalRatings })}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Projects</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("cards.completedProjects")}</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{translatorStats.completedProjects}</div>
-              <p className="text-xs text-muted-foreground">{translatorStats.failedProjects} incomplete</p>
+              <p className="text-xs text-muted-foreground">{t("cards.incomplete", { count: translatorStats.failedProjects })}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("cards.activeProjects")}</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{translatorStats.activeProjects}</div>
-              <p className="text-xs text-muted-foreground">Currently assigned</p>
+              <p className="text-xs text-muted-foreground">{t("cards.currentlyAssigned")}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Completion Time</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("cards.avgCompletionTime")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{translatorStats.averageCompletionTime}</div>
-              <p className="text-xs text-muted-foreground">Per project</p>
+              <p className="text-xs text-muted-foreground">{t("cards.perProject")}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
         <Tabs defaultValue="projects" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="projects">My Projects</TabsTrigger>
-            <TabsTrigger value="feedback">Customer Feedback</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="projects">{t("tabs.projects")}</TabsTrigger>
+            <TabsTrigger value="feedback">{t("tabs.feedback")}</TabsTrigger>
+            <TabsTrigger value="performance">{t("tabs.performance")}</TabsTrigger>
           </TabsList>
 
-          {/* Projects Tab */}
           <TabsContent value="projects" className="space-y-4">
-            <ProjectsContent user={user} />     
+            <ProjectsContent user={user} />
           </TabsContent>
-          {/* Feedback Tab */}
+
           <TabsContent value="feedback" className="space-y-4">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Customer Feedback</h2>
-              <p className="text-muted-foreground">See what customers are saying about your work</p>
+              <h2 className="text-2xl font-bold mb-2">{t("feedback.title")}</h2>
+              <p className="text-muted-foreground">{t("feedback.subtitle")}</p>
             </div>
 
             {recentFeedback.map((feedback) => (
@@ -151,11 +151,10 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
             ))}
           </TabsContent>
 
-          {/* Performance Tab */}
           <TabsContent value="performance" className="space-y-4">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Performance Overview</h2>
-              <p className="text-muted-foreground">Track your statistics and achievements</p>
+              <h2 className="text-2xl font-bold mb-2">{t("performance.title")}</h2>
+              <p className="text-muted-foreground">{t("performance.subtitle")}</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -163,27 +162,27 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5 text-yellow-500" />
-                    Quality Metrics
+                    {t("performance.qualityMetrics")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Average Rating</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.averageRating")}</span>
                     <span className="text-lg font-bold flex items-center gap-1">
                       {translatorStats.rating} <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Reviews</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.totalReviews")}</span>
                     <span className="text-lg font-bold">{translatorStats.totalRatings}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Success Rate</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.successRate")}</span>
                     <span className="text-lg font-bold">
                       {Math.round(
                         (translatorStats.completedProjects /
                           (translatorStats.completedProjects + translatorStats.failedProjects)) *
-                          100,
+                          100
                       )}
                       %
                     </span>
@@ -195,20 +194,20 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-green-500" />
-                    Productivity Metrics
+                    {t("performance.productivityMetrics")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Completed Projects</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.completedProjects")}</span>
                     <span className="text-lg font-bold">{translatorStats.completedProjects}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Avg. Completion Time</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.avgCompletionTime")}</span>
                     <span className="text-lg font-bold">{translatorStats.averageCompletionTime}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Active Projects</span>
+                    <span className="text-sm text-muted-foreground">{t("performance.activeProjects")}</span>
                     <span className="text-lg font-bold">{translatorStats.activeProjects}</span>
                   </div>
                 </CardContent>
@@ -216,11 +215,11 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
 
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Rating Distribution</CardTitle>
+                  <CardTitle>{t("performance.ratingDistribution")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[5, 4, 3, 2, 1].map((stars) => {
-                    const count = Math.floor(Math.random() * 50) // Mock data
+                    const count = Math.floor(Math.random() * 50)
                     const percentage = (count / translatorStats.totalRatings) * 100
                     return (
                       <div key={stars} className="flex items-center gap-4">
@@ -229,7 +228,7 @@ export const TranslatorDashboard = ({ user }: TranslatorDashboardProps) => {
                           <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
                         </div>
                         <div className="flex-1 bg-muted rounded-full h-2">
-                          <div className="bg-yellow-500 rounded-full h-2" style={{ width: `${percentage}%` }}></div>
+                          <div className="bg-yellow-500 rounded-full h-2" style={{ width: `${percentage}%` }} />
                         </div>
                         <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                       </div>

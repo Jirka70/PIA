@@ -10,6 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { SubmittedState } from "./submitted-state"
 import { CompanyFormData, companySchema } from "@/lib/validators/review-schemas"
 import { StarRating } from "./star-rating"
+import { useTranslations } from "next-intl"
 
 interface CompanyReviewProps {
   onSubmit: (data: CompanyFormData & { reviewType: "company" }) => void
@@ -18,6 +19,8 @@ interface CompanyReviewProps {
 }
 
 export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReviewProps) {
+  const t = useTranslations("CompanyReview")
+
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
@@ -27,8 +30,8 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
       wouldRecommend: false,
       overallRating: 0,
       title: "",
-      comment: "",
-    },
+      comment: ""
+    }
   })
 
   const handleFormSubmit = (data: CompanyFormData) => {
@@ -47,9 +50,9 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
           name="companyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Název firmy *</FormLabel>
+              <FormLabel>{t("fields.companyName.label")}</FormLabel>
               <FormControl>
-                <Input placeholder="Překladatelská agentura s.r.o." {...field} />
+                <Input placeholder={t("fields.companyName.placeholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,19 +65,20 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
             name="priceRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm text-muted-foreground">Cena/kvalita</FormLabel>
+                <FormLabel className="text-sm text-muted-foreground">{t("fields.ratings.priceQuality")}</FormLabel>
                 <FormControl>
                   <StarRating rating={field.value || 0} onRatingChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="supportRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm text-muted-foreground">Zákaznická podpora</FormLabel>
+                <FormLabel className="text-sm text-muted-foreground">{t("fields.ratings.support")}</FormLabel>
                 <FormControl>
                   <StarRating rating={field.value || 0} onRatingChange={field.onChange} />
                 </FormControl>
@@ -92,7 +96,7 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="cursor-pointer">Doporučil/a bych tuto firmu</FormLabel>
+                <FormLabel className="cursor-pointer">{t("fields.wouldRecommend.label")}</FormLabel>
               </div>
             </FormItem>
           )}
@@ -104,13 +108,13 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
             name="overallRating"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-medium">Celkové hodnocení *</FormLabel>
+                <FormLabel className="text-base font-medium">{t("fields.overallRating.label")}</FormLabel>
                 <div className="flex items-center gap-3">
                   <FormControl>
                     <StarRating rating={field.value} onRatingChange={field.onChange} />
                   </FormControl>
                   <span className="text-sm text-muted-foreground">
-                    {field.value > 0 ? `${field.value}/5` : "Vyberte hodnocení"}
+                    {field.value > 0 ? `${field.value}/5` : t("fields.overallRating.selectRating")}
                   </span>
                 </div>
                 <FormMessage />
@@ -123,9 +127,9 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Titulek recenze *</FormLabel>
+                <FormLabel>{t("fields.title.label")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Shrňte svou zkušenost jednou větou" {...field} />
+                  <Input placeholder={t("fields.title.placeholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,11 +141,11 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
             name="comment"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Vaše recenze *</FormLabel>
+                <FormLabel>{t("fields.comment.label")}</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Popište podrobněji svou zkušenost s překladem..." rows={4} {...field} />
+                  <Textarea placeholder={t("fields.comment.placeholder")} rows={4} {...field} />
                 </FormControl>
-                <FormDescription>{field.value?.length || 0}/1000 znaků</FormDescription>
+                <FormDescription>{t("fields.comment.counter", { count: field.value?.length || 0 })}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -149,10 +153,10 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
 
           <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Zrušit
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Odesílám..." : "Odeslat recenzi"}
+              {form.formState.isSubmitting ? t("actions.submitting") : t("actions.submit")}
             </Button>
           </div>
         </div>

@@ -7,17 +7,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
+import { useEffect } from "react"
 
 type OptionItem = { value: string; label: string }
 
 export function ContactSection() {
+  const locale = useLocale()
   const t = useTranslations("ContactSection")
   const trpc = useTRPC()
 
@@ -51,11 +53,33 @@ export function ContactSection() {
     }
   })
 
+  const storageKey = `contact-form-${locale}`
+  useEffect(() => {
+    const raw = typeof window !== "undefined"
+      ? localStorage.getItem(storageKey)
+      : null
+
+    if (raw) {
+      form.reset(JSON.parse(raw))
+    }
+  }, [storageKey, form])
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (typeof window === "undefined") return
+      localStorage.setItem(storageKey, JSON.stringify(values))
+    })
+    return () => subscription.unsubscribe()
+  }, [form, storageKey])
+
   const languagesQuery = useQuery(trpc.languages.getLanguagesPublic.queryOptions())
 
   const sendContactMutation = useMutation(
     trpc.emails.send.mutationOptions({
       onSuccess: () => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(storageKey)
+        }
         toast.success(t("form.success"))
         form.reset()
       },

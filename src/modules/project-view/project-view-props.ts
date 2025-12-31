@@ -11,9 +11,10 @@ export interface SingleProjectViewProps {
     translatorReview?: TranslatorReviewType | null,
     companyReview?: CompanyReviewType | null,
     isStatusUpdating: boolean,
-    onStatusUpdate: (newStatus: ProjectStatusType) => Promise<void>,
+    onStatusUpdate: (newStatus: ProjectStatusType, projectId: string) => Promise<void>,
     onClientClick?: (clientId: string) => void,
     onTranslatorClick?: (translatorId: string) => void,
+    availableStatuses?: ProjectStatusType[]
 }
 
 export interface UserProjectViewProps {

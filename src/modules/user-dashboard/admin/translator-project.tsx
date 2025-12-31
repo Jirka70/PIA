@@ -65,6 +65,9 @@ export const TranslatorProject = ({ translatorId, projectId }: TranslatorProject
   const companyReview = projectInfo.companyReview
   const translator = projectInfo.translator
 
+  const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
+
+
   const onStatusUpdate = async (newStatus: ProjectStatusType) => {
     await updateStatus({
       projectId: project.id,
@@ -98,6 +101,8 @@ export const TranslatorProject = ({ translatorId, projectId }: TranslatorProject
     )
   }
 
+  const availableStatuses = statuses?.statuses
+
   return (
     <ProjectView
       project={project}
@@ -115,6 +120,7 @@ export const TranslatorProject = ({ translatorId, projectId }: TranslatorProject
       backButtonText={t("actions.backToTranslator")}
       onClientClick={onClientClick}
       onTranslatorClick={onTranslatorClick}
+      availableStatuses={availableStatuses}
     />
   )
 }

@@ -92,7 +92,7 @@ export function UsersManagement() {
   }
 
   const viewProjects = (userId: string, role: string) => {
-    router.push(`admin/${role}/${userId}`)
+    router.push(`admin/${role}/${userId}/projects`)
   }
 
   const manageTranslator = (id: string) => {

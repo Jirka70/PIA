@@ -24,6 +24,7 @@ interface ProjectViewProps {
   backButtonText: string
   onClientClick?: (clientId: string) => Promise<void>
   onTranslatorClick?: (translatorId: string) => Promise<void>
+  availableStatuses?: ProjectStatusType[]
 }
 
 export const ProjectView = ({
@@ -41,7 +42,8 @@ export const ProjectView = ({
   backButtonLink,
   backButtonText,
   onClientClick,
-  onTranslatorClick
+  onTranslatorClick,
+  availableStatuses
 }: ProjectViewProps) => {
   const t = useTranslations("ProjectView")
 
@@ -69,6 +71,7 @@ export const ProjectView = ({
           isStatusUpdating={isStatusUpdating}
           onClientClick={onClientClick}
           onTranslatorClick={onTranslatorClick}
+          availableStatuses={availableStatuses}
         />
       </div>
     </ProjectAdminViewWrapper>

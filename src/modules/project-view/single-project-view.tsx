@@ -30,7 +30,8 @@ export const SingleProjectView = ({
   isStatusUpdating,
   onStatusUpdate,
   onClientClick,
-  onTranslatorClick
+  onTranslatorClick,
+  availableStatuses
 }: SingleProjectViewProps) => {
   const t = useTranslations("SingleProjectView")
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
@@ -104,6 +105,7 @@ export const SingleProjectView = ({
         setIsStatusDialogOpen={setIsStatusDialogOpen}
         onStatusUpdate={onStatusUpdate}
         isStatusUpdating={isStatusUpdating}
+        availableStatuses={availableStatuses}
       />
 
       <div className="space-y-6 px-6 pb-6">

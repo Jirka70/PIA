@@ -1,5 +1,6 @@
 import { createTRPCRouter } from '../init';
 import { activityRouter } from './activity-router';
+import { emailRouter } from './email-router';
 import { languageRouter } from './language-router';
 import { projectRouter } from './project-router';
 import { reviewRouter } from './review-router';
@@ -10,7 +11,8 @@ export const appRouter = createTRPCRouter({
   activity: activityRouter,
   users: userRouter,
   languages: languageRouter,
-  reviews: reviewRouter
+  reviews: reviewRouter,
+  emails: emailRouter
 });
 
 export type AppRouter = typeof appRouter;

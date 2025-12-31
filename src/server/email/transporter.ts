@@ -1,20 +1,19 @@
-// src/server/email/transporter.ts
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer from "nodemailer";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __mailer: Transporter | undefined;
-}
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST ?? "localhost",
+  port: Number(process.env.SMTP_PORT ?? 1025),
+  secure: false,
+});
 
-export function getMailer() {
-  if (!global.__mailer) {
-    global.__mailer = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'localhost',
-      port: Number(process.env.SMTP_PORT || 1025),
-      secure: false, // MailHog nepoužívá TLS
-      auth: undefined,
-      tls: { rejectUnauthorized: false },
-    });
-  }
-  return global.__mailer;
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  text?: string;
+  html?: string;
+}) {
+  return transporter.sendMail({
+    from: process.env.MAIL_FROM ?? "dev@example.test",
+    ...opts,
+  });
 }

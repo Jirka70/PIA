@@ -23,6 +23,8 @@ export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
     console.log("projectInfo", projectInfo)
 
     const queryClient = useQueryClient();
+    const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
+
 
     const { mutateAsync: updateStatus, isPending: isStatusUpdating } = useMutation(trpc.projects.changeProjectStatus.mutationOptions({
         onSuccess: () => {
@@ -115,6 +117,7 @@ export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
             backButtonText="Manage User"
             onClientClick={onClientClick}
             onTranslatorClick={onTranslatorClick}
+            availableStatuses={statuses?.statuses}
         />
     )
 }

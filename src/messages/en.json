@@ -219,7 +219,19 @@
       "projectDetailsLabel": "Project Details",
       "projectDetailsPlaceholder": "Tell us about your project, word count, deadline, and any special requirements...",
 
-      "submitButton": "Get Free Quote"
+      "submitButton": "Get Free Quote",
+      "submitting": "Sending...",
+      "success": "Request sent! We'll reply soon.",
+      "validation": {
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailInvalid": "Please enter a valid email address.",
+        "sourceRequired": "Select a source language.",
+        "targetRequired": "Select a target language.",
+        "serviceRequired": "Select a service type.",
+        "detailsRequired": "Please describe your project (at least 10 characters).",
+        "languagesMustDiffer": "Source and target languages must be different."
+      }
     },
 
     "languages": {

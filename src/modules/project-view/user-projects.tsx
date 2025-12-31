@@ -2,7 +2,7 @@
 
 import { ProjectStatusType, Role } from "@/db/schema"
 import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
 import { SingleProjectView } from "./single-project-view"
 import { ProjectAdminViewWrapper } from "./project-admin-view-wrapper"
@@ -19,15 +19,45 @@ interface UserProjectsProps {
 
 export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
   const t = useTranslations("UserProjects")
-
   const trpc = useTRPC()
+  const queryClient = useQueryClient();
+  const isTranslator = userRole === "translator"
+
+
+  const updateStatus = useMutation(trpc.projects.changeProjectStatus.mutationOptions());
+  const onStatusUpdate = async (newStatus: ProjectStatusType, projectId: string) => {
+    await updateStatus.mutateAsync({
+      projectId,
+      projectStatus: newStatus
+    })
+
+    const queryKey = isTranslator
+      ? trpc.projects.getProjectsByTranslatorId.queryKey({ id: userId })
+      : trpc.projects.getProjectsByUserId.queryKey({ userId })
+
+    queryClient.setQueryData(queryKey, (cached) => {
+      if (!cached || !cached.project) return cached
+
+      return {
+        ...cached,
+        project: cached.project.map((entry) =>
+          entry.project.id === projectId
+            ? { ...entry, project: { ...entry.project, status: newStatus } }
+            : entry
+        )
+      }
+    })
+  }
+
   const { data: rawUser, isPending: isGettingUser } = useQuery(
     trpc.users.getUserById.queryOptions({
       id: userId
     })
   )
 
-  const isTranslator = userRole === "translator"
+
+  const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
+
 
   const { data: projectsInfo, isPending: isProjectsPending } = isTranslator
     ? useQuery(
@@ -42,6 +72,7 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
       )
 
   const user = rawUser?.user
+  const availableStatuses = statuses?.statuses;
 
   if (isProjectsPending || isGettingUser) {
     return (
@@ -55,6 +86,14 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
 
   if (!user) {
     notFound()
+  }
+
+  const onClientClick = async (clientId: string) => {
+    window.open(`/admin/user/${clientId}`, "_blank")
+  }
+
+  const onTranslatorClick = async (translatorId: string) => {
+    window.open(`/admin/translator/${translatorId}`, "_blank")
   }
 
   const projects = projectsInfo?.project
@@ -92,9 +131,12 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
                 companyReview={companyReview}
                 translatorReview={translatorReview}
                 sourceFile={sourceFile}
-                isStatusUpdating={false}
+                isStatusUpdating={updateStatus.isPending}
                 translatedFile={translatedFile}
-                onStatusUpdate={async (_newStatus: ProjectStatusType) => {}}
+                onStatusUpdate={onStatusUpdate}
+                availableStatuses={availableStatuses}
+                onTranslatorClick={onTranslatorClick}
+                onClientClick={onClientClick}
               />
             )
           })

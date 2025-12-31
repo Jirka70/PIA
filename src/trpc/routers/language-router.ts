@@ -1,5 +1,5 @@
 import { language, translatorLanguage } from "@/db/schema";
-import { adminProcedure, createTRPCRouter } from "../init";
+import { adminProcedure, baseProcedure, createTRPCRouter } from "../init";
 import { z } from "zod"
 import { and, eq } from "drizzle-orm";
 
@@ -50,5 +50,9 @@ export const languageRouter = createTRPCRouter({
             return {
                 languages
             }
-        })
+        }),
+    getLanguagesPublic: baseProcedure.query(async ({ ctx }) => {
+        const languages = await ctx.db.select().from(language);
+        return { languages };
+    })
 })

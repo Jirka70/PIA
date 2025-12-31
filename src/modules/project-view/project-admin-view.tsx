@@ -14,7 +14,6 @@ import ProjectNotFound from "./project-not-found"
 
 import { SingleProjectView } from "./single-project-view"
 import { ProjectStatusType } from "@/db/schema"
-import { usePathname } from "next/navigation"
 
 interface ProjectAdminViewProps {
   id: string
@@ -36,6 +35,8 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
         toast.error(error?.message || "Status cannot be changed")
       }
     }))
+
+  const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
 
   const onStatusUpdate = async (newStatus: ProjectStatusType) => {
     await updateStatusMutation.mutateAsync({
@@ -78,6 +79,8 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
   const translatorReview = data.translatorReview
   const companyReview = data.companyReview
 
+  const availableStatuses = statuses?.statuses;
+
   return (
     <ProjectAdminViewWrapper title="Project Details" description="">
       <div className="space-y-4">
@@ -100,6 +103,7 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
             companyReview={companyReview}
             onStatusUpdate={onStatusUpdate}
             isStatusUpdating={updateStatusMutation.isPending}
+            availableStatuses={availableStatuses}
         />
       </div>
     </ProjectAdminViewWrapper>

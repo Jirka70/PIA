@@ -220,7 +220,19 @@
       "projectDetailsLabel": "Detaily projektu",
       "projectDetailsPlaceholder": "Popište projekt, počet slov, termín a případné specifické požadavky...",
 
-      "submitButton": "Získat nabídku zdarma"
+      "submitButton": "Získat nabídku zdarma",
+      "submitting": "Odesílám...",
+      "success": "Požadavek odeslán! Ozveme se co nejdříve.",
+      "validation": {
+        "firstNameRequired": "Jméno je povinné.",
+        "lastNameRequired": "Příjmení je povinné.",
+        "emailInvalid": "Zadejte platný e-mail.",
+        "sourceRequired": "Vyberte zdrojový jazyk.",
+        "targetRequired": "Vyberte cílový jazyk.",
+        "serviceRequired": "Vyberte typ služby.",
+        "detailsRequired": "Popište svůj projekt (alespoň 10 znaků).",
+        "languagesMustDiffer": "Zdrojový a cílový jazyk se musí lišit."
+      }
     },
 
     "languages": {

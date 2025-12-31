@@ -1,5 +1,4 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import TranslatorDetail from "@/modules/manage-translator/translator-detail";
 import { UserProjects } from "@/modules/project-view/user-projects";
 
 interface Props {

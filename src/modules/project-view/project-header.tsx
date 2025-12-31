@@ -7,8 +7,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Edit } from "lucide-react"
 import { useState } from "react"
 import { StatusBadge } from "./status-badge"
-import { useTRPC } from "@/trpc/client"
-import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -23,7 +21,8 @@ interface ProjectHeaderProps {
   isStatusDialogOpen: boolean
   setIsStatusDialogOpen: (open: boolean) => void
   isStatusUpdating: boolean
-  onStatusUpdate?: (newStatus: ProjectStatusType) => Promise<void>
+  onStatusUpdate: (newStatus: ProjectStatusType, projectId: string) => Promise<void>,
+  availableStatuses?: ProjectStatusType[]
 }
 
 export function ProjectHeader({
@@ -33,14 +32,12 @@ export function ProjectHeader({
   isStatusDialogOpen,
   setIsStatusDialogOpen,
   isStatusUpdating,
-  onStatusUpdate
+  onStatusUpdate,
+  availableStatuses
 }: ProjectHeaderProps) {
   const t = useTranslations("ProjectHeader")
 
   const [projectStatus, setProjectStatus] = useState<ProjectStatusType | undefined>(project.status)
-
-  const trpc = useTRPC()
-  const statusesQuery = useQuery(trpc.projects.getProjectStatuses.queryOptions())
 
   const updateStatus = async () => {
     if (!projectStatus) {
@@ -48,7 +45,7 @@ export function ProjectHeader({
       return
     }
 
-    await onStatusUpdate?.(projectStatus)
+    await onStatusUpdate?.(projectStatus, project.id)
     setIsStatusDialogOpen(false)
   }
 
@@ -96,8 +93,8 @@ export function ProjectHeader({
                   </SelectTrigger>
 
                   <SelectContent>
-                    {statusesQuery.data ? (
-                      statusesQuery.data.statuses.map((status) => (
+                    {availableStatuses ? (
+                      availableStatuses.map((status) => (
                         <SelectItem key={status} value={status}>
                           {status}
                         </SelectItem>

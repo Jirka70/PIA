@@ -1,6 +1,6 @@
 import z from "zod";
-import { adminProcedure, createTRPCRouter } from "../init";
-import { language, Project, translatorLanguage, user, userRole } from "@/db/schema";
+import { adminProcedure, createTRPCRouter, translatorProcedure } from "../init";
+import { language, Project, Role, translatorLanguage, translatorReview, user, userRole } from "@/db/schema";
 import { eq, getTableColumns, or, sql } from "drizzle-orm";
 import { id } from "date-fns/locale";
 import { TRPCError } from "@trpc/server";
@@ -146,5 +146,35 @@ export const userRouter = createTRPCRouter({
             return { 
                 user: updatedUser
              }
+        }),
+    getTranslatorAverageRatings: translatorProcedure
+        .input(
+            z.object({
+                translatorId: z.string()
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const db = ctx.db;
+            const requesterRole = ctx.user.role as Role;
+
+            if (!["admin", "owner"].includes(requesterRole) && ctx.user.id !== input.translatorId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authorized to access translator ratings"
+                })
+            }
+
+            const [averages] = await db
+                .select({
+                    quality: sql<number>`COALESCE(AVG(${translatorReview.qualityRating}), 0)`,
+                    communication: sql<number>`COALESCE(AVG(${translatorReview.communicationRating}), 0)`,
+                    punctuality: sql<number>`COALESCE(AVG(${translatorReview.punctualityRating}), 0)`,
+                    overall: sql<number>`COALESCE(AVG(${translatorReview.overallRating}), 0)`,
+                    totalReviews: sql<number>`COUNT(*)`
+                })
+                .from(translatorReview)
+                .where(eq(translatorReview.translatorId, input.translatorId));
+
+            return { averages };
         })
 })

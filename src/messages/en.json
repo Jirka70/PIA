@@ -533,6 +533,9 @@
       "download": "Download",
       "gettingTranslated": "Getting translated file...",
       "viewTranslated": "View translated file"
+    },
+    "reviews": {
+      "title": "Reviews"
     }
   },
   "TranslatorDashboard": {
@@ -564,6 +567,9 @@
       "title": "Performance Overview",
       "subtitle": "Track your statistics and achievements",
       "qualityMetrics": "Quality Metrics",
+      "quality": "Quality",
+      "communication": "Communication",
+      "punctuality": "Punctuality",
       "productivityMetrics": "Productivity Metrics",
       "averageRating": "Average Rating",
       "totalReviews": "Total Reviews",
@@ -668,7 +674,9 @@
       },
       "footer": {
         "noAccount": "Don't have an account? ",
-        "signUp": "Sign up"
+        "signUp": "Sign up",
+        "translatorCta": "Want to register as a translator? ",
+        "translator-sign-up": "Sign up as a translator"
       },
       "toasts": {
         "genericError": "Unable to sign in right now. Please try again."
@@ -679,6 +687,49 @@
       }
     },
     "signup": {
+      "translator": {
+        "header": {
+          "title": "Translator sign up",
+          "subtitle": "Create an account and start accepting translation jobs."
+        },
+        "card": {
+          "title": "Create a translator account",
+          "description": "Enter your details to sign up as a translator."
+        },
+        "fields": {
+          "name": {
+            "label": "Translator full name",
+            "placeholder": "e.g. Jane Doe"
+          },
+          "email": {
+            "label": "Email (translator account)",
+            "placeholder": "e.g. translator@domain.com"
+          },
+          "password": {
+            "label": "Password",
+            "placeholder": "Choose a password for your translator account"
+          },
+          "confirmPassword": {
+            "label": "Confirm password",
+            "placeholder": "Re-enter your password"
+          }
+        },
+        "actions": {
+          "creatingAccount": "Creating translator account…",
+          "createAccount": "Create translator account"
+        },
+        "divider": {
+          "orContinueWith": "Or continue with"
+        },
+        "providers": {
+          "google": "Continue with Google (translator)"
+        },
+        "footer": {
+          "alreadyHaveAccount": "New translator? ",
+          "signIn": "Sign in",
+          "roleNote": "By signing up, you confirm you are registering as a translator (not as a client)."
+        }
+      },
       "header": {
         "title": "Create your account",
         "subtitle": "Sign up to get started with your new account"
@@ -718,7 +769,9 @@
       },
       "footer": {
         "alreadyHaveAccount": "Already have an account? ",
-        "signIn": "Sign in"
+        "signIn": "Sign in",
+        "translator-sign-up": "Register as a translator",
+        "translatorCta": "Want to register as a translator? "
       },
       "validation": {
         "nameMin": "Name must be at least 2 characters.",

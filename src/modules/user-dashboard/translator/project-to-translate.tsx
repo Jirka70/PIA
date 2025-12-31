@@ -19,6 +19,8 @@ import { ProgressDialog } from "./progress-dialog"
 import { ConfirmProgressDialog, ConfirmProgressFormValues } from "./empty-translator-file-dialog"
 import { isInWorkingState } from "@/lib/project-status-utils"
 import { useLocale, useTranslations } from "next-intl"
+import { TranslatorReviewCard } from "@/modules/user-dashboard/user/review/translator-review-card"
+import { CompanyReviewCard } from "@/modules/user-dashboard/user/review/company-review-card"
 
 export type TranslatorProjectType = {
   project: ProjectType
@@ -45,6 +47,8 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const project = projectToTranslate.project
   const sourceFile = projectToTranslate.sourceFile
   const targetFile = projectToTranslate.targetFile
+  const translatorReview = projectToTranslate.translatorReview
+  const companyReview = projectToTranslate.companyReview
 
   const trpc = useTRPC()
   const queryClient = useQueryClient()
@@ -217,6 +221,9 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const daysUntilDue = getDaysUntilDue(project.dueAt)
   const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0
+  const hasTranslatorReview = !!translatorReview
+  const hasCompanyReview = !!companyReview
+  const hasAnyReview = hasTranslatorReview || hasCompanyReview
 
   const isProjectModifiable = () => {
     return (
@@ -345,6 +352,18 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
             </Button>
           )}
         </div>
+
+        {hasAnyReview && (
+          <div className="space-y-3 pt-2">
+            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+              {t("reviews.title")}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {hasTranslatorReview && translatorReview && <TranslatorReviewCard translatorReview={translatorReview} />}
+              {hasCompanyReview && companyReview && <CompanyReviewCard companyReview={companyReview} />}
+            </div>
+          </div>
+        )}
       </CardContent>
 
       <ProjectStatusDialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen} onConfirm={onStatusDialogConfirm} />

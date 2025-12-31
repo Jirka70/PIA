@@ -534,6 +534,9 @@
       "download": "Stáhnout",
       "gettingTranslated": "Načítám přeložený soubor...",
       "viewTranslated": "Zobrazit přeložený soubor"
+    },
+    "reviews": {
+      "title": "Recenze"
     }
   },
   "TranslatorDashboard": {
@@ -565,6 +568,9 @@
       "title": "Přehled výkonu",
       "subtitle": "Sledujte statistiky a úspěchy",
       "qualityMetrics": "Metry kvality",
+      "quality": "Kvalita",
+      "communication": "Komunikace",
+      "punctuality": "Dochvilnost",
       "productivityMetrics": "Metry produktivity",
       "averageRating": "Průměrné hodnocení",
       "totalReviews": "Celkem recenzí",
@@ -669,7 +675,9 @@
       },
       "footer": {
         "noAccount": "Nemáte účet? ",
-        "signUp": "Zaregistrovat se"
+        "signUp": "Zaregistrovat se",
+        "translator-sign-up": "Registrovat se jako překladatel",
+        "translatorCta": "Chcete se registrovat jako překladatel? "
       },
       "toasts": {
         "genericError": "Momentálně se nelze přihlásit. Zkuste to prosím znovu."
@@ -680,6 +688,49 @@
       }
     },
     "signup": {
+      "translator": {
+        "header": {
+          "title": "Registrace překladatele",
+          "subtitle": "Vytvořte si účet a začněte přijímat překladatelské zakázky."
+        },
+        "card": {
+          "title": "Vytvořit účet překladatele",
+          "description": "Zadejte údaje pro registraci jako překladatel."
+        },
+        "fields": {
+          "name": {
+            "label": "Jméno a příjmení překladatele",
+            "placeholder": "Např. Jan Novák"
+          },
+          "email": {
+            "label": "E-mail (překladatelský účet)",
+            "placeholder": "např. prekladatel@domena.cz"
+          },
+          "password": {
+            "label": "Heslo",
+            "placeholder": "Zvolte heslo pro překladatelský účet"
+          },
+          "confirmPassword": {
+            "label": "Potvrzení hesla",
+            "placeholder": "Zopakujte heslo"
+          }
+        },
+        "actions": {
+          "creatingAccount": "Vytvářím účet překladatele…",
+          "createAccount": "Vytvořit účet překladatele"
+        },
+        "divider": {
+          "orContinueWith": "Nebo pokračovat přes"
+        },
+        "providers": {
+          "google": "Pokračovat s Google (překladatel)"
+        },
+        "footer": {
+          "alreadyHaveAccount": "Nový překladatel? ",
+          "signIn": "Přihlásit se",
+          "roleNote": "Registrací potvrzujete, že se registrujete jako překladatel (ne jako zadavatel zakázek)."
+        }
+      },
       "header": {
         "title": "Vytvořte si účet",
         "subtitle": "Zaregistrujte se a začněte používat svůj nový účet"
@@ -719,7 +770,9 @@
       },
       "footer": {
         "alreadyHaveAccount": "Už máte účet? ",
-        "signIn": "Přihlásit se"
+        "signIn": "Přihlásit se",
+        "translator-sign-up": "Registrovat se jako překladatel",
+        "translatorCta": "Chcete se registrovat jako překladatel? "
       },
       "validation": {
         "nameMin": "Jméno musí mít alespoň 2 znaky.",
@@ -1028,4 +1081,3 @@
     }
   }
 }
-

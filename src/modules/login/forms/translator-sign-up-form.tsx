@@ -1,59 +1,92 @@
 "use client"
 
-import type React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react"
-import { signIn } from "@/server/users"
+import { Eye, EyeOff, Mail, Lock, ArrowRight, User } from "lucide-react"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { signUp } from "@/server/users"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { googleSignIn } from "@/lib/auth/google-sign-in"
 
-export function LoginForm() {
-  const t = useTranslations("auth.login")
+export function TranslatorSignupForm() {
+  const t = useTranslations("auth.signup")
+
+  const signForGoogleAsTranslator = async () => {
+    const res = await fetch("/api/auth/google/translator-intent", {
+        method: "POST",
+        credentials: "same-origin"
+    })
+
+    if (!res.ok) {
+        toast.error("Could not sign-in as translator with google")
+        return
+    }
+
+    await googleSignIn()
+  }
 
   const formSchema = useMemo(
     () =>
-      z.object({
-        email: z.email(t("validation.emailInvalid")),
-        password: z.string().min(8, t("validation.passwordMin"))
-      }),
+      z
+        .object({
+          name: z.string().min(2, t("validation.nameMin")),
+          email: z.email(t("validation.emailInvalid")),
+          password: z.string().min(8, t("validation.passwordMin")),
+          confirmPassword: z.string().min(8, t("validation.passwordMin"))
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("validation.passwordsDontMatch"),
+          path: ["confirmPassword"]
+        }),
     [t]
   )
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
-      password: ""
+      password: "",
+      confirmPassword: ""
     }
   })
 
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
+    const res = await fetch("/api/auth/google/translator-intent", {
+        method: "POST",
+        credentials: "same-origin"
+    })
+
+    if (!res.ok) {
+        toast.error("Could not sign-in as translator right now")
+        return
+    }
+
     try {
-      const { success, message } = await signIn(values.email, values.password)
-      if (success) {
-        toast.success(message as string)
-        router.replace("/")
+      const response = await signUp(values.name, values.email, values.password)
+      const message = response.message
+
+      if (response.success) {
+        toast.success(message)
+        router.replace("/user-dashboard")
       } else {
-        toast.error(message as string)
+        toast.error(message)
       }
-    } catch {
-      toast.error(t("toasts.genericError"))
     } finally {
       setIsLoading(false)
     }
@@ -73,16 +106,16 @@ export function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-balance">{t("header.title")}</h1>
-          <p className="text-muted-foreground text-balance">{t("header.subtitle")}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-balance">{t("translator.header.title")}</h1>
+          <p className="text-muted-foreground text-balance">{t("translator.header.subtitle")}</p>
         </div>
       </div>
 
-      {/* Login Card */}
+      {/* Signup Card */}
       <Card className="border-0 shadow-2xl shadow-black/5">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-xl font-semibold">{t("card.title")}</CardTitle>
-          <CardDescription>{t("card.description")}</CardDescription>
+          <CardTitle className="text-xl font-semibold">{t("translator.card.title")}</CardTitle>
+          <CardDescription>{t("translator.card.description")}</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -91,16 +124,40 @@ export function LoginForm() {
               <div className="space-y-2">
                 <FormField
                   control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("translator.fields.name.label")}</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type="text"
+                            placeholder={t("translator.fields.name.placeholder")}
+                            className="pl-10 h-11"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("fields.email.label")}</FormLabel>
+                      <FormLabel>{t("translator.fields.email.label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                           <Input
                             type="email"
-                            placeholder={t("fields.email.placeholder")}
+                            placeholder={t("translator.fields.email.placeholder")}
                             className="pl-10 h-11"
                             {...field}
                           />
@@ -118,18 +175,15 @@ export function LoginForm() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel htmlFor="password" className="text-sm font-medium">
-                          {t("fields.password.label")}
-                        </FormLabel>
-                      </div>
-
+                      <FormLabel htmlFor="password" className="text-sm font-medium">
+                        {t("translator.fields.password.label")}
+                      </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder={t("fields.password.placeholder")}
+                            placeholder={t("translator.fields.password.placeholder")}
                             className="pl-10 pr-10 h-11"
                             {...field}
                           />
@@ -137,13 +191,48 @@ export function LoginForm() {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            aria-label={showPassword ? "Hide password" : "Show password"}
+                            aria-label={showPassword ? t("a11y.hidePassword") : t("a11y.showPassword")}
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="confirmPassword" className="text-sm font-medium">
+                        {t("translator.fields.confirmPassword.label")}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder={t("translator.fields.confirmPassword.placeholder")}
+                            className="pl-10 pr-10 h-11"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label={
+                              showConfirmPassword ? t("a11y.hideConfirmPassword") : t("a11y.showConfirmPassword")
+                            }
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -154,11 +243,11 @@ export function LoginForm() {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    {t("actions.signingIn")}
+                    {t("translator.actions.creatingAccount")}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    {t("actions.signIn")}
+                    {t("translator.actions.createAccount")}
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 )}
@@ -171,12 +260,19 @@ export function LoginForm() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{t("divider.orContinueWith")}</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("translator.divider.orContinueWith")}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            <Button type="button" variant="outline" className="h-11 bg-transparent" onClick={async () => { await googleSignIn() }}>
+            <Button
+              variant="outline"
+              className="h-11 bg-transparent"
+              type="button"
+              onClick={async () => {
+                await signForGoogleAsTranslator()
+              }}
+            >
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -195,26 +291,18 @@ export function LoginForm() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {t("providers.google")}
+              {t("translator.providers.google")}
             </Button>
-
-
           </div>
-          <div className="space-y-2">
-            <div className="text-center text-sm text-muted-foreground">
-              {t("footer.noAccount")}
-              <Link href="/sign-up" className="text-accent">
-                {t("footer.signUp")}
-              </Link>
-            </div>
-            <div className="text-center text-sm text-muted-foreground">
-              {t("footer.translatorCta")}
-              <Link href="/translator-sign-up" className="text-accent">
-                {t("footer.translator-sign-up")}
-              </Link>
-            </div>
+
+          <div className="text-center text-sm text-muted-foreground">
+            {t("translator.footer.alreadyHaveAccount")}
+            <Link href="/sign-in" className="text-accent">
+              {t("translator.footer.signIn")}
+            </Link>
           </div>
-          
+
+          <p className="text-xs text-muted-foreground text-center">{t("translator.footer.roleNote")}</p>
         </CardContent>
       </Card>
     </div>

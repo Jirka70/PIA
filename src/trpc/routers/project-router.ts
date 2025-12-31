@@ -1,4 +1,4 @@
-import { companyReview, Project, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity } from "@/db/schema";
+import { companyReview, Project, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity, ProjectStatusType } from "@/db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
 import { eq, and, getTableColumns, sql, inArray, gte, desc, not } from "drizzle-orm"
 import { TRPCError } from "@trpc/server";
@@ -8,6 +8,7 @@ import z from "zod";
 import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
 import { alias } from "drizzle-orm/pg-core";
 import type { db } from "@/db/drizzle"
+import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
 
 type DB = typeof db
 
@@ -606,12 +607,16 @@ export const projectRouter = createTRPCRouter({
         }),
     getCompletedProjectsCount: adminProcedure
         .query(async ({ ctx }) => {
+            const completedStatuses = projectStatus.enumValues.filter((status) =>
+                isCompleted(status as ProjectStatusType)
+            ) as ProjectStatusType[];
+
             const [result] = await ctx.db
                 .select({
                     count: sql<number>`count(*)`
                 })
                 .from(Project)
-                .where(eq(Project.status, "DONE"));
+                .where(inArray(Project.status, completedStatuses));
 
             return { count: result?.count ?? 0 };
         }),
@@ -669,5 +674,54 @@ export const projectRouter = createTRPCRouter({
             return {
                 projects
             }
+        }),
+    getProjectStatusCounts: translatorProcedure
+        .input(
+            z.object({
+                translatorId: z.string()
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const requesterRole = ctx.user?.role as Role;
+
+            if (!["admin", "owner"].includes(requesterRole) && ctx.user?.id !== input.translatorId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authorized"
+                })
+            }
+
+            const activeStatuses = projectStatus.enumValues.filter((status) =>
+                isActive(status as ProjectStatusType)
+            ) as ProjectStatusType[];
+
+            const completedStatuses = projectStatus.enumValues.filter((status) =>
+                isCompleted(status as ProjectStatusType)
+            ) as ProjectStatusType[];
+
+            const cancelledStatuses = projectStatus.enumValues.filter((status) =>
+                isCancelled(status as ProjectStatusType)
+            ) as ProjectStatusType[];
+
+            const [active] = await ctx.db
+                .select({ count: sql<number>`count(*)` })
+                .from(Project)
+                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, activeStatuses)));
+
+            const [completed] = await ctx.db
+                .select({ count: sql<number>`count(*)` })
+                .from(Project)
+                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, completedStatuses)));
+
+            const [cancelled] = await ctx.db
+                .select({ count: sql<number>`count(*)` })
+                .from(Project)
+                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, cancelledStatuses)));
+
+            return {
+                active: active?.count ?? 0,
+                completed: completed?.count ?? 0,
+                cancelled: cancelled?.count ?? 0
+            };
         })
 })

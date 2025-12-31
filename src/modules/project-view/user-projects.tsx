@@ -79,6 +79,7 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
             const companyReview = projectEntry.companyReview
             const translatorReview = projectEntry.translatorReview
             const sourceFile = projectEntry.sourceFile
+            const translatedFile = projectEntry.targetFile
 
             return (
               <SingleProjectView
@@ -92,6 +93,7 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
                 translatorReview={translatorReview}
                 sourceFile={sourceFile}
                 isStatusUpdating={false}
+                translatedFile={translatedFile}
                 onStatusUpdate={async (_newStatus: ProjectStatusType) => {}}
               />
             )

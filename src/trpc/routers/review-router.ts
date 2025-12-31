@@ -1,7 +1,7 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { companyReview, Project, Role, translatorReview } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { companySchema, translatorSchema } from "@/lib/validators/review-schemas";
 import { nanoid } from "nanoid"
@@ -202,5 +202,58 @@ export const reviewRouter = createTRPCRouter({
             return {
                 companyReview: review
             }
+        }),
+    getTranslatorRatingDistribution: protectedProcedure
+        .input(z.object({ translatorId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const db = ctx.db;
+            const user = ctx.user;
+            const role = user.role as Role;
+
+            if (!["admin", "owner"].includes(role) && user.id !== input.translatorId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authorized to view these stats"
+                })
+            }
+
+            const reviews = await db
+                .select({
+                    overall: translatorReview.overallRating,
+                    quality: translatorReview.qualityRating,
+                    communication: translatorReview.communicationRating,
+                    punctuality: translatorReview.punctualityRating,
+                })
+                .from(translatorReview)
+                .where(eq(translatorReview.translatorId, input.translatorId));
+
+            type RatingValue = 1 | 2 | 3 | 4 | 5;
+            type RatingBucket = Record<RatingValue, number>;
+
+            const emptyCounts = (): RatingBucket => ({
+                1: 0,
+                2: 0,
+                3: 0,
+                4: 0,
+                5: 0
+            });
+
+            const distribution: Record<"overall" | "quality" | "communication" | "punctuality", RatingBucket> = {
+                overall: emptyCounts(),
+                quality: emptyCounts(),
+                communication: emptyCounts(),
+                punctuality: emptyCounts(),
+            };
+
+            for (const review of reviews) {
+                (["overall", "quality", "communication", "punctuality"] as const).forEach((key) => {
+                    const value = review[key];
+                    if (value && distribution[key][value as RatingValue] !== undefined) {
+                        distribution[key][value as RatingValue] += 1;
+                    }
+                });
+            }
+
+            return { distribution };
         })
 })

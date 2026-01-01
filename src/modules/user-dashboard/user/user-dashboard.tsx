@@ -44,10 +44,6 @@ export const UserDashboard = ({ user }: UserDashboardProps) => {
     refetchInterval: false
   })
 
-  if (isError) {
-    return <div className="text-sm text-red-600">{t("errors.projectsCouldNotBeLoaded", { message: error.message })}</div>
-  }
-
   const { data: lastMonthProjects } = useQuery(
     trpc.projects.getProjectsCreatedLastMonth.queryOptions({
       id: user.id
@@ -122,6 +118,10 @@ export const UserDashboard = ({ user }: UserDashboardProps) => {
         projects: cached.projects.map((row) => (row.project.id === project.id ? { ...row, companyReview } : row))
       }
     })
+  }
+
+  if (isError) {
+    return <div className="text-sm text-red-600">{t("errors.projectsCouldNotBeLoaded")}</div>
   }
 
   return (

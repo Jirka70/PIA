@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { ProjectHeader } from "./project-header"
 import { getDaysUntilDue } from "./utils/date"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { ProjectDetailsGrid } from "./project-details-grid"
 import { Separator } from "@/components/ui/separator"
 import { ProgressSection } from "./progress-section"
@@ -16,6 +16,10 @@ import { SingleProjectViewProps } from "./project-view-props"
 import { TranslatorReviewCard } from "@/modules/user-dashboard/user/review/translator-review-card"
 import { CompanyReviewCard } from "@/modules/user-dashboard/user/review/company-review-card"
 import { useTranslations } from "next-intl"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info, Hourglass, BadgeCheck, AlertTriangle, ThumbsUp, ThumbsDown, ShieldAlert, Siren } from "lucide-react"
+
+type AcceptState = "n/a" | "waiting for approval" | "accepted" | "rejected"
 
 export const SingleProjectView = ({
   project,
@@ -61,6 +65,64 @@ export const SingleProjectView = ({
   const hasCompanyReview = !!companyReview
   const hasAnyReview = hasTranslatorReview || hasCompanyReview
 
+  const acceptState = (project.acceptState ?? "n/a") as AcceptState
+  const shouldShowAcceptState = acceptState !== "n/a"
+
+  const isDoneWithoutApproval =
+    project.status === "DONE" && acceptState !== "accepted" // includes waiting/rejected/n/a
+
+  const acceptUi = useMemo(() => {
+    // If DONE without customer approval, show a stronger admin warning panel instead of normal accept-state info.
+    if (isDoneWithoutApproval) {
+      return {
+        icon: Siren,
+        title: "Projekt byl ukončen bez schválení zákazníka",
+        description:
+          "Projekt je ve stavu DONE, ale zákazník jej neakceptoval. To může znamenat procesní výjimku (force close) nebo nedokončenou QA smyčku. Doporučení: ověřte auditní stopu změny statusu, zkontrolujte komunikaci se zákazníkem a případně projekt znovu otevřete (QA / IN_PROGRESS) dle interních pravidel.",
+        badgeVariant: "destructive" as const,
+        badgeIcon: ShieldAlert,
+        containerClass: "border-red-500/40 bg-red-500/10"
+      }
+    }
+
+    if (!shouldShowAcceptState) return null
+
+    if (acceptState === "waiting for approval") {
+      return {
+        icon: Hourglass,
+        title: "Čeká se na schválení zákazníkem",
+        description:
+          "Projekt je připraven k zákaznickému hodnocení. Po rozhodnutí zákazníka se stav automaticky promítne zde i do dalších pohledů.",
+        badgeVariant: "secondary" as const,
+        badgeIcon: Info,
+        containerClass: "border-primary/30 bg-primary/5"
+      }
+    }
+
+    if (acceptState === "accepted") {
+      return {
+        icon: BadgeCheck,
+        title: "Zákazník schválil výstup",
+        description:
+          "Projekt byl zákazníkem akceptován. Administrativně můžete ověřit, že byly splněny interní kroky (fakturace, uzavření, archivace souborů).",
+        badgeVariant: "default" as const,
+        badgeIcon: ThumbsUp,
+        containerClass: "border-emerald-500/30 bg-emerald-500/5"
+      }
+    }
+
+    // rejected
+    return {
+      icon: AlertTriangle,
+      title: "Zákazník zamítl výstup",
+      description:
+        "Projekt byl zamítnut. Doporučení: zkontrolujte komentáře/review, případně iniciujte komunikaci mezi zákazníkem a překladatelem pro rychlé doplnění požadavků.",
+      badgeVariant: "destructive" as const,
+      badgeIcon: ThumbsDown,
+      containerClass: "border-red-500/30 bg-red-500/5"
+    }
+  }, [acceptState, shouldShowAcceptState, isDoneWithoutApproval])
+
   async function handleViewSourceFile() {
     toast.info(t("toasts.gettingFileToView"))
     const srcFile = await getSourceFileAsync({ projectId: project.id })
@@ -92,11 +154,7 @@ export const SingleProjectView = ({
   }
 
   return (
-    <Card
-      className={
-        isOverdue ? "border-red-500/50 shadow-lg" : isUrgent ? "border-yellow-500/50 shadow-lg" : ""
-      }
-    >
+    <Card className={isOverdue ? "border-red-500/50 shadow-lg" : isUrgent ? "border-yellow-500/50 shadow-lg" : ""}>
       <ProjectHeader
         project={project}
         isOverdue={isOverdue}
@@ -109,6 +167,36 @@ export const SingleProjectView = ({
       />
 
       <div className="space-y-6 px-6 pb-6">
+        {/* AcceptState / DONE-without-approval panel */}
+        {acceptUi && (
+          <>
+            <Alert className={acceptUi.containerClass}>
+              <AlertTitle className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <acceptUi.icon className="h-4 w-4" />
+                  <span>{acceptUi.title}</span>
+                </div>
+              </AlertTitle>
+
+              <AlertDescription className="mt-2 space-y-3">
+                <p className="text-sm text-muted-foreground">{acceptUi.description}</p>
+
+                <Separator />
+
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    {isDoneWithoutApproval
+                      ? "Poznámka: tento stav by měl být výjimečný. Pokud je to neúmyslné, doporučujeme projekt znovu otevřít a dokončit QA/approval proces."
+                      : "Administrativní poznámka: tento stav je odvozen ze zákaznického rozhodnutí."}
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+
+            <Separator />
+          </>
+        )}
+
         <ProjectDetailsGrid
           project={project}
           clientName={clientName}
@@ -130,9 +218,7 @@ export const SingleProjectView = ({
         {hasAnyReview && (
           <>
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                {t("reviews.title")}
-              </h4>
+              <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">{t("reviews.title")}</h4>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {hasTranslatorReview && translatorReview && <TranslatorReviewCard translatorReview={translatorReview} />}
                 {hasCompanyReview && companyReview && <CompanyReviewCard companyReview={companyReview} />}

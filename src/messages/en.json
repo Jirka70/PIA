@@ -401,6 +401,20 @@
       "cannotFindFileToDownload": "Cannot find file to download",
       "cannotDownloadTranslated": "Cannot download translated file right now",
       "cannotDownloadSource": "Cannot download source file right now"
+    },
+    "contact": {
+      "trigger": "Contact translator",
+      "title": "Message translator",
+      "description": "Send an email to the assigned translator. The recipient is fixed.",
+      "recipientLabel": "Recipient",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Optional subject",
+      "bodyLabel": "Message",
+      "bodyPlaceholder": "Optional message body",
+      "cancel": "Cancel",
+      "send": "Send",
+      "sending": "Sending...",
+      "success": "Message sent"
     }
   },
   "ProjectReviewed": {
@@ -548,6 +562,20 @@
     },
     "reviews": {
       "title": "Reviews"
+    },
+    "contact": {
+      "trigger": "Contact client",
+      "title": "Message client",
+      "description": "Send an email to the client about this project. The recipient is fixed.",
+      "recipientLabel": "Recipient",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Optional subject",
+      "bodyLabel": "Message",
+      "bodyPlaceholder": "Optional message body",
+      "cancel": "Cancel",
+      "send": "Send",
+      "sending": "Sending...",
+      "success": "Message sent"
     }
   },
   "TranslatorDashboard": {
@@ -640,7 +668,8 @@
       "removeFile": "Remove file",
       "uploadingOverlay": "Uploading…",
       "autoSetProgress": "Set progress to 100% automatically",
-      "autoSetQAState": "Mark project as QA"
+      "autoSetQAState": "Mark project as QA",
+      "autoSendProjectToUserForApproval": "Send project to customer for approval"
     },
     "toast": {
       "fileUploaded": "File uploaded successfully",

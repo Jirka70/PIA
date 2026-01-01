@@ -2,12 +2,24 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType } from "@/db/schema"
+import { CompanyReviewType, ProjectFileType, ProjectType, TranslatorReviewType, user } from "@/db/schema"
 import { performDownload, performPreview } from "@/lib/utils"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Calendar, Clock, Languages, Eye, Download } from "lucide-react"
-import { useState } from "react"
+import {
+  Calendar,
+  Clock,
+  Languages,
+  Eye,
+  Download,
+  ThumbsUp,
+  ThumbsDown,
+  Hourglass,
+  ShieldCheck,
+  BadgeCheck,
+  AlertTriangle
+} from "lucide-react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { UploadTranslatedFileDialog } from "./upload-translated-file-dialog"
 import { User } from "better-auth"
@@ -21,6 +33,9 @@ import { isInWorkingState } from "@/lib/project-status-utils"
 import { useLocale, useTranslations } from "next-intl"
 import { TranslatorReviewCard } from "@/modules/user-dashboard/user/review/translator-review-card"
 import { CompanyReviewCard } from "@/modules/user-dashboard/user/review/company-review-card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
 export type TranslatorProjectType = {
   project: ProjectType
@@ -28,12 +43,15 @@ export type TranslatorProjectType = {
   targetFile: ProjectFileType | null
   companyReview: CompanyReviewType | null
   translatorReview: TranslatorReviewType | null
+  client: typeof user.$inferSelect | null
 }
 
 interface ProjectToTranslateProps {
   projectToTranslate: TranslatorProjectType
   user: User
 }
+
+type AcceptState = "n/a" | "waiting for approval" | "accepted" | "rejected"
 
 export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTranslateProps) => {
   const t = useTranslations("ProjectToTranslate")
@@ -49,6 +67,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const targetFile = projectToTranslate.targetFile
   const translatorReview = projectToTranslate.translatorReview
   const companyReview = projectToTranslate.companyReview
+  const client = projectToTranslate.client
 
   const trpc = useTRPC()
   const queryClient = useQueryClient()
@@ -64,7 +83,21 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
     })
   )
 
+  const sentEmail = useMutation(trpc.emails.sendToUser.mutationOptions())
+
   const changeStatusMutation = useMutation(trpc.projects.changeProjectStatus.mutationOptions())
+
+  async function notifyUser() {
+    if (!client?.email) {
+      toast.error("User is not currently available. Project finish e-mail cannot be sent to them")
+      return
+    }
+    await sentEmail.mutateAsync({
+      to: client?.email,
+      subject: "Your project is translated",
+      body: `Your project ${project.name} is finished and is waiting for your approval`
+    })
+  }
 
   const onEmptyTranslatedFileDialogConfirm = async (values: ConfirmProgressFormValues) => {
     const markAsQA = values.markAsQA
@@ -80,6 +113,8 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
         projectId: project.id,
         projectStatus: "QA"
       })
+
+      await notifyUser()
     }
 
     await queryClient.invalidateQueries({
@@ -128,6 +163,8 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
       projectId: project.id,
       projectStatus: "QA"
     })
+
+    await notifyUser()
 
     await queryClient.invalidateQueries({
       queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
@@ -226,12 +263,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const hasAnyReview = hasTranslatorReview || hasCompanyReview
 
   const isProjectModifiable = () => {
-    return (
-      project.status === "NEW" ||
-      project.status === "QA" ||
-      project.status === "IN_PROGRESS" ||
-      project.status === "ASSIGNED"
-    )
+    return project.status === "NEW" || project.status === "QA" || project.status === "IN_PROGRESS" || project.status === "ASSIGNED"
   }
 
   const dueSuffix = (() => {
@@ -240,6 +272,52 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
     if (daysUntilDue === 1) return t("deadline.dayLeft", { days: 1 })
     return t("deadline.daysLeft", { days: daysUntilDue })
   })()
+
+  // -----------------------------
+  // Customer decision panel (NEW)
+  // -----------------------------
+  const acceptState = (project.acceptState ?? "n/a") as AcceptState
+
+  const decisionUi = useMemo(() => {
+    if (acceptState === "accepted") {
+      return {
+        icon: BadgeCheck,
+        title: "Zákazník schválil překlad",
+        description: "Projekt byl zákazníkem akceptován. Pokud je vše hotové, projekt bude uzavřen dle interního procesu.",
+        badgeVariant: "default" as const,
+        badgeText: "Accepted",
+        badgeIcon: ThumbsUp
+      }
+    }
+
+    if (acceptState === "rejected") {
+      return {
+        icon: AlertTriangle,
+        title: "Zákazník požaduje úpravy",
+        description:
+          "Projekt byl zákazníkem zamítnut. Očekávejte požadavek na revize; doporučujeme zákazníka kontaktovat a upřesnit očekávání.",
+        badgeVariant: "destructive" as const,
+        badgeText: "Rejected",
+        badgeIcon: ThumbsDown
+      }
+    }
+
+    if (acceptState === "waiting for approval") {
+      return {
+        icon: Hourglass,
+        title: "Čeká se na odpověď zákazníka",
+        description: "Překlad je předán k hodnocení. Jakmile zákazník rozhodne, stav se zde automaticky aktualizuje.",
+        badgeVariant: "secondary" as const,
+        badgeText: "Waiting for approval",
+        badgeIcon: ShieldCheck
+      }
+    }
+
+    return null
+  }, [acceptState])
+
+  const showDecisionPanel =
+    acceptState === "accepted" || acceptState === "rejected" || acceptState === "waiting for approval"
 
   return (
     <Card className={isOverdue ? "border-red-500/50" : isUrgent ? "border-yellow-500/50" : ""}>
@@ -279,6 +357,52 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* NEW: Customer decision panel */}
+        {showDecisionPanel && decisionUi && (
+          <div className="pt-1">
+            <Alert
+              className={
+                acceptState === "accepted"
+                  ? "border-emerald-500/30 bg-emerald-500/5"
+                  : acceptState === "rejected"
+                    ? "border-red-500/30 bg-red-500/5"
+                    : "border-primary/30 bg-primary/5"
+              }
+            >
+              <AlertTitle className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <decisionUi.icon className="h-4 w-4" />
+                  <span>{decisionUi.title}</span>
+                </div>
+
+                <Badge variant={decisionUi.badgeVariant} className="gap-1">
+                  <decisionUi.badgeIcon className="h-3.5 w-3.5" />
+                  {decisionUi.badgeText}
+                </Badge>
+              </AlertTitle>
+
+              <AlertDescription className="mt-2 space-y-3">
+                <p className="text-sm text-muted-foreground">{decisionUi.description}</p>
+
+                {(acceptState === "accepted" || acceptState === "rejected") && (
+                  <>
+                    <Separator />
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                      <div className="text-xs text-muted-foreground">
+                        Tip: pokud je potřeba rychlé vyjasnění, použijte chat se zákazníkem přímo z této karty.
+                      </div>
+
+                      {client && (
+                        <ChatDialog client={client} translationNamespace="ProjectToTranslate.contact" />
+                      )}
+                    </div>
+                  </>
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground font-medium">{t("progress.title")}</span>
@@ -300,9 +424,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
             />
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            {t("progress.lastUpdated", { dateTime: formatDateTime(project.updatedAt) })}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("progress.lastUpdated", { dateTime: formatDateTime(project.updatedAt) })}</p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -314,24 +436,16 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
             project={project}
           />
 
-          <ChatDialog />
+          {/* Note: Chat is already offered inside the decision panel for accepted/rejected.
+              Keep here for general access if you prefer. */}
+          {!showDecisionPanel && client && <ChatDialog client={client} translationNamespace="ProjectToTranslate.contact" />}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewFile}
-            disabled={!sourceFile || previewFileMutation.isPending}
-          >
+          <Button variant="outline" size="sm" onClick={handleViewFile} disabled={!sourceFile || previewFileMutation.isPending}>
             <Eye className="mr-2 h-4 w-4" />
             {previewFileMutation.isPending ? t("actions.creatingView") : t("actions.view")}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownloadFile}
-            disabled={!sourceFile || downloadMutation.isPending}
-          >
+          <Button variant="outline" size="sm" onClick={handleDownloadFile} disabled={!sourceFile || downloadMutation.isPending}>
             <Download className="mr-2 h-4 w-4" />
             {downloadMutation.isPending ? t("actions.waitingDownload") : t("actions.download")}
           </Button>
@@ -355,9 +469,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
 
         {hasAnyReview && (
           <div className="space-y-3 pt-2">
-            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-              {t("reviews.title")}
-            </h4>
+            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">{t("reviews.title")}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {hasTranslatorReview && translatorReview && <TranslatorReviewCard translatorReview={translatorReview} />}
               {hasCompanyReview && companyReview && <CompanyReviewCard companyReview={companyReview} />}
@@ -368,7 +480,11 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
 
       <ProjectStatusDialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen} onConfirm={onStatusDialogConfirm} />
       <QAStatusDialog open={isQADialogOpen} onOpenChange={setIsQADialogOpen} onConfirm={onQADialogConfirm} />
-      <ConfirmProgressDialog isOpen={isEmptyFileDialogOpen} onOpenChange={setIsEmptyFileDialogOpen} onConfirm={onEmptyTranslatedFileDialogConfirm} />
+      <ConfirmProgressDialog
+        isOpen={isEmptyFileDialogOpen}
+        onOpenChange={setIsEmptyFileDialogOpen}
+        onConfirm={onEmptyTranslatedFileDialogConfirm}
+      />
     </Card>
   )
 }

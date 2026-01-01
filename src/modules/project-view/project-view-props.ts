@@ -1,4 +1,4 @@
-import { CompanyReviewType, ProjectFileType, ProjectStatusType, ProjectType, TranslatorReviewType } from "@/db/schema";
+import { CompanyReviewType, ProjectFileType, ProjectStatusType, ProjectType, TranslatorReviewType, userType } from "@/db/schema";
 
 export interface SingleProjectViewProps {
     project: ProjectType,
@@ -22,5 +22,6 @@ export interface UserProjectViewProps {
     sourceFile: ProjectFileType | null,
     targetFile: ProjectFileType | null,
     translatorReview: TranslatorReviewType | null,
-    companyReview: CompanyReviewType | null
+    companyReview: CompanyReviewType | null,
+    translator: userType | null
 }

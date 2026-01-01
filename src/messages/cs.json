@@ -402,6 +402,20 @@
       "cannotFindFileToDownload": "Soubor ke stažení nebyl nalezen",
       "cannotDownloadTranslated": "Přeložený soubor nyní nelze stáhnout",
       "cannotDownloadSource": "Zdrojový soubor nyní nelze stáhnout"
+    },
+    "contact": {
+      "trigger": "Kontaktovat překladatele",
+      "title": "Napsat překladateli",
+      "description": "Pošlete e-mail přiřazenému překladateli. Příjemce nelze měnit.",
+      "recipientLabel": "Příjemce",
+      "subjectLabel": "Předmět",
+      "subjectPlaceholder": "Volitelný předmět",
+      "bodyLabel": "Zpráva",
+      "bodyPlaceholder": "Volitelný text zprávy",
+      "cancel": "Zrušit",
+      "send": "Odeslat",
+      "sending": "Odesílám...",
+      "success": "Zpráva odeslána"
     }
   },
   "ProjectReviewed": {
@@ -549,6 +563,20 @@
     },
     "reviews": {
       "title": "Recenze"
+    },
+    "contact": {
+      "trigger": "Kontaktovat klienta",
+      "title": "Napsat klientovi",
+      "description": "Pošlete e-mail klientovi tohoto projektu. Příjemce nelze měnit.",
+      "recipientLabel": "Příjemce",
+      "subjectLabel": "Předmět",
+      "subjectPlaceholder": "Volitelný předmět",
+      "bodyLabel": "Zpráva",
+      "bodyPlaceholder": "Volitelný text zprávy",
+      "cancel": "Zrušit",
+      "send": "Odeslat",
+      "sending": "Odesílám...",
+      "success": "Zpráva odeslána"
     }
   },
   "TranslatorDashboard": {
@@ -641,7 +669,8 @@
       "removeFile": "Odebrat soubor",
       "uploadingOverlay": "Nahrávám…",
       "autoSetProgress": "Nastavit průběh automaticky na 100 %",
-      "autoSetQAState": "Označit projekt jako QA"
+      "autoSetQAState": "Označit projekt jako QA",
+      "autoSendProjectToUserForApproval": "Poslat projekt zákazníkovi k přijmutí"
     },
     "toast": {
       "fileUploaded": "Soubor byl úspěšně nahrán",

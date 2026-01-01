@@ -8,6 +8,13 @@
       "when": 1759072789675,
       "tag": "0000_orange_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759072799675,
+      "tag": "0001_accept_state_enum",
+      "breakpoints": true
     }
   ]
 }

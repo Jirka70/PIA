@@ -33,7 +33,8 @@ import { useTranslations } from "next-intl"
 const uploadFileSchema = z.object({
   file: uploadedFileMeta,
   autoSetProgress: z.boolean(),
-  autoSetQAState: z.boolean()
+  autoSetQAState: z.boolean(),
+  autoSendProjectToUserForApproval: z.boolean()
 })
 
 interface UploadDialogProps {
@@ -56,7 +57,8 @@ export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps)
     defaultValues: {
       file: undefined,
       autoSetProgress: false,
-      autoSetQAState: false
+      autoSetQAState: false,
+      autoSendProjectToUserForApproval: false
     }
   })
 
@@ -111,12 +113,6 @@ export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps)
       onSuccess: async () => {
         form.reset()
 
-        await queryClient.invalidateQueries({
-          queryKey: trpc.projects.getManyAsTranslator.queryKey({
-            translatorId: user.id
-          })
-        })
-
         toast.success(t("toast.fileSuccessfullyUploaded"))
         setOpen(false)
       },
@@ -129,11 +125,33 @@ export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps)
   type UploadFileSchemaType = z.infer<typeof uploadFileSchema>
 
   const onSubmit = async (data: UploadFileSchemaType) => {
-    await uploadTranslatedFile({
+    const returnData = await uploadTranslatedFile({
       projectId: project.id,
       setProgressTo100: data.autoSetProgress,
       setQAState: data.autoSetQAState,
+      setWaitingForApprovalAcceptState: data.autoSendProjectToUserForApproval,
       ...data
+    })
+
+    const returnedProject = returnData.project
+
+    queryClient.setQueryData(trpc.projects.getManyAsTranslator.queryKey({
+      translatorId: user.id
+    }), (cached) => {
+      if (!cached) return cached;
+
+      return {
+        ...cached,
+        projects: cached.projects.map((entry) =>
+          entry.project.id === returnedProject.id
+            ? { ...entry, project: returnedProject }
+            : entry
+        )
+      }
+    })
+
+    await queryClient.invalidateQueries({
+      queryKey: trpc.projects.getManyAsTranslator.queryKey({ translatorId: user.id })
     })
   }
 
@@ -338,6 +356,28 @@ export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps)
                       />
                       <FormLabel htmlFor="auto-set-qa-state" className="font-normal">
                         {t("fields.autoSetQAState")}
+                      </FormLabel>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="autoSendProjectToUserForApproval"
+              render={({ field }) => (
+                <FormItem className="pt-1">
+                  <FormControl>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="auto-set-qa-state"
+                        checked={!!field.value}
+                        onCheckedChange={(v) => field.onChange(Boolean(v))}
+                      />
+                      <FormLabel htmlFor="auto-set-qa-state" className="font-normal">
+                        {t("fields.autoSendProjectToUserForApproval")}
                       </FormLabel>
                     </div>
                   </FormControl>

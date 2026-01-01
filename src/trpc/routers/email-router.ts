@@ -61,4 +61,24 @@ export const emailRouter = createTRPCRouter({
                 ok: true
             };
         })
+        ,
+    sendToUser: baseProcedure
+        .input(
+            z.object({
+                to: z.string().email(),
+                subject: z.string().optional().default(""),
+                body: z.string().optional().default("")
+            })
+        )
+        .mutation(async ({ input }) => {
+            await sendEmail({
+                to: input.to,
+                subject: input.subject || "Message from translator",
+                text: input.body || ""
+            })
+
+            return {
+                ok: true
+            }
+        })
 });

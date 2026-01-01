@@ -1,6 +1,6 @@
-import { companyReview, Project, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity, ProjectStatusType } from "@/db/schema";
+import { companyReview, Project, ProjectAcceptState, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity, ProjectStatusType } from "@/db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
-import { eq, and, getTableColumns, sql, inArray, gte, desc, not } from "drizzle-orm"
+import { eq, and, sql, inArray, gte, not } from "drizzle-orm"
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { createProjectInput } from "@/lib/validators/create-project-schema";
@@ -17,6 +17,7 @@ type DB = typeof db
 const getProjectsByUserId = async (db: DB, id: string) => {
     const sourceFile = alias(ProjectFile, "source_file");
     const targetFile = alias(ProjectFile, "target_file");
+    const translator = alias(user, "translator")
 
     const projects = await db
         .select({
@@ -25,6 +26,7 @@ const getProjectsByUserId = async (db: DB, id: string) => {
             targetFile,
             companyReview,
             translatorReview,
+            translator
         })
         .from(Project)
         .leftJoin(
@@ -43,16 +45,29 @@ const getProjectsByUserId = async (db: DB, id: string) => {
         )
         .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
         .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
+        .leftJoin(translator, eq(translator.id, Project.translatorId))
         .where(eq(Project.clientId, id))
+
+    console.log("projects: ", projects)
 
     return {
         projects
     }
 }
 
+const getProjectById = async (db: DB, id: string) => {
+    const [project] = await db
+        .select()
+        .from(Project)
+        .where(eq(Project.id, id))
+
+    return project;
+}
+
 const getProjectsByTranslatorId = async (db: DB, id: string) => {
     const sourceFile = alias(ProjectFile, "source_file");
     const targetFile = alias(ProjectFile, "target_file");
+    const clientUser = alias(user, "client_user");
 
     const projects = await db
         .select({
@@ -61,6 +76,7 @@ const getProjectsByTranslatorId = async (db: DB, id: string) => {
             targetFile,
             companyReview,
             translatorReview,
+            client: clientUser
         })
         .from(Project)
         .leftJoin(
@@ -79,6 +95,7 @@ const getProjectsByTranslatorId = async (db: DB, id: string) => {
         )
         .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
         .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
+        .leftJoin(clientUser, eq(clientUser.id, Project.clientId))
         .where(eq(Project.translatorId, id))
 
     return {
@@ -217,7 +234,8 @@ export const projectRouter = createTRPCRouter({
             file: uploadedFileMeta,
             projectId: z.string(),
             setProgressTo100: z.boolean(),
-            setQAState: z.boolean()
+            setQAState: z.boolean(),
+            setWaitingForApprovalAcceptState: z.boolean()
         }))
         .mutation(async ({ ctx, input }) => {
             const [project] = await ctx.db.select()
@@ -289,6 +307,16 @@ export const projectRouter = createTRPCRouter({
                     .where(eq(Project.id, project.id))
             }
 
+            if (input.setWaitingForApprovalAcceptState) {
+                await ctx.db
+                    .update(Project)
+                    .set({
+                        acceptState: "waiting for approval"
+                    })
+                    .where(eq(Project.id, project.id))
+
+            }
+
             if (input.setProgressTo100) {
                 await ctx.db
                     .update(Project)
@@ -299,7 +327,8 @@ export const projectRouter = createTRPCRouter({
             }
             
             return {
-                message: "File successfully uploaded"
+                message: "File successfully uploaded",
+                project
             }
         }),
     getManyAsUser: protectedProcedure
@@ -308,6 +337,7 @@ export const projectRouter = createTRPCRouter({
         }))
         .query(async ({ ctx, input }) => {
             const user = ctx.user
+            console.log("Spouštímeeee")
             if (user?.role !== "admin" && (!user || user.id != input.userId)) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
@@ -723,5 +753,34 @@ export const projectRouter = createTRPCRouter({
                 completed: completed?.count ?? 0,
                 cancelled: cancelled?.count ?? 0
             };
+        }),
+    changeAcceptState: protectedProcedure
+        .input(z.object({
+            accept: z.enum(ProjectAcceptState.enumValues),
+            projectId: z.string()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const requesterRole = ctx.user?.role as Role;
+
+            const project = await getProjectById(ctx.db, input.projectId)
+
+            if (!["owner", "admin"].includes(requesterRole) && ctx.user?.id !== project.clientId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authorized"
+                })
+            }
+
+            const updatedProject = await ctx.db
+                .update(Project)
+                .set({
+                    acceptState: input.accept
+                })
+                .where(eq(Project.id, input.projectId))
+                .returning()
+
+            return {
+                project: updatedProject
+            }
         })
 })

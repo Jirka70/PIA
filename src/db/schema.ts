@@ -159,6 +159,13 @@ export const ProjectFile = pgTable("project_file", {
   unique().on(t.projectId, t.fileType)
 ])
 
+export const ProjectAcceptState = pgEnum("project_accept_state",[
+  "accepted",
+  "rejected",
+  "waiting for approval",
+  "n/a"
+])
+
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -183,7 +190,9 @@ export const Project = pgTable("project", {
     .references(() => user.id, {
       onDelete: "set null"
     }),
-
+  acceptState: ProjectAcceptState("accept_state")
+    .default("n/a")
+    .notNull(),
   dueAt: timestamp("due_at"),
   createdAt: timestamp("created_at")
     .defaultNow()

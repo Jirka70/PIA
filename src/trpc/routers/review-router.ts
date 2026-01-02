@@ -69,6 +69,8 @@ export const reviewRouter = createTRPCRouter({
               })
               .returning()
 
+            console.log("review", review)
+
             return {
                 translatorReview: review
             }

@@ -108,10 +108,8 @@ export const projectRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createProjectInput)
         .mutation(async ({ ctx, input }) => {
-            const suitableTranslator = await ctx.db.select({
-                    id: user.id,
-                    name: user.name
-                }).from(user)
+            const [suitableTranslator] = await ctx.db.select()
+                .from(user)
                 .innerJoin(
                     translatorLanguage,
                     eq(user.id, translatorLanguage.translatorId)
@@ -121,9 +119,8 @@ export const projectRouter = createTRPCRouter({
                         eq(translatorLanguage.languageCode, input.targetLanguage)
                     )
                 )
-                .limit(1)
                 
-            if (!suitableTranslator || suitableTranslator.length === 0) {
+            if (!suitableTranslator) {
                 throw new TRPCError({
                     code: "NOT_FOUND",
                     message: "Suitable translator was not found for target language"
@@ -141,11 +138,13 @@ export const projectRouter = createTRPCRouter({
                     sourceLanguage: "cs",
                     targetLanguage: input.targetLanguage,
                     clientId: userId,
-                    translatorId: suitableTranslator[0].id,
+                    translatorId: suitableTranslator.user.id,
                     dueAt: input.dueAt 
                         ? new Date(input.dueAt)
                         : null,
                 }).returning()
+            
+            
 
             await ctx.db.insert(ProjectFile).values({
                 id: input.file.fileId,

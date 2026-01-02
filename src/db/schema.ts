@@ -169,7 +169,9 @@ export const ProjectAcceptState = pgEnum("project_accept_state",[
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
+  description: text("description")
+    .default("")
+    .notNull(),
 
   status: projectStatus("status").default("NEW").notNull(),
   progressPercent: smallint("progress_percent").default(0).notNull(),
@@ -185,11 +187,13 @@ export const Project = pgTable("project", {
   translatorId: text("translator_id")
     .references(() => user.id, {
       onDelete: "set null"
-    }),
+    })
+    .notNull(),
   clientId: text("client_id")
     .references(() => user.id, {
       onDelete: "set null"
-    }),
+    })
+    .notNull(),
   acceptState: ProjectAcceptState("accept_state")
     .default("n/a")
     .notNull(),
@@ -274,8 +278,6 @@ export const schema = {
   companyReview,
 }
 
-
-export type ProjectType = typeof Project.$inferSelect
 export type ProjectStatusType = (typeof projectStatus.enumValues)[number];
 export type ProjectFileType = typeof ProjectFile.$inferSelect
 export type userActivityType = typeof userActivity.$inferInsert

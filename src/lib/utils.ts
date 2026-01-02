@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { authClient } from "./auth-client"
 import { ProjectFileType } from "@/db/schema"
+import { BadPayloadType } from "./types/bad-payload.type"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -59,6 +60,10 @@ export async function performPreview(projectFile: ProjectFileType) {
     // TODO doplnit
   }
 }
+
+export const isBadPayload = (payload: any | BadPayloadType): payload is BadPayloadType => {
+    return (payload as BadPayloadType).ok === false;
+};
 
 export async function uploadFile(fd: FormData) {
   const res = await fetch("/api/upload/project-file", {

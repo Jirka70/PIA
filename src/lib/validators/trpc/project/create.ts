@@ -8,6 +8,8 @@ export const createProjectInput = z.object({
     description: z.string()
         .max(10_000, { message: "Description is too long" })
         .optional(),
+    sourceLanguage: z.string({ message: "Invalid language specification" })
+        .length(2, { message: "Invalid language specification" }),
     targetLanguage: z.string({ message: "Invalid language specification" })
         .length(2, { message: "Invalid language specification" }),
     dueAt: z.date()

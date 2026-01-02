@@ -5,6 +5,9 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { alias } from "drizzle-orm/pg-core";
 import type { db } from "@/db/drizzle";
+import * as projectService from "@/server/services/project.service";
+import * as fileService from "@/server/services/file.service";
+import * as activityService from "@/server/services/activity.service";
 import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
 import { createProjectInput } from "@/lib/validators/trpc/project/create";
 import { getSourceProjectFileInput } from "@/lib/validators/trpc/project/getSourceProjectFile";
@@ -20,9 +23,12 @@ import { changeProjectStatusInput } from "@/lib/validators/trpc/project/changePr
 import { getProjectsCreatedLastMonthInput } from "@/lib/validators/trpc/project/getProjectsCreatedLastMonth";
 import { getProjectStatusCountsInput } from "@/lib/validators/trpc/project/getProjectStatusCounts";
 import { changeAcceptStateInput } from "@/lib/validators/trpc/project/changeAcceptState";
+import { InsertProjectType, ProjectType } from "@/lib/types/project.type";
+import { isBadPayload } from "@/lib/utils";
+import { InsertProjectFileType } from "@/lib/types/project-file.type";
+import { InsertUserActivityType } from "@/lib/types/userActivity.type";
 
 type DB = typeof db
-
 
 
 const getProjectsByUserId = async (db: DB, id: string) => {
@@ -58,8 +64,6 @@ const getProjectsByUserId = async (db: DB, id: string) => {
         .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
         .leftJoin(translator, eq(translator.id, Project.translatorId))
         .where(eq(Project.clientId, id))
-
-    console.log("projects: ", projects)
 
     return {
         projects
@@ -140,24 +144,34 @@ export const projectRouter = createTRPCRouter({
 
             const userId = ctx.user?.id
 
-            const [project] = await ctx.db
-                .insert(Project)
-                .values({
-                    id: nanoid(),
-                    name: input.name,
-                    description: input.description,
-                    sourceLanguage: "cs",
-                    targetLanguage: input.targetLanguage,
-                    clientId: userId,
-                    translatorId: suitableTranslator.user.id,
-                    dueAt: input.dueAt 
-                        ? new Date(input.dueAt)
-                        : null,
-                }).returning()
-            
+            const projectPayload : InsertProjectType = {
+                id: nanoid(),
+                name: input.name,
+                description: input.description ?? "",
+                sourceLanguage: input.sourceLanguage,
+                targetLanguage: input.targetLanguage,
+                clientId: userId,
+                translatorId: suitableTranslator.user.id,
+
+                dueAt: input.dueAt
+                    ? new Date(input.dueAt)
+                    : null,
+            };
+
+            const insertedProject = await projectService.create(ctx.db, projectPayload);
+
+            if (isBadPayload(insertedProject)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Project is in invalid form",
+                    cause: insertedProject.error,
+                });
+            }
+
             
 
-            await ctx.db.insert(ProjectFile).values({
+            const project: ProjectType = insertedProject;
+            const projectFilePayload : InsertProjectFileType = {
                 id: input.file.fileId,
                 projectId: project.id,
                 fileName: input.file.fileName,
@@ -166,19 +180,28 @@ export const projectRouter = createTRPCRouter({
                 storageKey: input.file.storageKey,
                 fileType: "SOURCE",
                 url: input.file.url
-            })
+            }
 
-            await ctx.db
-                .insert(userActivity)
-                .values({
+            const insertedProjectFile = fileService.create(ctx.db, projectFilePayload)
+            
+            if (isBadPayload(insertedProjectFile)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Project file is in invalid form",
+                    cause: insertedProjectFile.error,
+                });
+            }
+
+            const activityPayload : InsertUserActivityType = {
                     id: nanoid(),
                     userId: ctx.user?.id,
                     info: "created a project",
                     activityStatus: "CREATED_PROJECT",
                     activitySeverity: "Info",
                     projectId: project.id
-                })
+                } 
 
+            await activityService.create(ctx.db, activityPayload)
             return { project }
     }),
     getSourceProjectFile: protectedProcedure
@@ -229,10 +252,7 @@ export const projectRouter = createTRPCRouter({
                 })
             }
 
-            const projects = await getProjectsByTranslatorId(ctx.db, input.translatorId);
-
-            return projects
-            
+            return await getProjectsByTranslatorId(ctx.db, input.translatorId);            
         }),
 
     uploadTranslatedFile: translatorProcedure
@@ -249,7 +269,6 @@ export const projectRouter = createTRPCRouter({
                 })
             }
 
-            
             const translated_file = await ctx.db
                 .select()
                 .from(ProjectFile)
@@ -257,9 +276,6 @@ export const projectRouter = createTRPCRouter({
                     eq(ProjectFile.fileType, "TRANSLATE"),
                     eq(ProjectFile.projectId, project.id)
                 ))
-
-            console.log("translatedFile", translated_file)
-            console.log("input", input.file)
             
             const newTranslatedFile = {
                 id: input.file.fileId,

@@ -66,10 +66,10 @@ function buildProjectRow(input: ProjectInput): ProjectRow {
     updatedAt: input.updatedAt ?? now,
 
     // nullable / optional
-    description: input.description ?? null,
+    description: input.description ?? "",
     progressNote: input.progressNote ?? null,
-    translatorId: input.translatorId ?? null,
-    clientId: input.clientId ?? null,
+    translatorId: input.translatorId ?? "translator-id",
+    clientId: input.clientId ?? "client-id",
     dueAt: input.dueAt ?? null,
   };
 }

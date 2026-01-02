@@ -1,28 +1,14 @@
-import z from "zod";
 import { createTRPCRouter, baseProcedure } from "../init";
 import { sendEmail } from "@/server/email/transporter";
 import { language } from "@/db/schema";
 import { TRPCError } from "@trpc/server";
 import { sql } from "drizzle-orm";
+import { sendInput } from "@/lib/validators/trpc/email/send";
+import { sendToUserInput } from "@/lib/validators/trpc/email/sendToUser";
 
 export const emailRouter = createTRPCRouter({
     send: baseProcedure
-        .input(
-            z
-                .object({
-                    firstName: z.string().min(1),
-                    lastName: z.string().min(1),
-                    email: z.email(),
-                    sourceLanguage: z.string().min(1),
-                    targetLanguage: z.string().min(1),
-                    serviceType: z.string().min(1),
-                    projectDetails: z.string().min(10)
-                })
-                .refine((data) => data.sourceLanguage !== data.targetLanguage, {
-                    message: "Source and target languages must differ",
-                    path: ["targetLanguage"]
-                })
-        )
+        .input(sendInput)
         .mutation(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -63,13 +49,7 @@ export const emailRouter = createTRPCRouter({
         })
         ,
     sendToUser: baseProcedure
-        .input(
-            z.object({
-                to: z.string().email(),
-                subject: z.string().optional().default(""),
-                body: z.string().optional().default("")
-            })
-        )
+        .input(sendToUserInput)
         .mutation(async ({ input }) => {
             await sendEmail({
                 to: input.to,

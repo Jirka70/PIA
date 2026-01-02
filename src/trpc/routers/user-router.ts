@@ -1,15 +1,16 @@
-import z from "zod";
 import { adminProcedure, createTRPCRouter, translatorProcedure } from "../init";
-import { language, Project, Role, translatorLanguage, translatorReview, user, userRole } from "@/db/schema";
+import { language, Project, Role, translatorLanguage, translatorReview, user } from "@/db/schema";
 import { eq, getTableColumns, or, sql } from "drizzle-orm";
-import { id } from "date-fns/locale";
 import { TRPCError } from "@trpc/server";
+import { getUserByIdInput } from "@/lib/validators/trpc/user/getUserById";
+import { getTranslatorInfoInput } from "@/lib/validators/trpc/user/getTranslatorInfo";
+import { getUserInfoInput } from "@/lib/validators/trpc/user/getUserInfo";
+import { changeUserRoleInput } from "@/lib/validators/trpc/user/changeUserRole";
+import { getTranslatorAverageRatingsInput } from "@/lib/validators/trpc/user/getTranslatorAverageRatings";
 
 export const userRouter = createTRPCRouter({
     getUserById: adminProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getUserByIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -45,11 +46,9 @@ export const userRouter = createTRPCRouter({
             return {
                 users: res
             }
-        }),
+    }),
     getTranslatorInfo: adminProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getTranslatorInfoInput)
         .query(async ({ ctx, input }) => {
             const [translator] = await ctx.db
                 .select()
@@ -70,11 +69,9 @@ export const userRouter = createTRPCRouter({
                 .where(eq(translatorLanguage.translatorId, input.id));
 
             return { translator, projects, languages };
-        }),
+    }),
     getUserInfo: adminProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getUserInfoInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
             const rows = await db
@@ -123,12 +120,9 @@ export const userRouter = createTRPCRouter({
             return {
                 result
             }
-        }),
+    }),
     changeUserRole: adminProcedure
-        .input(z.object({
-            id: z.string(),
-            role: z.enum(userRole.enumValues),
-        }))
+        .input(changeUserRoleInput)
         .mutation(async ({ ctx, input }) => {
             if (input.role === "admin") {
                 throw new TRPCError({
@@ -146,13 +140,9 @@ export const userRouter = createTRPCRouter({
             return { 
                 user: updatedUser
              }
-        }),
+    }),
     getTranslatorAverageRatings: translatorProcedure
-        .input(
-            z.object({
-                translatorId: z.string()
-            })
-        )
+        .input(getTranslatorAverageRatingsInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
             const requesterRole = ctx.user.role as Role;

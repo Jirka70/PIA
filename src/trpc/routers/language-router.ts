@@ -1,14 +1,12 @@
 import { language, translatorLanguage } from "@/db/schema";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "../init";
-import { z } from "zod"
 import { and, eq } from "drizzle-orm";
+import { addLanguageToTranslatorInput } from "@/lib/validators/trpc/language/addLanguageToTranslator";
+import { removeLanguageOfTranslatorInput } from "@/lib/validators/trpc/language/removeLanguageOfTranslator";
 
 export const languageRouter = createTRPCRouter({
     addLanguageToTranslator: adminProcedure
-        .input(z.object({
-            translatorId: z.string(),
-            code: z.string(),
-        }))
+        .input(addLanguageToTranslatorInput)
         .mutation(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -22,10 +20,7 @@ export const languageRouter = createTRPCRouter({
             }
         }),
     removeLanguageOfTranslator: adminProcedure
-        .input(z.object({
-            translatorId: z.string(),
-            code: z.string(),
-        }))
+        .input(removeLanguageOfTranslatorInput)
         .mutation(async ({ ctx, input }) => {
             const db = ctx.db;
 

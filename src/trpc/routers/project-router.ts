@@ -1,14 +1,25 @@
 import { companyReview, Project, ProjectAcceptState, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity, ProjectStatusType } from "@/db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
-import { eq, and, sql, inArray, gte, not } from "drizzle-orm"
+import { eq, and, sql, inArray, gte, not } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
-import { createProjectInput } from "@/lib/validators/create-project-schema";
-import z from "zod";
-import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
 import { alias } from "drizzle-orm/pg-core";
-import type { db } from "@/db/drizzle"
+import type { db } from "@/db/drizzle";
 import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
+import { createProjectInput } from "@/lib/validators/trpc/project/create";
+import { getSourceProjectFileInput } from "@/lib/validators/trpc/project/getSourceProjectFile";
+import { getManyAsTranslatorInput } from "@/lib/validators/trpc/project/getManyAsTranslator";
+import { uploadTranslatedFileInput } from "@/lib/validators/trpc/project/uploadTranslatedFile";
+import { getManyAsUserInput } from "@/lib/validators/trpc/project/getManyAsUser";
+import { updateProgressInput } from "@/lib/validators/trpc/project/updateProgress";
+import { getTranslatedFileInput } from "@/lib/validators/trpc/project/getTranslatedFile";
+import { getProjectByIdInput } from "@/lib/validators/trpc/project/getProjectById";
+import { getProjectsByTranslatorIdInput } from "@/lib/validators/trpc/project/getProjectsByTranslatorId";
+import { getProjectsByUserIdInput } from "@/lib/validators/trpc/project/getProjectsByUserId";
+import { changeProjectStatusInput } from "@/lib/validators/trpc/project/changeProjectStatus";
+import { getProjectsCreatedLastMonthInput } from "@/lib/validators/trpc/project/getProjectsCreatedLastMonth";
+import { getProjectStatusCountsInput } from "@/lib/validators/trpc/project/getProjectStatusCounts";
+import { changeAcceptStateInput } from "@/lib/validators/trpc/project/changeAcceptState";
 
 type DB = typeof db
 
@@ -169,11 +180,9 @@ export const projectRouter = createTRPCRouter({
                 })
 
             return { project }
-        }),
+    }),
     getSourceProjectFile: protectedProcedure
-        .input(z.object({
-            projectId: z.string()
-        }))
+        .input(getSourceProjectFileInput)
         .mutation(async ({ ctx, input }) => {
             const user = ctx.user!;
             const [project] = await ctx.db.select()
@@ -210,9 +219,7 @@ export const projectRouter = createTRPCRouter({
 
         }),
     getManyAsTranslator: translatorProcedure
-        .input(z.object({
-            translatorId: z.string()
-        }))
+        .input(getManyAsTranslatorInput)
         .query(async ({ ctx, input }) => {
             const user = ctx.user
             if (user?.role !== "admin" && (!user || user.id != input.translatorId)) {
@@ -229,13 +236,7 @@ export const projectRouter = createTRPCRouter({
         }),
 
     uploadTranslatedFile: translatorProcedure
-        .input(z.object({
-            file: uploadedFileMeta,
-            projectId: z.string(),
-            setProgressTo100: z.boolean(),
-            setQAState: z.boolean(),
-            setWaitingForApprovalAcceptState: z.boolean()
-        }))
+        .input(uploadTranslatedFileInput)
         .mutation(async ({ ctx, input }) => {
             const [project] = await ctx.db.select()
                 .from(Project)
@@ -329,11 +330,9 @@ export const projectRouter = createTRPCRouter({
                 message: "File successfully uploaded",
                 project
             }
-        }),
+    }),
     getManyAsUser: protectedProcedure
-        .input(z.object({
-            userId: z.string()
-        }))
+        .input(getManyAsUserInput)
         .query(async ({ ctx, input }) => {
             const user = ctx.user
             console.log("Spouštímeeee")
@@ -347,15 +346,9 @@ export const projectRouter = createTRPCRouter({
             const projects = await getProjectsByUserId(ctx.db, input.userId);
 
             return projects
-        }),
+    }),
     updateProgress: translatorProcedure
-        .input(z.object({
-            projectId: z.string(),
-            newProgress: z
-                .number()
-                .min(0, { message: "Progress must be higher or equal than 0"})
-                .max(100, { message: "Progress must be lower or equal than 100" })
-        }))
+        .input(updateProgressInput)
         .mutation(async ({ ctx, input }) => {
             const loggedUser = ctx.user
 
@@ -394,9 +387,7 @@ export const projectRouter = createTRPCRouter({
             
         }),
     getTranslatedFile: protectedProcedure
-        .input(z.object({
-            projectId: z.string()
-        }))
+        .input(getTranslatedFileInput)
         .mutation(async ({ ctx, input }) => {
             const [project] = await ctx.db.
                 select()
@@ -423,11 +414,9 @@ export const projectRouter = createTRPCRouter({
             return {
                 translatedFile: projectFile
             }
-        }),
+    }),
     getProjectById: adminProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getProjectByIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -475,11 +464,9 @@ export const projectRouter = createTRPCRouter({
 
             return project
             
-        }),
+    }),
     getProjectsByTranslatorId: adminProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getProjectsByTranslatorIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -524,11 +511,9 @@ export const projectRouter = createTRPCRouter({
             return {
                 project
             }
-        }),
+    }),
     getProjectsByUserId: adminProcedure
-        .input(z.object({
-            userId: z.string()
-        }))
+        .input(getProjectsByUserIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
 
@@ -573,12 +558,9 @@ export const projectRouter = createTRPCRouter({
             return {
                 project
             }
-        }),
+    }),
     changeProjectStatus: translatorProcedure
-        .input(z.object({
-            projectId: z.string(),
-            projectStatus: z.enum(projectStatus.enumValues)
-        }))
+        .input(changeProjectStatusInput)
         .mutation(async ({ ctx, input }) => {
             const db = ctx.db;
             const role = ctx.user?.role as Role;
@@ -669,11 +651,9 @@ export const projectRouter = createTRPCRouter({
     getProjectStatuses: adminProcedure
         .query(() => {
             return { statuses: projectStatus.enumValues };
-        }),
+    }),
     getProjectsCreatedLastMonth: protectedProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getProjectsCreatedLastMonthInput)
         .query(async ({ ctx, input }) => {
             const role = ctx.user?.role as Role
             const signedUserId = ctx.user?.id
@@ -703,13 +683,9 @@ export const projectRouter = createTRPCRouter({
             return {
                 projects
             }
-        }),
+    }),
     getProjectStatusCounts: translatorProcedure
-        .input(
-            z.object({
-                translatorId: z.string()
-            })
-        )
+        .input(getProjectStatusCountsInput)
         .query(async ({ ctx, input }) => {
             const requesterRole = ctx.user?.role as Role;
 
@@ -752,12 +728,9 @@ export const projectRouter = createTRPCRouter({
                 completed: completed?.count ?? 0,
                 cancelled: cancelled?.count ?? 0
             };
-        }),
+    }),
     changeAcceptState: protectedProcedure
-        .input(z.object({
-            accept: z.enum(ProjectAcceptState.enumValues),
-            projectId: z.string()
-        }))
+        .input(changeAcceptStateInput)
         .mutation(async ({ ctx, input }) => {
             const requesterRole = ctx.user?.role as Role;
 

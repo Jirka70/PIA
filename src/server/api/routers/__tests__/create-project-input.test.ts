@@ -1,8 +1,5 @@
-import { ProjectFile } from "@/db/schema";
-import { createProjectInput } from "@/lib/validators/create-project-schema";
-import { ProjectRow } from "@/test/helpers/db";
+import { createProjectInput } from "@/lib/validators/trpc/project/create";
 import { validCreateProjectInput } from "@/test/helpers/factories";
-import { InferSelectModel } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 

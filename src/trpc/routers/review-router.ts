@@ -1,19 +1,19 @@
-import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import { companyReview, Project, Role, translatorReview } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { companySchema, translatorSchema } from "@/lib/validators/review-schemas";
 import { nanoid } from "nanoid"
+import { publishTranslatorReviewInput } from "@/lib/validators/trpc/review/publishTranslatorReview";
+import { publishCompanyReviewInput } from "@/lib/validators/trpc/review/publishCompanyReview";
+import { getTranslatorReviewByProjectIdInput } from "@/lib/validators/trpc/review/getTranslatorReviewByProjectId";
+import { getCompanyReviewByProjectIdInput } from "@/lib/validators/trpc/review/getCompanyReviewByProjectId";
+import { getTranslatorRatingDistributionInput } from "@/lib/validators/trpc/review/getTranslatorRatingDistribution";
 
 
 
 export const reviewRouter = createTRPCRouter({
     publishTranslatorReview: protectedProcedure
-        .input(z.object({
-            projectId: z.string(),
-            reviewData: translatorSchema
-        }))
+        .input(publishTranslatorReviewInput)
         .mutation(async ({ ctx, input }) => {
             const reviewData = input.reviewData;
             const db = ctx.db;
@@ -77,10 +77,7 @@ export const reviewRouter = createTRPCRouter({
         }),
 
     publishCompanyReview: protectedProcedure
-        .input(z.object({
-            projectId: z.string(),
-            reviewData: companySchema
-        }))
+        .input(publishCompanyReviewInput)
         .mutation(async ({ ctx, input }) => {
                 
             const reviewData = input.reviewData;
@@ -146,9 +143,7 @@ export const reviewRouter = createTRPCRouter({
         }),
     
     getTranslatorReviewByProjectId: protectedProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getTranslatorReviewByProjectIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
             const user = ctx.user;
@@ -176,9 +171,7 @@ export const reviewRouter = createTRPCRouter({
             }
         }),
     getCompanyReviewByProjectId: protectedProcedure
-        .input(z.object({
-            id: z.string()
-        }))
+        .input(getCompanyReviewByProjectIdInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
             const user = ctx.user;
@@ -206,7 +199,7 @@ export const reviewRouter = createTRPCRouter({
             }
         }),
     getTranslatorRatingDistribution: protectedProcedure
-        .input(z.object({ translatorId: z.string() }))
+        .input(getTranslatorRatingDistributionInput)
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
             const user = ctx.user;

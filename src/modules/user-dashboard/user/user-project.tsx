@@ -11,7 +11,8 @@ import {
   ThumbsDown,
   CheckCircle2,
   XCircle,
-  ShieldCheck
+  ShieldCheck,
+  Languages
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { performDownload } from "@/lib/utils"
@@ -76,6 +77,11 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
   const translator = projectInfo.translator
   const sourceFile = projectInfo.sourceFile
   const translatedFile = projectInfo.targetFile
+  const translatorName = translator?.name || ""
+  const languagePair =
+    project.sourceLanguage && project.targetLanguage
+      ? `${project.sourceLanguage.toUpperCase()} → ${project.targetLanguage.toUpperCase()}`
+      : ""
 
   const downloadTranslatedFile = async () => {
     if (!translatedFile) throw new Error(t("errors.cannotFindFileToDownload"))
@@ -104,10 +110,10 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
   const { mutateAsync: changeAcceptState, isPending: isChangingAcceptState } = useMutation(
     trpc.projects.changeAcceptState.mutationOptions({
       onSuccess: () => {
-        toast.success("Response was successfully submitted")
+        toast.success(t("qa.toast.success"))
       },
       onError: (error) => {
-        toast.error(error.message ?? "Failed to submit your response")
+        toast.error(error.message ?? t("qa.toast.error"))
       }
     })
   )
@@ -226,14 +232,11 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
             <Alert className="border-primary/30 bg-primary/5">
               <AlertTitle className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                Překlad je hotový a čeká na vaše schválení
+                {t("qa.title")}
               </AlertTitle>
 
               <AlertDescription className="mt-2 space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Zkontrolujte výstupní soubor a dejte nám vědět, zda jste s projektem spokojeni. Schválení projekt uzavře,
-                  zamítnutí odešle požadavek na úpravy.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("qa.description")}</p>
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
@@ -252,22 +255,22 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
                       {acceptedState === "accepted" && (
                         <>
                           <ThumbsUp className="mr-1 h-3.5 w-3.5" />
-                          Schváleno
+                          {t("qa.status.accepted")}
                         </>
                       )}
                       {acceptedState === "rejected" && (
                         <>
                           <ThumbsDown className="mr-1 h-3.5 w-3.5" />
-                          Zamítnuto
+                          {t("qa.status.rejected")}
                         </>
                       )}
-                      {acceptedState === "waiting for approval" && "Čeká na rozhodnutí"}
+                      {acceptedState === "waiting for approval" && t("qa.status.pending")}
                     </Badge>
 
                     <span className="text-xs text-muted-foreground">
                       {isApprovalNotAvailable
-                        ? "Schválení bude dostupné, jakmile bude překlad připraven k zhodnocení."
-                        : "Doporučení: stáhněte „Přeložený soubor“ a rychle zkontrolujte klíčové pasáže."}
+                        ? t("qa.hint.notAvailable")
+                        : t("qa.hint.available")}
                     </span>
                   </div>
 
@@ -283,7 +286,7 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
                       className="min-w-[140px]"
                     >
                       <ThumbsUp className="mr-2 h-4 w-4" />
-                      Accept
+                      {t("qa.actions.accept")}
                     </Button>
 
                     <Button
@@ -297,7 +300,7 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
                       className="min-w-[140px]"
                     >
                       <ThumbsDown className="mr-2 h-4 w-4" />
-                      Reject
+                      {t("qa.actions.reject")}
                     </Button>
                   </div>
                 </div>
@@ -313,10 +316,7 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
                       )}
                       <div className="space-y-0.5">
                         <div className="font-medium">
-                          {acceptedState === "accepted" ? "Rozhodnutí bylo zaznamenáno." : "Zpětná vazba byla zaznamenána."}
-                        </div>
-                        <div className="text-muted-foreground">
-                          Pokud potřebujete rozhodnutí změnit, udělejte to prosím přes detail projektu (nebo kontaktujte podporu).
+                          {acceptedState === "accepted" ? t("qa.decision.recordedAccepted") : t("qa.decision.recordedRejected")}
                         </div>
                       </div>
                     </div>
@@ -360,6 +360,18 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
             <div className="flex flex-col min-w-0">
               <span className="text-xs text-muted-foreground">{t("deadline")}</span>
               <span className={`font-medium truncate ${getDeadlineColor(project.dueAt)}`}>{formatDate(project.dueAt)}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <Languages className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs text-muted-foreground">{t("languages")}</span>
+              <span className="font-medium truncate">
+                {project.sourceLanguage && project.targetLanguage
+                  ? `${project.sourceLanguage.toUpperCase()} → ${project.targetLanguage.toUpperCase()}`
+                  : t("notSet")}
+              </span>
             </div>
           </div>
         </div>
@@ -416,6 +428,8 @@ export const UserProject = ({ projectInfo, onTranslatorReviewSubmit, onCompanyRe
                 onCompanyReviewSubmitted={onCompanyReviewSubmitWrapper}
                 isTranslatorReviewSubmitted={hasTranslatorReview}
                 isCompanyReviewSubmitted={hasCompanyReview}
+                translatorName={translatorName}
+                languagePair={languagePair}
               />
             )}
 

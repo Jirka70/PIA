@@ -24,7 +24,7 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      companyName: "",
+      companyName: "Lingualink",
       priceRating: 0,
       supportRating: 0,
       wouldRecommend: false,
@@ -52,7 +52,7 @@ export function CompanyReview({ onSubmit, onCancel, isSubmitted }: CompanyReview
             <FormItem>
               <FormLabel>{t("fields.companyName.label")}</FormLabel>
               <FormControl>
-                <Input placeholder={t("fields.companyName.placeholder")} {...field} />
+                <Input placeholder={t("fields.companyName.placeholder")} {...field} disabled readOnly />
               </FormControl>
               <FormMessage />
             </FormItem>

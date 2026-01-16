@@ -3,17 +3,9 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Globe, Shield, Zap } from "lucide-react"
 import Link from "next/link"
 import { TestimonialsSection } from "@/modules/dashboard/testimonials-section"
-import { getDictionary } from "@/lib/get-dictionary"
 import { getTranslations } from "next-intl/server"
 
-export default async function HomePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  
-
-  const {locale} = await params
+export default async function HomePage() {
   const t = await getTranslations("hero")
   const navT = await getTranslations("nav")
 

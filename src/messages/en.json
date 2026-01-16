@@ -324,10 +324,15 @@
         "label": "Project Name",
         "placeholder": "e.g., Legal Contract Translation"
       },
+      "sourceLanguage": {
+        "label": "Source Language",
+        "placeholder": "Select language"
+      },
       "targetLanguage": {
         "label": "Target Language",
         "placeholder": "Select language"
       },
+      "languageUnavailable": "Not available",
       "description": {
         "label": "Project Description",
         "placeholder": "Provide details about the content, context and any specific requirements..."
@@ -380,8 +385,35 @@
     "progress": "Progress",
     "created": "Created",
     "deadline": "Deadline",
+    "languages": "Languages",
     "notSet": "Not set",
     "reviews": "Reviews",
+    "qa": {
+      "title": "Translation is ready and awaiting your approval",
+      "description": "Review the output file and let us know if you're satisfied. Approving will close the project, rejecting will request changes.",
+      "status": {
+        "accepted": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending decision"
+      },
+      "hint": {
+        "notAvailable": "Approval will be available once the translation is ready for review.",
+        "available": "Tip: download the translated file and quickly scan key passages."
+      },
+      "actions": {
+        "accept": "Approve",
+        "reject": "Reject"
+      },
+      "decision": {
+        "recordedAccepted": "Decision recorded.",
+        "recordedRejected": "Feedback recorded.",
+        "hint": "If you need to change the decision, please do so via the project detail (or contact support)."
+      },
+      "toast": {
+        "success": "Response was successfully submitted",
+        "error": "Failed to submit your response"
+      }
+    },
 
     "downloads": {
       "gettingSource": "Getting source file…",
@@ -675,6 +707,9 @@
       "fileUploaded": "File uploaded successfully",
       "uploadFailed": "Upload failed",
       "fileSuccessfullyUploaded": "File successfully uploaded"
+    },
+    "disabled": {
+      "approved": "Project is already approved by the customer."
     },
     "actions": {
       "cancel": "Cancel",
@@ -1082,6 +1117,14 @@
     },
     "states": {
       "noProjects": "No projects found"
+    }
+  },
+  "UserNotFound": {
+    "title": "User not found",
+    "description": "The requested user does not exist or was removed. The link may be invalid, or the user has no data available.",
+    "actions": {
+      "dashboard": "Go to dashboard",
+      "backHome": "Back to home"
     }
   },
   "ProjectStatusDialog": {

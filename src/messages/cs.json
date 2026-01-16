@@ -325,10 +325,15 @@
         "label": "Název projektu",
         "placeholder": "např. Překlad smlouvy"
       },
+      "sourceLanguage": {
+        "label": "Zdrojový jazyk",
+        "placeholder": "Vyberte jazyk"
+      },
       "targetLanguage": {
         "label": "Cílový jazyk",
         "placeholder": "Vyberte jazyk"
       },
+      "languageUnavailable": "Není dostupný",
       "description": {
         "label": "Popis projektu",
         "placeholder": "Uveďte kontext, rozsah a případné specifické požadavky..."
@@ -381,8 +386,35 @@
     "progress": "Průběh",
     "created": "Vytvořeno",
     "deadline": "Deadline",
+    "languages": "Jazyky",
     "notSet": "Nenastaveno",
     "reviews": "Recenze",
+    "qa": {
+      "title": "Překlad je hotový a čeká na vaše schválení",
+      "description": "Zkontrolujte výstupní soubor a dejte nám vědět, zda jste spokojeni. Schválení projekt uzavře, zamítnutí odešle požadavek na úpravy.",
+      "status": {
+        "accepted": "Schváleno",
+        "rejected": "Zamítnuto",
+        "pending": "Čeká na rozhodnutí"
+      },
+      "hint": {
+        "notAvailable": "Schválení bude dostupné, jakmile bude překlad připraven k zhodnocení.",
+        "available": "Tip: stáhněte přeložený soubor a rychle zkontrolujte klíčové pasáže."
+      },
+      "actions": {
+        "accept": "Schválit",
+        "reject": "Zamítnout"
+      },
+      "decision": {
+        "recordedAccepted": "Rozhodnutí bylo zaznamenáno.",
+        "recordedRejected": "Zpětná vazba byla zaznamenána.",
+        "hint": "Pokud potřebujete rozhodnutí změnit, udělejte to prosím přes detail projektu (nebo kontaktujte podporu)."
+      },
+      "toast": {
+        "success": "Odpověď byla úspěšně odeslána",
+        "error": "Odpověď se nepodařilo odeslat"
+      }
+    },
 
     "downloads": {
       "gettingSource": "Načítám zdrojový soubor…",
@@ -676,6 +708,9 @@
       "fileUploaded": "Soubor byl úspěšně nahrán",
       "uploadFailed": "Nahrávání se nezdařilo",
       "fileSuccessfullyUploaded": "Soubor byl úspěšně odeslán"
+    },
+    "disabled": {
+      "approved": "Projekt už byl schválen zákazníkem."
     },
     "actions": {
       "cancel": "Zrušit",
@@ -1083,6 +1118,14 @@
     },
     "states": {
       "noProjects": "Nebyly nalezeny žádné projekty"
+    }
+  },
+  "UserNotFound": {
+    "title": "Uživatel nebyl nalezen",
+    "description": "Požadovaný uživatel neexistuje nebo byl odstraněn. Je možné, že odkaz je neplatný, případně uživatel nemá k dispozici žádná data.",
+    "actions": {
+      "dashboard": "Přejít na dashboard",
+      "backHome": "Zpět na domov"
     }
   },
   "ProjectStatusDialog": {

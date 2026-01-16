@@ -1,3 +1,5 @@
+ "use client"
+
 import Link from "next/link"
 import { UserX, Home, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,8 +11,11 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty"
+import { useTranslations } from "next-intl"
 
 export default function UserNotFound() {
+  const t = useTranslations("UserNotFound")
+
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <Empty className="max-w-2xl border">
@@ -18,11 +23,8 @@ export default function UserNotFound() {
           <EmptyMedia variant="icon">
             <UserX className="text-muted-foreground" />
           </EmptyMedia>
-          <EmptyTitle>Překladatel nebyl nalezen</EmptyTitle>
-          <EmptyDescription>
-            Požadovaný uživatel neexistuje nebo byl odstraněn. Je možné, že odkaz je neplatný,
-            případně uživatel nemá k dispozici žádná data.
-          </EmptyDescription>
+          <EmptyTitle>{t("title")}</EmptyTitle>
+          <EmptyDescription>{t("description")}</EmptyDescription>
         </EmptyHeader>
 
         <EmptyContent>
@@ -30,14 +32,14 @@ export default function UserNotFound() {
             <Button asChild className="flex-1 sm:flex-none">
               <Link href="/user-dashboard">
                 <Home />
-                Dashboard
+                {t("actions.dashboard")}
               </Link>
             </Button>
 
             <Button asChild variant="secondary" className="flex-1 sm:flex-none">
               <Link href="/">
                 <ArrowLeft />
-                Zpět na domov
+                {t("actions.backHome")}
               </Link>
             </Button>
           </div>

@@ -2,9 +2,9 @@ import { requireAdmin } from "@/lib/auth-utils"
 import UserDetail from "@/modules/manage-user/user-detail";
 
 interface UserProjectsProps {
-    params: {
+    params: Promise<{
         userId: string
-    }
+    }>
 }
 
 export default async function UserProjectsPage({ params } : UserProjectsProps) {

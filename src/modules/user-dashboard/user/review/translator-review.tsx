@@ -11,21 +11,24 @@ import { TranslatorFormData, translatorSchema } from "@/lib/validators/review-sc
 import { SubmittedState } from "./submitted-state"
 import { StarRating } from "./star-rating"
 import { useTranslations } from "next-intl"
+import { useEffect } from "react"
 
 interface TranslatorReviewProps {
   onSubmit: (data: TranslatorFormData & { reviewType: "translator" }) => void
   onCancel: () => Promise<void>
   isSubmitted: boolean
+  translatorName?: string
+  languagePair?: string
 }
 
-export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: TranslatorReviewProps) {
+export function TranslatorReview({ onSubmit, onCancel, isSubmitted, translatorName, languagePair }: TranslatorReviewProps) {
   const t = useTranslations("TranslatorReview")
 
   const form = useForm<TranslatorFormData>({
     resolver: zodResolver(translatorSchema),
     defaultValues: {
-      translatorName: "",
-      languagePair: "",
+      translatorName: translatorName || "",
+      languagePair: languagePair || "",
       qualityRating: 0,
       communicationRating: 0,
       punctualityRating: 0,
@@ -34,6 +37,19 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
       comment: ""
     }
   })
+
+  useEffect(() => {
+    form.reset({
+      translatorName: translatorName || "",
+      languagePair: languagePair || "",
+      qualityRating: form.getValues("qualityRating"),
+      communicationRating: form.getValues("communicationRating"),
+      punctualityRating: form.getValues("punctualityRating"),
+      overallRating: form.getValues("overallRating"),
+      title: form.getValues("title"),
+      comment: form.getValues("comment")
+    })
+  }, [translatorName, languagePair, form])
 
   const handleFormSubmit = async (data: TranslatorFormData) => {
     await onSubmit({ ...data, reviewType: "translator" })
@@ -53,7 +69,7 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
             <FormItem>
               <FormLabel>{t("fields.translatorName.label")}</FormLabel>
               <FormControl>
-                <Input placeholder={t("fields.translatorName.placeholder")} {...field} />
+                <Input placeholder={t("fields.translatorName.placeholder")} {...field} disabled />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -70,7 +86,7 @@ export function TranslatorReview({ onSubmit, onCancel, isSubmitted }: Translator
                 {t("fields.languagePair.label")}
               </FormLabel>
               <FormControl>
-                <Input placeholder={t("fields.languagePair.placeholder")} {...field} />
+                <Input placeholder={t("fields.languagePair.placeholder")} {...field} disabled />
               </FormControl>
               <FormDescription>{t("fields.languagePair.description")}</FormDescription>
               <FormMessage />

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { TranslatorSignupForm } from "@/modules/login/forms/translator-sign-up-form";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function Home() {

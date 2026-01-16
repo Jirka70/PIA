@@ -3,7 +3,6 @@
 import { ProjectStatusType, Role } from "@/db/schema"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { notFound } from "next/navigation"
 import { SingleProjectView } from "./single-project-view"
 import { ProjectAdminViewWrapper } from "./project-admin-view-wrapper"
 import { Button } from "@/components/ui/button"
@@ -11,6 +10,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { ProjectAdminViewSkeleton } from "./project-admin-view-skeleton"
 import { useTranslations } from "next-intl"
+import UserNotFound from "../error/user-not-found"
 
 interface UserProjectsProps {
   userRole: Role
@@ -55,21 +55,28 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
     })
   )
 
+  console.log("rawUser", rawUser, "userId: ", userId)
+
 
   const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
 
 
-  const { data: projectsInfo, isPending: isProjectsPending } = isTranslator
-    ? useQuery(
-        trpc.projects.getProjectsByTranslatorId.queryOptions({
-          id: userId
-        })
-      )
-    : useQuery(
-        trpc.projects.getProjectsByUserId.queryOptions({
-          userId
-        })
-      )
+  const translatorProjects = useQuery({
+    ...trpc.projects.getProjectsByTranslatorId.queryOptions({
+      id: userId
+    }),
+    enabled: isTranslator
+  })
+
+  const userProjects = useQuery({
+    ...trpc.projects.getProjectsByUserId.queryOptions({
+      userId
+    }),
+    enabled: !isTranslator
+  })
+
+  const projectsInfo = isTranslator ? translatorProjects.data : userProjects.data
+  const isProjectsPending = isTranslator ? translatorProjects.isPending : userProjects.isPending
 
   const user = rawUser?.user
   const availableStatuses = statuses?.statuses;
@@ -85,7 +92,7 @@ export const UserProjects = ({ userRole, userId }: UserProjectsProps) => {
   }
 
   if (!user) {
-    notFound()
+    return <UserNotFound />
   }
 
   const onClientClick = async (clientId: string) => {

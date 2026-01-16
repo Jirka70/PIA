@@ -40,9 +40,10 @@ const uploadFileSchema = z.object({
 interface UploadDialogProps {
   project: ProjectType
   user: User
+  disabled?: boolean
 }
 
-export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps) {
+export function UploadTranslatedFileDialog({ project, user, disabled = false }: UploadDialogProps) {
   const t = useTranslations("UploadTranslatedFileDialog")
 
   const [open, setOpen] = useState(false)
@@ -156,12 +157,20 @@ export function UploadTranslatedFileDialog({ project, user }: UploadDialogProps)
   }
 
   const isProjectModifiable = () => isActive(project.status)
+  const isDisabled = disabled || !isProjectModifiable()
+  const disabledReason = disabled ? t("disabled.approved") : undefined
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <ProjectClosedTooltip disabled={!isProjectModifiable()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (isDisabled && next) return
+        setOpen(next)
+      }}
+    >
+      <ProjectClosedTooltip disabled={isDisabled} disabledReason={disabledReason}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" disabled={!isProjectModifiable()}>
+          <Button variant="outline" size="sm" disabled={isDisabled}>
             <Upload className="mr-2 h-4 w-4" />
             {t("trigger")}
           </Button>

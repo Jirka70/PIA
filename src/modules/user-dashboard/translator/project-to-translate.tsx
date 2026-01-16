@@ -254,6 +254,8 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
     const diffTime = due.getTime() - now.getTime()
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   }
+  const acceptState = (project.acceptState ?? "n/a") as AcceptState
+
 
   const daysUntilDue = getDaysUntilDue(project.dueAt)
   const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
@@ -261,6 +263,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   const hasTranslatorReview = !!translatorReview
   const hasCompanyReview = !!companyReview
   const hasAnyReview = hasTranslatorReview || hasCompanyReview
+  const isUploadDisabled = acceptState === "accepted"
 
   const isProjectModifiable = () => {
     return project.status === "NEW" || project.status === "QA" || project.status === "IN_PROGRESS" || project.status === "ASSIGNED"
@@ -276,7 +279,6 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
   // -----------------------------
   // Customer decision panel (NEW)
   // -----------------------------
-  const acceptState = (project.acceptState ?? "n/a") as AcceptState
 
   const decisionUi = useMemo(() => {
     if (acceptState === "accepted") {
@@ -450,7 +452,7 @@ export const ProjectToTranslate = ({ projectToTranslate, user }: ProjectToTransl
             {downloadMutation.isPending ? t("actions.waitingDownload") : t("actions.download")}
           </Button>
 
-          <UploadTranslatedFileDialog project={project} user={user} />
+          <UploadTranslatedFileDialog project={project} user={user} disabled={isUploadDisabled} />
 
           {targetFile && (
             <Button

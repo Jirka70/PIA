@@ -20,8 +20,6 @@ export const UserProject = ({ userId, projectId } : TranslatorProjectProps) => {
         id: projectId
     }))
 
-    console.log("projectInfo", projectInfo)
-
     const queryClient = useQueryClient();
     const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
 

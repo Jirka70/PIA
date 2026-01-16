@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal, Shield, User } from "lucide-react"
+import { Crown, MoreHorizontal, Shield, User } from "lucide-react"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import UserShimmer from "./users-shimmer"
@@ -118,7 +118,6 @@ export function UsersManagement() {
                 <TableRow>
                   <TableHead>{t("table.user")}</TableHead>
                   <TableHead>{t("table.role")}</TableHead>
-                  <TableHead>{t("table.status")}</TableHead>
                   <TableHead className="text-right">{t("table.activeProjects")}</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
@@ -146,18 +145,22 @@ export function UsersManagement() {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant={user.role === "translator" ? "default" : "secondary"} className="gap-1">
-                        {user.role === "translator" ? <Shield className="size-3" /> : <User className="size-3" />}
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>
                       <Badge
-                        variant="default"
-                        className={"bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400"}
+                        variant={user.role === "admin" ? "outline" : user.role === "translator" ? "default" : "secondary"}
+                        className={`gap-1 ${
+                          user.role === "admin"
+                            ? "bg-amber-500/15 text-amber-700 border-amber-300 hover:bg-amber-500/25 dark:text-amber-200 dark:border-amber-500/40"
+                            : ""
+                        }`}
                       >
-                        {t("badges.statusActive")}
+                        {user.role === "admin" ? (
+                          <Crown className="size-3" />
+                        ) : user.role === "translator" ? (
+                          <Shield className="size-3" />
+                        ) : (
+                          <User className="size-3" />
+                        )}
+                        {user.role}
                       </Badge>
                     </TableCell>
 

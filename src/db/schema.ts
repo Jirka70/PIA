@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, uniqueIndex, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum, smallint, primaryKey, integer, unique } from "drizzle-orm/pg-core";
 
 export const userRole = pgEnum("user_role", ["owner","admin","translator","user"]);
 export type Role = typeof userRole.enumValues[number]

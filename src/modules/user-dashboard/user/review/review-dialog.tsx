@@ -32,6 +32,8 @@ interface ReviewDialogProps {
   onCompanyReviewSubmitted: (data: CompanyFormData) => Promise<void>
   isTranslatorReviewSubmitted: boolean
   isCompanyReviewSubmitted: boolean
+  translatorName?: string
+  languagePair?: string
 }
 
 export function ReviewDialog({
@@ -40,7 +42,9 @@ export function ReviewDialog({
   onTranslatorReviewSubmitted,
   onCompanyReviewSubmitted,
   isTranslatorReviewSubmitted,
-  isCompanyReviewSubmitted
+  isCompanyReviewSubmitted,
+  translatorName,
+  languagePair
 }: ReviewDialogProps) {
   const t = useTranslations("ReviewDialog")
   const isMobile = useIsMobile()
@@ -67,6 +71,8 @@ export function ReviewDialog({
               onCancel={handleCancel}
               translator={isTranslatorReviewSubmitted}
               company={isCompanyReviewSubmitted}
+              translatorName={translatorName}
+              languagePair={languagePair}
             />
           </div>
         </DrawerContent>
@@ -90,6 +96,8 @@ export function ReviewDialog({
           onCancel={handleCancel}
           translator={isTranslatorReviewSubmitted}
           company={isCompanyReviewSubmitted}
+          translatorName={translatorName}
+          languagePair={languagePair}
         />
       </DialogContent>
     </Dialog>

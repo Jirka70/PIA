@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
-import { trpc } from "@/trpc/server"
 import { useTRPC } from "@/trpc/client"
 
 interface SetRoleDialogProps {

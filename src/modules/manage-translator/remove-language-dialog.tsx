@@ -51,7 +51,7 @@ export function RemoveLanguageDialog({
 
             <p>
               Removing this language will prevent them from accessing or
-              updating these translations. This may block the project's
+              updating these translations. This may block the project&apos;s
               progress or leave it incomplete.
             </p>
 

@@ -135,7 +135,7 @@ export const projectRouter = createTRPCRouter({
                     id: nanoid(),
                     name: input.name,
                     description: input.description,
-                    sourceLanguage: "cs",
+                    sourceLanguage: input.sourceLanguage,
                     targetLanguage: input.targetLanguage,
                     clientId: userId,
                     translatorId: suitableTranslator.user.id,
@@ -612,6 +612,35 @@ export const projectRouter = createTRPCRouter({
                 })
                 .where(eq(Project.id, input.projectId))
 
+            const statusActivity = (() => {
+                if (input.projectStatus === "DONE") {
+                    return {
+                        activityStatus: "COMPLETED_PROJECT" as const,
+                        activitySeverity: "Success" as const
+                    }
+                }
+
+                if (input.projectStatus === "CLOSED" || input.projectStatus === "BLOCKED") {
+                    return {
+                        activityStatus: "PROJECT_CANCELED" as const,
+                        activitySeverity: "Warning" as const
+                    }
+                }
+
+                return {
+                    activityStatus: "TRANSLATION_SUBMITTED" as const,
+                    activitySeverity: "Info" as const
+                }
+            })()
+
+            await db.insert(userActivity).values({
+                id: nanoid(),
+                userId: ctx.user?.id,
+                projectId: input.projectId,
+                info: `Status changed to ${input.projectStatus}`,
+                ...statusActivity
+            })
+
             return {
                 success: true
             }
@@ -777,6 +806,28 @@ export const projectRouter = createTRPCRouter({
                 })
                 .where(eq(Project.id, input.projectId))
                 .returning()
+
+            if (input.accept === "accepted") {
+                await ctx.db.insert(userActivity).values({
+                    id: nanoid(),
+                    userId: ctx.user?.id,
+                    projectId: input.projectId,
+                    info: "Customer approved the translation",
+                    activityStatus: "COMPLETED_PROJECT",
+                    activitySeverity: "Success"
+                })
+            }
+
+            if (input.accept === "rejected") {
+                await ctx.db.insert(userActivity).values({
+                    id: nanoid(),
+                    userId: ctx.user?.id,
+                    projectId: input.projectId,
+                    info: "Customer requested revisions",
+                    activityStatus: "REVISION_REQUEST",
+                    activitySeverity: "Warning"
+                })
+            }
 
             return {
                 project: updatedProject

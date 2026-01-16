@@ -2,7 +2,7 @@ interface ActivityShimmerProps {
     length: number
 }
 
-function ActivityShimmer({ length } : ActivityShimmerProps) {
+export function ActivityShimmer({ length } : ActivityShimmerProps) {
   return (
     <div className="space-y-4">
       {[...Array(length)].map((_, i) => (

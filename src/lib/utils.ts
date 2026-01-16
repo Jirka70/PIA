@@ -35,7 +35,7 @@ export async function performDownload(projectFile: ProjectFileType) {
         a.remove();
         URL.revokeObjectURL(url);
 
-      } catch (err) {
+      } catch (_) {
         // TODO doplnit
       } 
 }
@@ -55,7 +55,7 @@ export async function performPreview(projectFile: ProjectFileType) {
 
     // memory revoke...
     setTimeout(() => URL.revokeObjectURL(fileUrl), 10000);
-  } catch (err) {
+  } catch (_) {
     // TODO doplnit
   }
 }

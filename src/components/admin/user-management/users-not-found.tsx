@@ -13,7 +13,7 @@ export default function UsersNotFound() {
           </EmptyMedia>
           <EmptyTitle>No Users Found</EmptyTitle>
           <EmptyDescription>
-            We couldn't find any users. Try adjusting your filters or create a new user to get started.
+            We couldn&apos;t find any users. Try adjusting your filters or create a new user to get started.
           </EmptyDescription>
         </EmptyHeader>
 

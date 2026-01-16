@@ -2,10 +2,10 @@ import { requireAdmin } from "@/lib/auth-utils";
 import { UserProject } from "@/modules/user-dashboard/admin/user-project";
 
 interface UserProjectProps {
-    params: {
+    params: Promise<{
         projectId: string
         userId: string
-    }
+    }>
 }
 
 export default async function UserProjectPage({ params } : UserProjectProps) {

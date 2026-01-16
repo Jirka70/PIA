@@ -37,6 +37,9 @@ export const TranslatorProject = ({ translatorId, projectId }: TranslatorProject
     })
   )
 
+  const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
+
+
   if (isPending) {
     return (
       <ProjectAdminViewWrapper title={t("wrapper.title")} description={t("wrapper.description")}>
@@ -64,9 +67,6 @@ export const TranslatorProject = ({ translatorId, projectId }: TranslatorProject
   const translatorReview = projectInfo.translatorReview
   const companyReview = projectInfo.companyReview
   const translator = projectInfo.translator
-
-  const { data: statuses } = useQuery(trpc.projects.getProjectStatuses.queryOptions())
-
 
   const onStatusUpdate = async (newStatus: ProjectStatusType) => {
     await updateStatus({

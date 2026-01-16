@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mailhog
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-2525}:1025" # SMTP
+      - "${MAILHOG_HTTP_PORT:-8025}:8025" # Web UI

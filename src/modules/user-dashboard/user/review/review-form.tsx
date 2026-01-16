@@ -14,6 +14,8 @@ interface ReviewFormProps {
   onCancel: () => Promise<void>
   translator: boolean
   company: boolean
+  translatorName?: string
+  languagePair?: string
 }
 
 export function ReviewForm({
@@ -21,7 +23,9 @@ export function ReviewForm({
   onCompanyReviewSubmit,
   onCancel,
   translator,
-  company
+  company,
+  translatorName,
+  languagePair
 }: ReviewFormProps) {
   const t = useTranslations("ReviewForm")
   const [activeTab, setActiveTab] = useState<"translator" | "company">("translator")
@@ -45,7 +49,13 @@ export function ReviewForm({
         </TabsList>
 
         <TabsContent value="translator" className="mt-4">
-          <TranslatorReview onSubmit={onTranslatorReviewSubmit} onCancel={onCancel} isSubmitted={translator} />
+          <TranslatorReview
+            onSubmit={onTranslatorReviewSubmit}
+            onCancel={onCancel}
+            isSubmitted={translator}
+            translatorName={translatorName}
+            languagePair={languagePair}
+          />
         </TabsContent>
 
         <TabsContent value="company" className="mt-4">

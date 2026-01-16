@@ -8,6 +8,8 @@ export const createProjectInput = z.object({
     description: z.string()
         .max(10_000, { message: "Description is too long"})
         .optional(),
+    sourceLanguage: z.string({ message: "Invalid language specification" })
+        .length(2, { message: "Invalid language specification" }), // ISO 639-1
     targetLanguage: z.string({ message: "Invalid language specification" })
         .length(2, { message: "Invalid language specification" }), // ISO 639-1
     dueAt: z.date()
@@ -27,7 +29,13 @@ export const createProjectInput = z.object({
             return dd >= today;
         }, "Deadline has to be in future"),
     file: uploadedFileMeta,
-})
+}).refine(
+    (data) => data.sourceLanguage !== data.targetLanguage,
+    {
+        message: "Source and target languages must differ",
+        path: ["targetLanguage"]
+    }
+)
 
 export type CreateProjectFormInput = z.input<typeof createProjectInput>;
 export type CreateProjectFormOutput = z.output<typeof createProjectInput>;

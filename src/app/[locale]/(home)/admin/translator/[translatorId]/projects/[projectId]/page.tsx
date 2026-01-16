@@ -1,12 +1,11 @@
 import { requireAdmin } from "@/lib/auth-utils";
-import { ProjectView } from "@/modules/user-dashboard/admin/project-view";
 import { TranslatorProject } from "@/modules/user-dashboard/admin/translator-project";
 
 interface Props {
-    params: {
+    params: Promise<{
         translatorId: string,
         projectId: string
-    }
+    }>
 }
 
 export default async function TranslatorProjectPage({ params } : Props) {

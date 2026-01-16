@@ -4,7 +4,7 @@ import TranslatorDetail from "@/modules/manage-translator/translator-detail";
 export default async function ManageTranslatorPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
     await requireAdmin()
     const { id } = await params;

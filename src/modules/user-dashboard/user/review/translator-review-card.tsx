@@ -47,7 +47,7 @@ export const TranslatorReviewCard = ({ translatorReview }: TranslatorReviewCardP
         <div className="pt-2 border-t border-border/50">
           <div className="flex items-start gap-2">
             <MessageSquare className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-muted-foreground italic line-clamp-2">"{translatorReview.comment}"</p>
+            <p className="text-xs text-muted-foreground italic line-clamp-2">&quot;{translatorReview.comment}&quot;</p>
           </div>
         </div>
       )}

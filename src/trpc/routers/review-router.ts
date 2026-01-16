@@ -1,7 +1,7 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../init";
-import { companyReview, Project, Role, translatorReview } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { companyReview, Project, Role, translatorReview, userActivity } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { companySchema, translatorSchema } from "@/lib/validators/review-schemas";
 import { nanoid } from "nanoid"
@@ -68,6 +68,15 @@ export const reviewRouter = createTRPCRouter({
                 comment: reviewData.comment,
               })
               .returning()
+
+            await db.insert(userActivity).values({
+              id: nanoid(),
+              userId: user.id,
+              projectId: project.id,
+              info: "Customer left a translator review",
+              activityStatus: "COMPLETED_PROJECT",
+              activitySeverity: "Info"
+            })
 
             console.log("review", review)
 
@@ -138,6 +147,16 @@ export const reviewRouter = createTRPCRouter({
                 overallRating: reviewData.overallRating,
               })
               .returning()
+
+
+            await db.insert(userActivity).values({
+              id: nanoid(),
+              userId: user.id,
+              projectId: project.id,
+              info: "Customer left a company review",
+              activityStatus: "COMPLETED_PROJECT",
+              activitySeverity: "Info"
+            })
 
 
             return {

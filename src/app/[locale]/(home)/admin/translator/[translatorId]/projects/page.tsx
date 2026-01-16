@@ -2,9 +2,9 @@ import { requireAdmin } from "@/lib/auth-utils";
 import { UserProjects } from "@/modules/project-view/user-projects";
 
 interface Props {
-    params: {
+    params: Promise<{
         translatorId: string
-    }
+    }>
 }
 
 export default async function TranslatorProjectsPage({ params } : Props) {

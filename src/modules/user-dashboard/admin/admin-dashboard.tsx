@@ -6,7 +6,6 @@ import { LayoutDashboard, Users, MessageSquare, Activity } from "lucide-react"
 import { StatsCards } from "@/components/admin/stats-cards"
 import { ProjectsChart } from "@/components/admin/projects-chart"
 import { UsersManagement } from "@/components/admin/user-management/users-management"
-import { MessagingPanel } from "@/components/admin/messaging-panel"
 import { RecentActivity } from "@/components/admin/recent-activity"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
@@ -31,10 +30,6 @@ export default function AdminDashboard() {
     users: {
       trigger: "admin-dashboard-tab-users",
       content: "admin-dashboard-panel-users"
-    },
-    messaging: {
-      trigger: "admin-dashboard-tab-messaging",
-      content: "admin-dashboard-panel-messaging"
     },
     activity: {
       trigger: "admin-dashboard-tab-activity",
@@ -83,16 +78,6 @@ export default function AdminDashboard() {
             </TabsTrigger>
 
             <TabsTrigger
-              value="messaging"
-              className="gap-2"
-              id={tabIds.messaging.trigger}
-              aria-controls={tabIds.messaging.content}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("tabs.messaging")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
               value="activity"
               className="gap-2"
               id={tabIds.activity.trigger}
@@ -130,11 +115,6 @@ export default function AdminDashboard() {
           {/* Users Tab */}
           <TabsContent value="users" id={tabIds.users.content} aria-labelledby={tabIds.users.trigger}>
             <UsersManagement />
-          </TabsContent>
-
-          {/* Messaging Tab */}
-          <TabsContent value="messaging" id={tabIds.messaging.content} aria-labelledby={tabIds.messaging.trigger}>
-            <MessagingPanel />
           </TabsContent>
 
           {/* Activity Tab */}

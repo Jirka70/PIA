@@ -3,15 +3,14 @@ FROM node:20-alpine AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install dependencies (shared for builder and runtime)
+# Install dependencies (shared for builder/migrate)
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
-RUN npm install --include=dev
+RUN npm ci
 
 # Build the Next.js app
 FROM deps AS builder
-# Default build-time env so docker builds succeed even without a .env file
 ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
 ARG BETTER_AUTH_URL=http://localhost:3000
 ARG DATABASE_URL=postgresql://app:app@db:5432/app
@@ -36,20 +35,32 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
+# ---- migrate stage (contains drizzle config + migrations + schema) ----
+FROM deps AS migrate
+WORKDIR /app
+COPY package.json package-lock.json ./
+# copy only what drizzle-kit needs
+COPY drizzle.config.ts ./drizzle.config.ts
+# schema imports are usually from src/
+COPY src ./src
+# some setups need tsconfig.json for TS path aliases
+COPY tsconfig.json ./tsconfig.json
+
+# migrations (you have these folders)
+COPY migrations ./migrations
+COPY db/migrations ./db/migrations
+
+CMD ["npm","run","db:migrate"]
+
 # Production runtime image
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Copy app manifest so Next.js can read metadata at runtime
 COPY package.json package-lock.json ./
-# Copy production dependencies built in the deps stage
 COPY --from=deps /app/node_modules ./node_modules
-# Copy build output (server and static assets)
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
 EXPOSE 3000
-
-# Use Next.js production server
 CMD ["npm", "run", "start"]

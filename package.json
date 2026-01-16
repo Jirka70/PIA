@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
+    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "test:run": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -62,6 +63,7 @@
     "next-intl": "^4.3.12",
     "next-themes": "^0.4.6",
     "nodemailer": "^7.0.10",
+    "pg": "^8.17.1",
     "react": "19.1.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "19.1.0",

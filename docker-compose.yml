@@ -1,39 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      target: runner
-    # .env je volitelné – když existuje, načte se, když ne, jede se na defaulty níže
-    env_file:
-      - .env
-    environment:
-      # Public URL pro Next
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-
-      # Lokální DB v docker síti (service name "db")
-      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@db:5432/app}
-
-      # MailHog (uvnitř docker network je host "mailhog" a port 1025)
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      MAIL_FROM: ${MAIL_FROM:-"Dev <dev@example.test>"}
-
-      # Auth secret – pro lokál může být default, v produkci to ale musíš přepsat
-      # Použijeme 32+ znaků, aby Better Auth nepadal při prázdném .env
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_only_change_me_but_at_least_32_chars_long}
-
-      # Integrace jako Google/Resend nech jako volitelné (bez defaultu)
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-
-    ports:
-      - "3000:3000"
-    depends_on:
-      - db
-      - mailhog
-
   db:
     image: postgres:16
     restart: unless-stopped
@@ -42,7 +7,7 @@ services:
       POSTGRES_PASSWORD: app
       POSTGRES_DB: app
     ports:
-      - "5432:5432"  
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -53,6 +18,43 @@ services:
     ports:
       - "${MAILHOG_SMTP_PORT:-2525}:1025"
       - "${MAILHOG_HTTP_PORT:-8025}:8025"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@db:5432/app}
+    depends_on:
+      - db
+    command: ["npm", "run", "db:migrate"]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@db:5432/app}
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      MAIL_FROM: ${MAIL_FROM:-"Dev <dev@example.test>"}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_only_change_me_but_at_least_32_chars_long}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - mailhog
 
 volumes:
   pgdata:

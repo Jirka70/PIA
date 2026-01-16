@@ -24,6 +24,7 @@ import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-sch
 import { TranslatorReviewCard } from "./review/translator-review-card"
 import { CompanyReviewCard } from "./review/company-review-card"
 import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
+import { ProjectType } from "@/db/schema"
 import { ProjectReviewed } from "./project-reviewed"
 import { isActive, isCancelled } from "@/lib/project-status-utils"
 import { useLocale, useTranslations } from "next-intl"
@@ -32,7 +33,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useTRPC } from "@/trpc/client"
-import { ProjectType } from "@/lib/types/project.type"
 
 interface UserProjectProps {
   projectInfo: UserProjectViewProps

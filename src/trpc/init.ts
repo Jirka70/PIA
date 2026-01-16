@@ -11,17 +11,9 @@ export async function createTRPCContext() {
   const session = await auth.api.getSession({
     headers: await hdrs,
   });
-
-  type AuthSession = Awaited<typeof session>
-  type AuthUser = AuthSession extends { user: infer U } ? U : never
-  type SessionUserWithTypedRole = AuthUser & { role: Role }
-
-  const typedUser = session?.user
-    ? ({ ...session.user, role: session.user.role as Role } satisfies SessionUserWithTypedRole)
-    : undefined;
   
   return { session: session, 
-    user: typedUser, 
+    user: session?.user, 
     auth: auth,
     db: db
   };

@@ -3,8 +3,8 @@
 import { UserProjectViewProps } from "@/modules/project-view/project-view-props"
 import { UserProject } from "./user-project"
 import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
+import { ProjectType } from "@/db/schema"
 import { useTranslations } from "next-intl"
-import { ProjectType } from "@/lib/types/project.type"
 
 interface UserProjectsProps {
   projects: UserProjectViewProps[]

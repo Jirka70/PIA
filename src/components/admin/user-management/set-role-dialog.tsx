@@ -46,8 +46,8 @@ export const SetRoleDialog = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("header.title") + " " + user?.user?.name}</DialogTitle>
-          <DialogDescription>{t("header.description") + user?.user?.name}</DialogDescription>
+          <DialogTitle>{t("header.title") + " " + user?.user.name}</DialogTitle>
+          <DialogDescription>{t("header.description") + user?.user.name}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">

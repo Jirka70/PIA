@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Calendar, ChevronRight } from 'lucide-react'
 import Link from "next/link"
+import { ProjectType } from "@/db/schema"
 import { StatusBadge } from "../project-view/status-badge"
-import { ProjectType } from "@/lib/types/project.type"
 
 
 interface ProjectsListProps {

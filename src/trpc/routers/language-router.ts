@@ -1,54 +1,58 @@
+import { language, translatorLanguage } from "@/db/schema";
 import { adminProcedure, baseProcedure, createTRPCRouter } from "../init";
-import { addLanguageToTranslatorInput } from "@/lib/validators/trpc/language/addLanguageToTranslator";
-import { removeLanguageOfTranslatorInput } from "@/lib/validators/trpc/language/removeLanguageOfTranslator";
-import * as languageService from "@/server/services/language.service";
-import { isBadPayload } from "@/lib/utils";
-import { TRPCError } from "@trpc/server";
+import { z } from "zod"
+import { and, eq } from "drizzle-orm";
 
 export const languageRouter = createTRPCRouter({
     addLanguageToTranslator: adminProcedure
-        .input(addLanguageToTranslatorInput)
+        .input(z.object({
+            translatorId: z.string(),
+            code: z.string(),
+        }))
         .mutation(async ({ ctx, input }) => {
-            const result = await languageService.addLanguage(ctx.db, {
+            const db = ctx.db;
+
+            await db.insert(translatorLanguage).values({
                 translatorId: input.translatorId,
                 languageCode: input.code
-            });
+            })
 
-            if (isBadPayload(result)) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "Invalid translator language payload",
-                    cause: result.error
-                })
+            return {
+                success: "OK"
             }
-
-            return { success: "OK" }
         }),
     removeLanguageOfTranslator: adminProcedure
-        .input(removeLanguageOfTranslatorInput)
+        .input(z.object({
+            translatorId: z.string(),
+            code: z.string(),
+        }))
         .mutation(async ({ ctx, input }) => {
-            const result = await languageService.removeLanguage(ctx.db, {
-                translatorId: input.translatorId,
-                languageCode: input.code
-            });
+            const db = ctx.db;
 
-            if (isBadPayload(result)) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "Invalid translator language payload",
-                    cause: result.error
-                })
+            await db.delete(translatorLanguage)
+                .where(
+                    and(
+                        eq(translatorLanguage.translatorId, input.translatorId),
+                        eq(translatorLanguage.languageCode, input.code)
+                    )
+                )
+
+            return {
+                success: "OK"
             }
-
-            return { success: "OK" }
         }),
     getLanguages: adminProcedure
         .query(async ({ ctx }) => {
-            const languages = await languageService.getLanguages(ctx.db);
-            return { languages };
+            const languages = await ctx.db
+                .select()
+                .from(language)
+
+            return {
+                languages
+            }
         }),
     getLanguagesPublic: baseProcedure.query(async ({ ctx }) => {
-        const languages = await languageService.getLanguages(ctx.db);
+        const languages = await ctx.db.select().from(language);
         return { languages };
     })
 })

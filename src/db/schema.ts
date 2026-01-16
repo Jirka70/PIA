@@ -9,7 +9,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  banned: boolean("banned").notNull().default(false), 
+  banned: boolean("banned").notNull().default(false), // 👈 DŮLEŽITÉ PRO admin plugin
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -169,9 +169,7 @@ export const ProjectAcceptState = pgEnum("project_accept_state",[
 export const Project = pgTable("project", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description")
-    .default("")
-    .notNull(),
+  description: text("description"),
 
   status: projectStatus("status").default("NEW").notNull(),
   progressPercent: smallint("progress_percent").default(0).notNull(),
@@ -187,13 +185,11 @@ export const Project = pgTable("project", {
   translatorId: text("translator_id")
     .references(() => user.id, {
       onDelete: "set null"
-    })
-    .notNull(),
+    }),
   clientId: text("client_id")
     .references(() => user.id, {
       onDelete: "set null"
-    })
-    .notNull(),
+    }),
   acceptState: ProjectAcceptState("accept_state")
     .default("n/a")
     .notNull(),
@@ -278,6 +274,8 @@ export const schema = {
   companyReview,
 }
 
+
+export type ProjectType = typeof Project.$inferSelect
 export type ProjectStatusType = (typeof projectStatus.enumValues)[number];
 export type ProjectFileType = typeof ProjectFile.$inferSelect
 export type userActivityType = typeof userActivity.$inferInsert

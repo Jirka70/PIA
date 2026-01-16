@@ -3,8 +3,10 @@ import { auth } from '@/lib/auth';
 import { ADMIN_ROLES, TRANSLATOR_ROLES } from '@/modules/roles/permissions';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { headers } from 'next/headers';
-import { db } from '@/db/drizzle';
+import { getDb } from '@/db/drizzle';
 import superjson from "superjson"
+
+const db = getDb()
 
 export async function createTRPCContext() {
   const hdrs = headers()

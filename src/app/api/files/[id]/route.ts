@@ -1,4 +1,4 @@
-import { db } from "@/db/drizzle"
+import { getDb } from "@/db/drizzle"
 import { eq } from "drizzle-orm"
 import { ProjectFile } from "@/db/schema"
 import { NextRequest, NextResponse } from "next/server"
@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth"
 import fs from "fs/promises"
 
 export const runtime = "nodejs"
+const db = getDb();
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads")
 

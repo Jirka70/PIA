@@ -101,6 +101,44 @@ export function makeFakeDb(config: FakeDbConfig = {}) {
 
   const calls: any[] = []
 
+  function handleWhere(table: any) {
+    return (_cond: any) => {
+      calls.push({ op: "where", cond: _cond, table })
+
+      if (table === Project) {
+        return projectRow ? [projectRow] : [];
+      }
+
+      // translatorReview existence check
+      if (table === translatorReview) {
+        return {
+          limit: () => (translatorReviewExists ? [{}] : []),
+        };
+      }
+
+      // companyReview existence check
+      if (table === companyReview) {
+        return {
+          limit: () => (companyReviewExists ? [{}] : []),
+        };
+      }
+
+      if (table === user) {
+        return userRow
+          ? [userRow]
+          : []
+      }
+
+      if (table === translatorLanguage) {
+        return translatorLanguageRow
+          ? [translatorLanguageRow]
+          : []
+      }
+
+      return [];
+    }
+  }
+
   return {
     calls,
     select(_projection?: any) {
@@ -109,45 +147,11 @@ export function makeFakeDb(config: FakeDbConfig = {}) {
         from(table: any) {
           calls.push({ op: "from", table })
           return {
-            innerJoin(table: any) {
-              calls.push({ op: "innerJoin", table })
+            where: handleWhere(table),
+            innerJoin(joinTable: any) {
+              calls.push({ op: "innerJoin", table: joinTable })
               return {
-                where(_cond: any) {
-                  calls.push({ up: "where", cond: _cond })
-                  console.log("user?", table === user)
-                  console.log("table", table)
-                  if (table === Project) {
-                    return projectRow ? [projectRow] : [];
-                  }
-
-                  // translatorReview existence check
-                  if (table === translatorReview) {
-                    return {
-                      limit: () => (translatorReviewExists ? [{}] : []),
-                    };
-                  }
-
-                  // companyReview existence check
-                  if (table === companyReview) {
-                    return {
-                      limit: () => (companyReviewExists ? [{}] : []),
-                    };
-                  }
-
-                  if (table === user) {
-                    return userRow 
-                      ? [userRow]
-                      : []
-                  }
-
-                  if (table === translatorLanguage) {
-                    return translatorLanguageRow
-                      ? [translatorLanguageRow]
-                      : []
-                  }
-
-                  return [];
-                },
+                where: handleWhere(joinTable)
               }
             }    
           };
@@ -177,16 +181,16 @@ export function makeFakeDb(config: FakeDbConfig = {}) {
                   {
                     id: "company-review-1",
                     ...(insertedCompanyReview ?? {}),
-                  } as CompanyReviewRow,
-                ];
-              }
+              } as CompanyReviewRow,
+            ];
+          }
 
-              if (table === project) {
-                return [
-                  {
-                    id: "project-id-1",
-                    ...(projectRow ?? {}),
-                  } as ProjectRow
+          if (table === Project) {
+            return [
+              {
+                id: "project-id-1",
+                ...(projectRow ?? {}),
+              } as ProjectRow
                 ]
               }
 

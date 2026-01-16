@@ -21,7 +21,8 @@ services:
       MAIL_FROM: ${MAIL_FROM:-"Dev <dev@example.test>"}
 
       # Auth secret – pro lokál může být default, v produkci to ale musíš přepsat
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_only_change_me}
+      # Použijeme 32+ znaků, aby Better Auth nepadal při prázdném .env
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_only_change_me_but_at_least_32_chars_long}
 
       # Integrace jako Google/Resend nech jako volitelné (bez defaultu)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}

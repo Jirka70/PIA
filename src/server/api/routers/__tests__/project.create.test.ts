@@ -29,7 +29,7 @@ describe("projectRouter.create", () => {
 
         const caller = projectRouter.createCaller(ctx);
         await expectTrpcError(
-            caller.create(validCreateProjectInput({ targetLanguage: "cs" })),
+            caller.create(validCreateProjectInput({ targetLanguage: "cs", sourceLanguage: "en" })),
             {
                 code: "NOT_FOUND",
                 messageIncludes: "Suitable translator"
@@ -68,6 +68,7 @@ describe("projectRouter.create", () => {
 
         const input = validCreateProjectInput({
             name: "Project A",
+            sourceLanguage: "en",
             targetLanguage: "cs",
             dueAt: null
         })
@@ -85,7 +86,7 @@ describe("projectRouter.create", () => {
         expect(projectInsert!.values).toMatchObject({
             name: "Project A",
             description: input.description,
-            sourceLanguage: "cs",
+            sourceLanguage: "en",
             targetLanguage: "cs",
             clientId: "client-1",
             translatorId: "translator-1",

@@ -7,9 +7,10 @@ import { createProjectInput } from "@/lib/validators/create-project-schema";
 import z from "zod";
 import { uploadedFileMeta } from "@/lib/validators/uploaded-file-meta";
 import { alias } from "drizzle-orm/pg-core";
-import type { db } from "@/db/drizzle"
+import { getDb } from "@/db/drizzle"
 import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
 
+const db = getDb()
 type DB = typeof db
 
 

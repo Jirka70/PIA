@@ -10,6 +10,7 @@ export function validCreateProjectInput(overrides: Partial<any> = {}, fileOverri
     name: "My project",
     description: "Short desc",
     targetLanguage: "cs",
+    sourceLanguage: "en",
     dueAt: new Date(),
     file: {
         fileId: "file",

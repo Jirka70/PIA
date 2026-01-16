@@ -1,4 +1,4 @@
-import { db } from "@/db/drizzle";
+import { getDb } from "@/db/drizzle";
 import { schema, user as dbUser } from "@/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -6,6 +6,8 @@ import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin, createAuthMiddleware, username } from "better-auth/plugins"
 import { ac, owner, admin, user as betterAuthUser, translator } from "@/modules/roles/permissions"
 import { eq } from "drizzle-orm";
+
+const db = getDb()
  
 
 export const auth = betterAuth({

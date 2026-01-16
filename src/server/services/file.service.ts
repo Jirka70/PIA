@@ -17,3 +17,25 @@ export async function create(db: DB, values: InsertProjectFileType) : Promise<Pr
 
     return fileRepo.createProjectFile(db, values);
 }
+
+export async function getByType(db: DB, projectId: string, fileType: ProjectFileType["fileType"]) {
+    return fileRepo.getProjectFileByType(db, projectId, fileType);
+}
+
+export async function replaceFileOfType(
+    db: DB,
+    values: InsertProjectFileType,
+    fileType: ProjectFileType["fileType"],
+) {
+    const parsed = insertProjectFileSchema.safeParse(values);
+
+    if (!parsed.success) {
+        return {
+            ok: false as const,
+            error: parsed.error
+        }
+    }
+
+    await fileRepo.deleteProjectFileByType(db, values.projectId, fileType);
+    return fileRepo.createProjectFile(db, values);
+}

@@ -9,7 +9,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  banned: boolean("banned").notNull().default(false), // 👈 DŮLEŽITÉ PRO admin plugin
+  banned: boolean("banned").notNull().default(false), 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

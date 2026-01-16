@@ -10,9 +10,9 @@ import { UserProjectsContent } from "./user-projects-content"
 import { ProjectListSkeleton } from "../project-list-skeleton"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyFormData, TranslatorFormData } from "@/lib/validators/review-schemas"
-import { ProjectType } from "@/db/schema"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
+import type { ProjectType } from "@/lib/types/project.type"
 
 interface UserDashboardProps {
   user: User
@@ -96,10 +96,12 @@ export const UserDashboard = ({ user }: UserDashboardProps) => {
 
     queryClient.setQueryData(trpc.projects.getManyAsUser.queryKey({ userId: user.id }), (cached) => {
       if (!cached) return cached
-      return {
+      const ret = {
         ...cached,
-        projects: cached.projects.map((row) => (row.project.id === project.id ? { ...row, translatorReview } : row))
+        projects: cached.projects.map((row) => row.project.id === project.id ? { ...row, translatorReview } : row)
       }
+
+      return ret;
     })
   }
 
@@ -113,10 +115,11 @@ export const UserDashboard = ({ user }: UserDashboardProps) => {
 
     queryClient.setQueryData(trpc.projects.getManyAsUser.queryKey({ userId: user.id }), (cached) => {
       if (!cached) return cached
-      return {
+      const obj = {
         ...cached,
         projects: cached.projects.map((row) => (row.project.id === project.id ? { ...row, companyReview } : row))
       }
+      return obj;
     })
   }
 

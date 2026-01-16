@@ -324,6 +324,10 @@
         "label": "Project Name",
         "placeholder": "e.g., Legal Contract Translation"
       },
+      "sourceLanguage": {
+        "label": "Source Language",
+        "placeholder": "Select language"
+      },
       "targetLanguage": {
         "label": "Target Language",
         "placeholder": "Select language"
@@ -343,7 +347,8 @@
         "hint": "PDF, DOC, DOCX, or TXT. Max ~20 MB.",
         "upload": "Upload",
         "uploading": "Uploading…",
-        "removeTitle": "Remove file"
+        "removeTitle": "Remove file",
+        "invalid": "Unsupported file type or size. Please upload PDF, DOC, DOCX or TXT up to 20 MB."
       },
       "actions": {
         "cancel": "Cancel",
@@ -369,7 +374,8 @@
       "projectCreated": "Project was successfully created",
       "fileRemoved": "File removed",
       "fileUploaded": "File uploaded successfully",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "fileRequired": "Please select a source file before creating the project"
     }
   },
   "UserProjectsContent": {

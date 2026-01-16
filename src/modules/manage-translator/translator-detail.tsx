@@ -10,10 +10,10 @@ import { ProjectsList } from "./projects-list"
 import { useTRPC } from "@/trpc/client"
 import { useQuery } from "@tanstack/react-query"
 import { TranslatorDetailsShimmer } from "./translator-details-skeleton"
-import { ProjectType } from "@/db/schema"
 import UserNotFound from "../error/user-not-found"
 import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils"
 import { useTranslations, useLocale } from "next-intl"
+import { ProjectType } from "@/lib/types/project.type"
 
 interface TranslatorDetailProps {
   id: string

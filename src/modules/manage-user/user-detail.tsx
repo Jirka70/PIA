@@ -12,7 +12,6 @@ import {
 } from "lucide-react"
 
 import { useTRPC } from "@/trpc/client"
-import { ProjectStatusType, ProjectType } from "@/db/schema"
 
 import {
   Card,
@@ -26,6 +25,7 @@ import { TranslatorDetailsShimmer } from "../manage-translator/translator-detail
 import UserNotFound from "../error/user-not-found"
 import { ProjectsList } from "../manage-translator/projects-list"
 import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils"
+import { ProjectType } from "@/lib/types/project.type"
 
 interface CustomerDetailProps {
   id: string

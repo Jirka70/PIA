@@ -1,170 +1,99 @@
 import { adminProcedure, createTRPCRouter, translatorProcedure } from "../init";
-import { language, Project, Role, translatorLanguage, translatorReview, user } from "@/db/schema";
-import { eq, getTableColumns, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import type { Role } from "@/db/schema";
+import type { UserType } from "@/lib/types/user.type";
 import { getUserByIdInput } from "@/lib/validators/trpc/user/getUserById";
 import { getTranslatorInfoInput } from "@/lib/validators/trpc/user/getTranslatorInfo";
 import { getUserInfoInput } from "@/lib/validators/trpc/user/getUserInfo";
 import { changeUserRoleInput } from "@/lib/validators/trpc/user/changeUserRole";
 import { getTranslatorAverageRatingsInput } from "@/lib/validators/trpc/user/getTranslatorAverageRatings";
+import * as userService from "@/server/services/user.service";
+import { isBadPayload } from "@/lib/utils";
 
 export const userRouter = createTRPCRouter({
     getUserById: adminProcedure
         .input(getUserByIdInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
+            const result = await userService.getUserById(ctx.db, input);
 
-            const [res] = await db
-                .select()
-                .from(user)
-                .where(eq(user.id, input.id))
-
-            return {
-                user: res
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
+                })
             }
+
+            return result;
         }),
     getMany: adminProcedure
         .query(async ({ ctx }) => {
-            const db = ctx.db;
-
-            const res = await db
-                .select({
-                    ...getTableColumns(user),
-                    numberOfOpenProjects: sql<number>`
-                        count(*) FILTER (
-                            WHERE ${Project.status} IN ('NEW', 'IN_PROGRESS', 'QA', 'ASSIGNED')
-                        )
-                    `,
-                })
-                .from(user)
-                .leftJoin(
-                    Project,
-                    or(eq(Project.clientId, user.id), eq(Project.translatorId, user.id))
-                )
-                .groupBy(user.id);
-
-            return {
-                users: res
-            }
+            const result = await userService.getMany(ctx.db);
+            return result;
     }),
     getTranslatorInfo: adminProcedure
         .input(getTranslatorInfoInput)
         .query(async ({ ctx, input }) => {
-            const [translator] = await ctx.db
-                .select()
-                .from(user)
-                .where(eq(user.id, input.id))
+            const result = await userService.getTranslatorInfo(ctx.db, input);
 
-            if (!translator) return null;
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
+                })
+            }
 
-            const projects = await ctx.db
-                .select()
-                .from(Project)
-                .where(eq(Project.translatorId, input.id))
-
-            const languages = await ctx.db
-                .select({ code: language.code, name: language.name })
-                .from(translatorLanguage)
-                .innerJoin(language, eq(language.code, translatorLanguage.languageCode))
-                .where(eq(translatorLanguage.translatorId, input.id));
-
-            return { translator, projects, languages };
+            return result;
     }),
     getUserInfo: adminProcedure
         .input(getUserInfoInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
-            const rows = await db
-                .select({
-                    user,
-                    project: Project,
+            const result = await userService.getUserInfo(ctx.db, input);
+
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-                .from(user)
-                .leftJoin(Project, eq(Project.clientId, user.id))
-
-                .where(eq(user.id, input.id));
-
-            if (rows.length === 0) return null;
-
-            const obtainedUser = rows[0].user
-
-            return {
-                user: obtainedUser,
-                projects: rows.map((item) => item.project).filter((item) => !!item)
             }
+
+            return result;
         }),
     getUserStats: adminProcedure
         .query(async ({ ctx }) => {
-            const db = ctx.db;
-            const [result] = await db
-                .select({
-                    totalUsers: sql<number>`COUNT(*)`,
-                    usersLastMonth: sql<number>`
-                    COUNT(*) FILTER (
-                        WHERE ${user.createdAt} >= NOW() - INTERVAL '1 month'
-                    )
-                    `,
-                    translators: sql<number>`
-                    COUNT(*) FILTER (
-                        WHERE ${user.role} = 'translator'
-                    )
-                    `,
-                    normalUsers: sql<number>`
-                    COUNT(*) FILTER (
-                        WHERE ${user.role} = 'user'
-                    )
-                    `,
-                })
-                .from(user);
-            
-            return {
-                result
-            }
+            return userService.getUserStats(ctx.db);
     }),
     changeUserRole: adminProcedure
         .input(changeUserRoleInput)
         .mutation(async ({ ctx, input }) => {
-            if (input.role === "admin") {
+            const result = await userService.changeUserRole(ctx.db, input);
+
+            if (isBadPayload(result)) {
                 throw new TRPCError({
                     code: "BAD_REQUEST",
-                    message: "Cannot change role to admin"
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            const [updatedUser] = await ctx.db
-                .update(user)
-                .set({ role: input.role })
-                .where(eq(user.id, input.id))
-                .returning()
-
-            return { 
-                user: updatedUser
-             }
+            return result;
     }),
     getTranslatorAverageRatings: translatorProcedure
         .input(getTranslatorAverageRatingsInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
-            const requesterRole = ctx.user.role as Role;
+            const currentUser = ctx.user as UserType & { role: Role };
+            const result = await userService.getTranslatorAverageRatings(ctx.db, input, currentUser);
 
-            if (!["admin", "owner"].includes(requesterRole) && ctx.user.id !== input.translatorId) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized to access translator ratings"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            const [averages] = await db
-                .select({
-                    quality: sql<number>`COALESCE(AVG(${translatorReview.qualityRating}), 0)`,
-                    communication: sql<number>`COALESCE(AVG(${translatorReview.communicationRating}), 0)`,
-                    punctuality: sql<number>`COALESCE(AVG(${translatorReview.punctualityRating}), 0)`,
-                    overall: sql<number>`COALESCE(AVG(${translatorReview.overallRating}), 0)`,
-                    totalReviews: sql<number>`COUNT(*)`
-                })
-                .from(translatorReview)
-                .where(eq(translatorReview.translatorId, input.translatorId));
-
-            return { averages };
+            return result;
         })
 })

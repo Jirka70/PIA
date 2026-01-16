@@ -1,64 +1,40 @@
 import { createTRPCRouter, baseProcedure } from "../init";
-import { sendEmail } from "@/server/email/transporter";
-import { language } from "@/db/schema";
-import { TRPCError } from "@trpc/server";
-import { sql } from "drizzle-orm";
 import { sendInput } from "@/lib/validators/trpc/email/send";
 import { sendToUserInput } from "@/lib/validators/trpc/email/sendToUser";
+import { isBadPayload } from "@/lib/utils";
+import * as emailService from "@/server/services/email.service";
+import { TRPCError } from "@trpc/server";
 
 export const emailRouter = createTRPCRouter({
     send: baseProcedure
         .input(sendInput)
         .mutation(async ({ ctx, input }) => {
-            const db = ctx.db;
+            const result = await emailService.sendContactEmail(ctx.db, input);
 
-            const availableLanguages = await db
-                .select({ code: language.code })
-                .from(language)
-                .where(sql`${language.code} IN (${input.sourceLanguage}, ${input.targetLanguage})`);
-
-            const codes = availableLanguages.map((l) => l.code);
-            if (!codes.includes(input.sourceLanguage) || !codes.includes(input.targetLanguage)) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
                     code: "BAD_REQUEST",
-                    message: "Invalid language selection"
-                });
+                    message: "Invalid email payload",
+                    cause: result.error
+                })
             }
 
-            const subject = `New contact request from ${input.firstName} ${input.lastName}`;
-            const bodyLines = [
-                `Name: ${input.firstName} ${input.lastName}`,
-                `Email: ${input.email}`,
-                `Service: ${input.serviceType}`,
-                `Source language: ${input.sourceLanguage}`,
-                `Target language: ${input.targetLanguage}`,
-                ``,
-                `Project details:`,
-                input.projectDetails
-            ];
-
-            await sendEmail({
-                to: process.env.CONTACT_EMAIL ?? input.email,
-                subject,
-                text: bodyLines.join("\n")
-            });
-
-            return {
-                ok: true
-            };
+            return result;
         })
         ,
     sendToUser: baseProcedure
         .input(sendToUserInput)
         .mutation(async ({ input }) => {
-            await sendEmail({
-                to: input.to,
-                subject: input.subject || "Message from translator",
-                text: input.body || ""
-            })
+            const result = await emailService.sendToUser(input);
 
-            return {
-                ok: true
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid email payload",
+                    cause: result.error
+                })
             }
+
+            return result
         })
 });

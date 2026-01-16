@@ -325,6 +325,10 @@
         "label": "Název projektu",
         "placeholder": "např. Překlad smlouvy"
       },
+      "sourceLanguage": {
+        "label": "Zdrojový jazyk",
+        "placeholder": "Vyberte jazyk"
+      },
       "targetLanguage": {
         "label": "Cílový jazyk",
         "placeholder": "Vyberte jazyk"
@@ -344,7 +348,8 @@
         "hint": "PDF, DOC, DOCX nebo TXT. Max ~20 MB.",
         "upload": "Nahrát",
         "uploading": "Nahrávání…",
-        "removeTitle": "Odebrat soubor"
+        "removeTitle": "Odebrat soubor",
+        "invalid": "Nepodporovaný typ nebo velikost souboru. Nahrajte prosím PDF, DOC, DOCX nebo TXT do 20 MB."
       },
       "actions": {
         "cancel": "Zrušit",
@@ -370,7 +375,8 @@
       "projectCreated": "Projekt byl úspěšně vytvořen",
       "fileRemoved": "Soubor byl odebrán",
       "fileUploaded": "Soubor byl úspěšně nahrán",
-      "uploadFailed": "Nahrávání se nezdařilo"
+      "uploadFailed": "Nahrávání se nezdařilo",
+      "fileRequired": "Před vytvořením projektu prosím vyberte zdrojový soubor"
     }
   },
   "UserProjectsContent": {

@@ -23,6 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
 import { useLocale, useTranslations } from "next-intl"
+import { ALLOWED_EXT, ALLOWED_MIME } from "@/lib/uploaded-file/allowed-file-constraints"
 
 type LanguageItem = { code: string; name: string }
 
@@ -38,6 +39,7 @@ export function NewProjectDialog({ user }: NewDialogProps) {
 
   const [open, setOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
@@ -48,16 +50,20 @@ export function NewProjectDialog({ user }: NewDialogProps) {
     defaultValues: {
       name: "",
       description: "",
+      sourceLanguage: "",
+      targetLanguage: "",
       dueAt: undefined as unknown as Date | undefined
     }
   })
 
   const trpc = useTRPC()
+  const MAX_FILE_BYTES = 20 * 1024 * 1024
   const { mutateAsync: createProject, isPending } = useMutation(
     trpc.projects.create.mutationOptions({
       onSuccess: () => {
         toast.success(t("toast.projectCreated"))
         form.reset()
+        setSelectedFile(null)
         setOpen(false)
 
         queryClient.invalidateQueries(
@@ -80,10 +86,12 @@ export function NewProjectDialog({ user }: NewDialogProps) {
   )
 
   function removeFile() {
+    setSelectedFile(null)
     form.setValue("file", undefined as any, {
-      shouldValidate: true,
+      shouldValidate: false,
       shouldDirty: true
     })
+    form.clearErrors("file")
 
     if (inputRef.current) {
       inputRef.current.value = ""
@@ -92,7 +100,7 @@ export function NewProjectDialog({ user }: NewDialogProps) {
     toast.info(t("toast.fileRemoved"))
   }
 
-  async function handleFileUpload(file: File) {
+  async function uploadSelectedFile(file: File) {
     const fd = new FormData()
     fd.append("file", file)
 
@@ -131,7 +139,8 @@ export function NewProjectDialog({ user }: NewDialogProps) {
     }
   }
 
-  const onSubmit = async (data: CreateProjectFormInput) => {
+  const onSubmit = async () => {
+    const data = form.getValues()
     await createProject({
       ...data,
       dueAt: data.dueAt ? new Date(data.dueAt) : undefined
@@ -145,6 +154,7 @@ export function NewProjectDialog({ user }: NewDialogProps) {
   })()
 
   const fileMeta = form.watch("file")
+  const displayFile = selectedFile
   const clearDueDate = () => form.setValue("dueAt", undefined as any, { shouldDirty: true, shouldValidate: true })
   const dialogContentId = "new-project-dialog-content"
 
@@ -182,7 +192,13 @@ export function NewProjectDialog({ user }: NewDialogProps) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void onSubmit()
+            }}
+            className="space-y-6 mt-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -191,6 +207,31 @@ export function NewProjectDialog({ user }: NewDialogProps) {
                   <FormLabel>{t("form.projectName.label")}</FormLabel>
                   <FormControl>
                     <Input placeholder={t("form.projectName.placeholder")} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sourceLanguage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.sourceLanguage.label")}</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("form.sourceLanguage.placeholder")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            {lang.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -314,7 +355,24 @@ export function NewProjectDialog({ user }: NewDialogProps) {
                           disabled={uploading || isPending}
                           onChange={async (e) => {
                             const f = e.currentTarget.files?.[0]
-                            if (f) await handleFileUpload(f)
+                            if (f) {
+                              const ext = "." + (f.name.split(".").pop() ?? "").toLowerCase()
+                              const isMimeOk = ALLOWED_MIME.has(f.type)
+                              const isExtOk = ALLOWED_EXT.has(ext)
+                              const isSizeOk = f.size > 0 && f.size <= MAX_FILE_BYTES
+
+                              if (!isMimeOk || !isExtOk || !isSizeOk) {
+                                setSelectedFile(null)
+                                form.setValue("file", undefined as any, { shouldValidate: false, shouldDirty: true })
+                                form.setError("file", { type: "manual", message: t("form.sourceFile.invalid") })
+                                if (inputRef.current) inputRef.current.value = ""
+                                return
+                              }
+
+                              setSelectedFile(f)
+                              form.setValue("file", undefined as any, { shouldValidate: false, shouldDirty: true })
+                              form.clearErrors("file")
+                            }
                           }}
                         />
                         <Button
@@ -336,12 +394,13 @@ export function NewProjectDialog({ user }: NewDialogProps) {
                         </Button>
                       </div>
 
-                      {fileMeta ? (
+                      {displayFile || fileMeta ? (
                         <div className="flex items-center justify-between rounded-md border p-3 text-sm">
                           <div className="flex flex-col">
-                            <span className="font-medium">{fileMeta.fileName}</span>
+                            <span className="font-medium">{displayFile?.name ?? fileMeta?.fileName}</span>
                             <span className="text-muted-foreground">
-                              {fileMeta.contentType} · {(fileMeta.size / 1024).toFixed(1)} kB
+                              {((displayFile ? displayFile.size : fileMeta?.size ?? 0) / 1024).toFixed(1)}{" "}
+                              kB
                             </span>
                           </div>
                           <Button
@@ -369,8 +428,12 @@ export function NewProjectDialog({ user }: NewDialogProps) {
               <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
                 {t("form.actions.cancel")}
               </Button>
-              <Button type="submit" disabled={isPending} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                {isPending ? t("form.actions.creating") : t("form.actions.create")}
+              <Button
+                type="submit"
+                disabled={isPending || uploading}
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                {isPending || uploading ? t("form.actions.creating") : t("form.actions.create")}
               </Button>
             </div>
           </form>

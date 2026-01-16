@@ -29,7 +29,13 @@ export const createProjectInput = z.object({
             return dd >= today;
         }, "Deadline has to be in future"),
     file: uploadedFileMeta,
-});
+}).refine(
+    (data) => data.sourceLanguage !== data.targetLanguage,
+    {
+        message: "Source and target languages must be different",
+        path: ["targetLanguage"],
+    }
+);
 
 export type CreateProjectFormInput = z.input<typeof createProjectInput>;
 export type CreateProjectFormOutput = z.output<typeof createProjectInput>;

@@ -1,14 +1,12 @@
-import { companyReview, Project, ProjectAcceptState, ProjectFile, projectStatus, Role, translatorLanguage, translatorReview, user, userActivity, ProjectStatusType } from "@/db/schema";
+import { translatorLanguage, user } from "@/db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure, translatorProcedure } from "../init";
-import { eq, and, sql, inArray, gte, not } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
-import { alias } from "drizzle-orm/pg-core";
-import type { db } from "@/db/drizzle";
 import * as projectService from "@/server/services/project.service";
 import * as fileService from "@/server/services/file.service";
 import * as activityService from "@/server/services/activity.service";
-import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
+import type { Role } from "@/db/schema";
 import { createProjectInput } from "@/lib/validators/trpc/project/create";
 import { getSourceProjectFileInput } from "@/lib/validators/trpc/project/getSourceProjectFile";
 import { getManyAsTranslatorInput } from "@/lib/validators/trpc/project/getManyAsTranslator";
@@ -28,101 +26,12 @@ import { isBadPayload } from "@/lib/utils";
 import { InsertProjectFileType } from "@/lib/types/project-file.type";
 import { InsertUserActivityType } from "@/lib/types/userActivity.type";
 
-type DB = typeof db
-
-
-const getProjectsByUserId = async (db: DB, id: string) => {
-    const sourceFile = alias(ProjectFile, "source_file");
-    const targetFile = alias(ProjectFile, "target_file");
-    const translator = alias(user, "translator")
-
-    const projects = await db
-        .select({
-            project: Project,
-            sourceFile,
-            targetFile,
-            companyReview,
-            translatorReview,
-            translator
-        })
-        .from(Project)
-        .leftJoin(
-            sourceFile,
-            and(
-                eq(sourceFile.projectId, Project.id),
-                eq(sourceFile.fileType, "SOURCE")
-            )
-        )
-        .leftJoin(
-            targetFile,
-            and(
-                eq(targetFile.projectId, Project.id),
-                eq(targetFile.fileType, "TRANSLATE")
-            )
-        )
-        .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
-        .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
-        .leftJoin(translator, eq(translator.id, Project.translatorId))
-        .where(eq(Project.clientId, id))
-
-    return {
-        projects
-    }
-}
-
-const getProjectById = async (db: DB, id: string) => {
-    const [project] = await db
-        .select()
-        .from(Project)
-        .where(eq(Project.id, id))
-
-    return project;
-}
-
-const getProjectsByTranslatorId = async (db: DB, id: string) => {
-    const sourceFile = alias(ProjectFile, "source_file");
-    const targetFile = alias(ProjectFile, "target_file");
-    const clientUser = alias(user, "client_user");
-
-    const projects = await db
-        .select({
-            project: Project,
-            sourceFile,
-            targetFile,
-            companyReview,
-            translatorReview,
-            client: clientUser
-        })
-        .from(Project)
-        .leftJoin(
-            sourceFile,
-            and(
-                eq(sourceFile.projectId, Project.id),
-                eq(sourceFile.fileType, "SOURCE")
-            )
-        )
-        .leftJoin(
-            targetFile,
-            and(
-                eq(targetFile.projectId, Project.id),
-                eq(targetFile.fileType, "TRANSLATE")
-            )
-        )
-        .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
-        .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
-        .leftJoin(clientUser, eq(clientUser.id, Project.clientId))
-        .where(eq(Project.translatorId, id))
-
-    return {
-        projects
-    }
-}
-
 
 export const projectRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createProjectInput)
         .mutation(async ({ ctx, input }) => {
+            console.log("creating new project, input", input)
             const [suitableTranslator] = await ctx.db.select()
                 .from(user)
                 .innerJoin(
@@ -172,7 +81,7 @@ export const projectRouter = createTRPCRouter({
 
             const project: ProjectType = insertedProject;
             const projectFilePayload : InsertProjectFileType = {
-                id: input.file.fileId,
+                id: nanoid(), // keep DB PK unique even if upload id is reused
                 projectId: project.id,
                 fileName: input.file.fileName,
                 contentType: input.file.contentType,
@@ -182,7 +91,7 @@ export const projectRouter = createTRPCRouter({
                 url: input.file.url
             }
 
-            const insertedProjectFile = fileService.create(ctx.db, projectFilePayload)
+            const insertedProjectFile = await fileService.create(ctx.db, projectFilePayload)
             
             if (isBadPayload(insertedProjectFile)) {
                 throw new TRPCError({
@@ -207,568 +116,228 @@ export const projectRouter = createTRPCRouter({
     getSourceProjectFile: protectedProcedure
         .input(getSourceProjectFileInput)
         .mutation(async ({ ctx, input }) => {
-            const user = ctx.user!;
-            const [project] = await ctx.db.select()
-                .from(Project)
-                .where(eq(Project.id, input.projectId))
+            const result = await projectService.getProjectSourceFile(ctx.db, input, ctx.user!);
 
-            if (project.clientId !== user.id 
-                && project.translatorId !== user.id
-                && user.role as Role !== "admin"
-            ) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            if (!project) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Source file to download was not found"
-                })
-            }
-
-            const [projectFile] = await ctx.db.select()
-                .from(ProjectFile)
-                .where(and(
-                    eq(ProjectFile.projectId, project.id),
-                    eq(ProjectFile.fileType, "SOURCE")
-                ))
-
-            return {
-                projectFile
-            }
+            return result;
 
         }),
     getManyAsTranslator: translatorProcedure
         .input(getManyAsTranslatorInput)
         .query(async ({ ctx, input }) => {
-            const user = ctx.user
-            if (user?.role !== "admin" && (!user || user.id != input.translatorId)) {
+            const result = await projectService.listTranslatorProjects(ctx.db, input.translatorId, ctx.user!);
+
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: `User ${user?.name} is not authorized`
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            return await getProjectsByTranslatorId(ctx.db, input.translatorId);            
+            return result;            
         }),
 
     uploadTranslatedFile: translatorProcedure
         .input(uploadTranslatedFileInput)
         .mutation(async ({ ctx, input }) => {
-            const [project] = await ctx.db.select()
-                .from(Project)
-                .where(eq(Project.id, input.projectId))
-        
-            if (project.translatorId !== ctx.user?.id) {
+            const result = await projectService.uploadTranslatedProjectFile(ctx.db, input, ctx.user!);
+
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "NOT AUTHENTICATED"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
-
-            const translated_file = await ctx.db
-                .select()
-                .from(ProjectFile)
-                .where(and(
-                    eq(ProjectFile.fileType, "TRANSLATE"),
-                    eq(ProjectFile.projectId, project.id)
-                ))
             
-            const newTranslatedFile = {
-                id: input.file.fileId,
-                projectId: project.id,
-                fileName: input.file.fileName,
-                contentType: input.file.contentType,
-                size: input.file.size,
-                storageKey: input.file.storageKey,
-                fileType: "TRANSLATE" as const,
-                url: input.file.url
-            }
-
-            if (translated_file && translated_file.length > 0) {
-                await ctx.db
-                    .delete(ProjectFile)
-                    .where(
-                        and(
-                            eq(ProjectFile.projectId, project.id),
-                            eq(ProjectFile.fileType, "TRANSLATE")
-                        )
-                    )
-            }
-
-            await ctx.db
-                .insert(ProjectFile)
-                .values(newTranslatedFile)
-
-            await ctx.db
-                .insert(userActivity)
-                .values({
-                    id: nanoid(),
-                    userId: ctx.user?.id,
-                    info: `submitted translation`,
-                    activityStatus: "TRANSLATION_SUBMITTED",
-                    activitySeverity: "Info",
-                    projectId: input.projectId
-                })
-
-            if (input.setQAState) {
-                await ctx.db
-                    .update(Project)
-                    .set({
-                        status: "QA"
-                    })
-                    .where(eq(Project.id, project.id))
-            }
-
-            if (input.setWaitingForApprovalAcceptState) {
-                await ctx.db
-                    .update(Project)
-                    .set({
-                        acceptState: "waiting for approval"
-                    })
-                    .where(eq(Project.id, project.id))
-
-            }
-
-            if (input.setProgressTo100) {
-                await ctx.db
-                    .update(Project)
-                    .set({
-                        progressPercent: 100
-                    })
-                    .where(eq(Project.id, project.id))
-            }
-            
-            return {
-                message: "File successfully uploaded",
-                project
-            }
+            return result
     }),
     getManyAsUser: protectedProcedure
         .input(getManyAsUserInput)
         .query(async ({ ctx, input }) => {
-            const user = ctx.user
-            console.log("Spouštímeeee")
-            if (user?.role !== "admin" && (!user || user.id != input.userId)) {
+            const result = await projectService.listClientProjects(ctx.db, input.userId, ctx.user!);
+
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: `User ${user?.name} is not authorized`
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            const projects = await getProjectsByUserId(ctx.db, input.userId);
-
-            return projects
+            return result
     }),
     updateProgress: translatorProcedure
         .input(updateProgressInput)
         .mutation(async ({ ctx, input }) => {
-            const loggedUser = ctx.user
+            const result = await projectService.updateProjectProgressForTranslator(ctx.db, input, ctx.user!);
 
-            if (!loggedUser) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
-
-            const projectsList = await ctx.db
-                .select()
-                .from(Project)
-                .where(and(
-                    eq(Project.id, input.projectId),
-                    eq(Project.translatorId, loggedUser.id)
-                ))
             
-            if (!projectsList || projectsList.length === 0) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Project not found or not assigned to this translator",
-                });
-            }
-                        
-            const [updated] = await ctx.db
-                .update(Project)
-                .set({ progressPercent: input.newProgress })
-                .where(eq(Project.id, input.projectId))
-                .returning();
-            
-            return {
-                message: "Progress updated successfully",
-                project: updated
-            }
+            return result
             
         }),
     getTranslatedFile: protectedProcedure
         .input(getTranslatedFileInput)
         .mutation(async ({ ctx, input }) => {
-            const [project] = await ctx.db.
-                select()
-                .from(Project)
-                .where(eq(Project.id, input.projectId))
+            const result = await projectService.getProjectTranslatedFile(ctx.db, input, ctx.user!);
 
-            if (project.clientId !== ctx.user?.id 
-                && project.translatorId !== ctx.user?.id
-                && ctx.user?.role as Role !== "admin"
-            ) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-            } 
-            
-            const [projectFile] = await ctx.db.select()
-                .from(ProjectFile)
-                .where(and(
-                    eq(ProjectFile.projectId, project.id),
-                    eq(ProjectFile.fileType, "TRANSLATE")
-                ))
-
-            return {
-                translatedFile: projectFile
             }
+            
+            return result
     }),
     getProjectById: adminProcedure
         .input(getProjectByIdInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
+            const result = await projectService.getProjectWithRelationsById(ctx.db, input);
 
-            const client = alias(user, "client");
-            const translator = alias(user, "translator");
-            const sourceFile = alias(ProjectFile, "source_file");
-            const translatedFile = alias(ProjectFile, "translated_file");
-
-            const [project] = await db
-                .select({
-                    project: Project,
-                    client,
-                    translator,
-                    sourceFile,
-                    translatedFile,
-                    translatorReview,
-                    companyReview
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-                .from(Project)
-                .leftJoin(client, eq(Project.clientId, client.id))
-                .leftJoin(translator, eq(Project.translatorId, translator.id))
-                .leftJoin(
-                    sourceFile,
-                    and(
-                        eq(sourceFile.projectId, Project.id),
-                        eq(sourceFile.fileType, "SOURCE")
-                    )
-                )
-                .leftJoin(
-                    translatedFile,
-                    and(
-                        eq(translatedFile.projectId, Project.id),
-                        eq(translatedFile.fileType, "TRANSLATE")
-                    )
-                )
-                .leftJoin(
-                    translatorReview,
-                    eq(translatorReview.projectId, Project.id)
-                )
-                .leftJoin(
-                    companyReview,
-                    eq(companyReview.projectId, Project.id)
-                )
-                .where(eq(Project.id, input.id))
+            }
 
-            return project
+            return result
             
     }),
     getProjectsByTranslatorId: adminProcedure
         .input(getProjectsByTranslatorIdInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
+            const result = await projectService.listProjectsWithDetailsByTranslatorId(ctx.db, input);
 
-            const client = alias(user, "client");
-            const translator = alias(user, "translator");
-
-            const sourceFile = alias(ProjectFile, "source_file");
-            const targetFile = alias(ProjectFile, "target_file");
-
-            const project = await db
-                .select({
-                    project: Project,
-                    client,
-                    translator,
-                    sourceFile,
-                    targetFile,
-                    companyReview,
-                    translatorReview
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-                .from(Project)
-                .leftJoin(client, eq(Project.clientId, client.id))
-                .leftJoin(translator, eq(Project.translatorId, translator.id))
-                .leftJoin(
-                    sourceFile,
-                    and(
-                        eq(sourceFile.projectId, Project.id),
-                        eq(sourceFile.fileType, "SOURCE")
-                    )
-                )
-                .leftJoin(
-                    targetFile,
-                    and(
-                        eq(targetFile.projectId, Project.id),
-                        eq(targetFile.fileType, "TRANSLATE")
-                    )
-                )
-                .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
-                .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
-                .where(eq(Project.translatorId, input.id))
-                .orderBy(Project.createdAt)
-
-            return {
-                project
             }
+
+            return result
     }),
     getProjectsByUserId: adminProcedure
         .input(getProjectsByUserIdInput)
         .query(async ({ ctx, input }) => {
-            const db = ctx.db;
+            const result = await projectService.listProjectsWithDetailsByClientId(ctx.db, input);
 
-            const client = alias(user, "client");
-            const translator = alias(user, "translator");
-
-            const sourceFile = alias(ProjectFile, "source_file");
-            const targetFile = alias(ProjectFile, "target_file");
-
-
-            const project = await db
-                .select({
-                    project: Project,
-                    client,
-                    translator,
-                    sourceFile,
-                    targetFile,
-                    companyReview,
-                    translatorReview
+            if (isBadPayload(result)) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-                .from(Project)
-                .leftJoin(client, eq(Project.clientId, client.id))
-                .leftJoin(translator, eq(Project.translatorId, translator.id))
-                .leftJoin(
-                    sourceFile,
-                    and(
-                        eq(sourceFile.projectId, Project.id),
-                        eq(sourceFile.fileType, "SOURCE")
-                    )
-                )
-                .leftJoin(
-                    targetFile,
-                    and(
-                        eq(targetFile.projectId, Project.id),
-                        eq(targetFile.fileType, "TRANSLATE")
-                    )
-                )
-                .leftJoin(companyReview, eq(companyReview.projectId, Project.id))
-                .leftJoin(translatorReview, eq(translatorReview.projectId, Project.id))
-                .where(eq(Project.clientId, input.userId))
-
-            return {
-                project
             }
+
+            return result
     }),
     changeProjectStatus: translatorProcedure
         .input(changeProjectStatusInput)
         .mutation(async ({ ctx, input }) => {
-            const db = ctx.db;
-            const role = ctx.user?.role as Role;
+            const result = await projectService.updateProjectStatusWithAuthorization(ctx.db, input, ctx.user!);
 
-            const [project] = await db
-                .select()
-                .from(Project)
-                .where(eq(Project.id, input.projectId))
-
-            if (role !== "admin" && project.translatorId !== ctx.user?.id) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            if (role === "translator" 
-                && (input.projectStatus === "DONE"
-                || input.projectStatus === "BLOCKED"
-                || input.projectStatus === "CLOSED"
-                )) {
-                    throw new TRPCError({
-                        code: "UNAUTHORIZED",
-                        message: `Translator cannot change project status to ${input.projectStatus}`
-                    })
-                }
-            
-            await db.update(Project)
-                .set({
-                    status: input.projectStatus
-                })
-                .where(eq(Project.id, input.projectId))
-
-            return {
-                success: true
-            }
+            return result
 
         }),
     getProjectsStats: adminProcedure
         .query(async ({ ctx }) => {
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-            const excludedStatuses = ["CLOSED", "BLOCKED", "DONE"] as (typeof projectStatus.enumValues)[number][];
-
-            const [stats] = await ctx.db
-                .select({
-                    total: sql<number>`count(*)`,
-                    lastMonth: sql<number>`sum(case when ${Project.createdAt} >= ${oneMonthAgo} then 1 else 0 end)`
-                })
-                .from(Project)
-                .where(not(inArray(Project.status, excludedStatuses)));
-
-            return stats ?? { total: 0, lastMonth: 0 };
+            const stats = await projectService.getActiveProjectsStats(ctx.db);
+            return stats;
         }),
     getCompletedProjectsCount: adminProcedure
         .query(async ({ ctx }) => {
-            const completedStatuses = projectStatus.enumValues.filter((status) =>
-                isCompleted(status as ProjectStatusType)
-            ) as ProjectStatusType[];
-
-            const [result] = await ctx.db
-                .select({
-                    count: sql<number>`count(*)`
-                })
-                .from(Project)
-                .where(inArray(Project.status, completedStatuses));
-
-            return { count: result?.count ?? 0 };
+            return projectService.countCompletedProjects(ctx.db);
         }),
     getProjectsCount: adminProcedure
         .query(async ({ ctx }) => {
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-            const [result] = await ctx.db
-                .select({
-                    total: sql<number>`count(*)`,
-                    lastMonth: sql<number>`sum(case when ${Project.createdAt} >= ${oneMonthAgo} then 1 else 0 end)`
-                })
-                .from(Project);
-
-            return {
-                total: result?.total ?? 0,
-                lastMonth: result?.lastMonth ?? 0,
-            };
+            return projectService.countProjectsWithRecent(ctx.db);
         }),
     getProjectStatuses: adminProcedure
         .query(() => {
-            return { statuses: projectStatus.enumValues };
+            return projectService.listProjectStatuses();
     }),
     getProjectsCreatedLastMonth: protectedProcedure
         .input(getProjectsCreatedLastMonthInput)
         .query(async ({ ctx, input }) => {
-            const role = ctx.user?.role as Role
-            const signedUserId = ctx.user?.id
+            const result = await projectService.listProjectsCreatedLastMonthByClientId(ctx.db, input, ctx.user!);
 
-
-            if (role !== "admin"
-                && input.id !== signedUserId
-            ) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
-            } 
-
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-
-            const projects = await ctx.db
-                .select()
-                .from(Project)
-                .where(and(
-                    gte(Project.createdAt, oneMonthAgo),
-                    eq(Project.clientId, input.id)
-                ))
-
-            return {
-                projects
             }
+
+            return result
     }),
     getProjectStatusCounts: translatorProcedure
         .input(getProjectStatusCountsInput)
         .query(async ({ ctx, input }) => {
-            const requesterRole = ctx.user?.role as Role;
+            const currentUser = {
+                id: ctx.user!.id,
+                role: ctx.user!.role as Role,
+                name: ctx.user!.name ?? null,
+            };
+            const result = await projectService.countTranslatorProjectsByStatusGroups(ctx.db, input, currentUser);
 
-            if (!["admin", "owner"].includes(requesterRole) && ctx.user?.id !== input.translatorId) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            const activeStatuses = projectStatus.enumValues.filter((status) =>
-                isActive(status as ProjectStatusType)
-            ) as ProjectStatusType[];
-
-            const completedStatuses = projectStatus.enumValues.filter((status) =>
-                isCompleted(status as ProjectStatusType)
-            ) as ProjectStatusType[];
-
-            const cancelledStatuses = projectStatus.enumValues.filter((status) =>
-                isCancelled(status as ProjectStatusType)
-            ) as ProjectStatusType[];
-
-            const [active] = await ctx.db
-                .select({ count: sql<number>`count(*)` })
-                .from(Project)
-                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, activeStatuses)));
-
-            const [completed] = await ctx.db
-                .select({ count: sql<number>`count(*)` })
-                .from(Project)
-                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, completedStatuses)));
-
-            const [cancelled] = await ctx.db
-                .select({ count: sql<number>`count(*)` })
-                .from(Project)
-                .where(and(eq(Project.translatorId, input.translatorId), inArray(Project.status, cancelledStatuses)));
-
-            return {
-                active: active?.count ?? 0,
-                completed: completed?.count ?? 0,
-                cancelled: cancelled?.count ?? 0
-            };
+            return result;
     }),
     changeAcceptState: protectedProcedure
         .input(changeAcceptStateInput)
         .mutation(async ({ ctx, input }) => {
-            const requesterRole = ctx.user?.role as Role;
+            const currentUser = {
+                id: ctx.user!.id,
+                role: ctx.user!.role as Role,
+                name: ctx.user!.name ?? null,
+            };
+            const result = await projectService.updateProjectAcceptStateWithAuthorization(ctx.db, input, currentUser);
 
-            const project = await getProjectById(ctx.db, input.projectId)
-
-            if (!["owner", "admin"].includes(requesterRole) && ctx.user?.id !== project.clientId) {
+            if (isBadPayload(result)) {
                 throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authorized"
+                    code: "BAD_REQUEST",
+                    message: "Invalid request payload",
+                    cause: result.error
                 })
             }
 
-            const updatedProject = await ctx.db
-                .update(Project)
-                .set({
-                    acceptState: input.accept
-                })
-                .where(eq(Project.id, input.projectId))
-                .returning()
-
-            return {
-                project: updatedProject
-            }
+            return result;
         })
 })

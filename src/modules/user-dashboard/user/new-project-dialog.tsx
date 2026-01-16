@@ -19,10 +19,11 @@ import { CalendarIcon } from "lucide-react"
 import { cn, uploadFile } from "@/lib/utils"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useTRPC } from "@/trpc/client"
 import { toast } from "sonner"
 import { useLocale, useTranslations } from "next-intl"
+import { SelectLanguagesSkeleton } from "@/modules/manage-translator/edit-languages-dialog"
 
 type LanguageItem = { code: string; name: string }
 
@@ -42,17 +43,23 @@ export function NewProjectDialog({ user }: NewDialogProps) {
   const queryClient = useQueryClient()
 
   const languages = t.raw("languages.list") as LanguageItem[]
+  const trpc = useTRPC()
+
+  const { data: languageAvailability, isPending: isLanguagesPending } = useQuery(
+    trpc.languages.getLanguageAvailability.queryOptions()
+  )
 
   const form = useForm<CreateProjectFormInput>({
     resolver: zodResolver(createProjectInput),
     defaultValues: {
       name: "",
       description: "",
+      sourceLanguage: "",
+      targetLanguage: "",
       dueAt: undefined as unknown as Date | undefined
     }
   })
 
-  const trpc = useTRPC()
   const { mutateAsync: createProject, isPending } = useMutation(
     trpc.projects.create.mutationOptions({
       onSuccess: () => {
@@ -199,6 +206,48 @@ export function NewProjectDialog({ user }: NewDialogProps) {
 
             <FormField
               control={form.control}
+              name="sourceLanguage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.sourceLanguage.label")}</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("form.sourceLanguage.placeholder")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLanguagesPending ? (
+                          <SelectLanguagesSkeleton />
+                        ) : (
+                          languages.map((lang) => {
+                            const available = languageAvailability?.availability
+                              ? languageAvailability.availability[lang.code]
+                              : true
+
+                            return (
+                              <SelectItem key={lang.code} value={lang.code} disabled={!available}>
+                                <div className="flex w-full items-center justify-between gap-2">
+                                  <span>{lang.name}</span>
+                                  {!available && (
+                                    <span className="text-xs text-muted-foreground ml-2">
+                                      {t("form.languageUnavailable")}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            )
+                          })
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="targetLanguage"
               render={({ field }) => (
                 <FormItem>
@@ -209,11 +258,28 @@ export function NewProjectDialog({ user }: NewDialogProps) {
                         <SelectValue placeholder={t("form.targetLanguage.placeholder")} />
                       </SelectTrigger>
                       <SelectContent>
-                        {languages.map((lang) => (
-                          <SelectItem key={lang.code} value={lang.code}>
-                            {lang.name}
-                          </SelectItem>
-                        ))}
+                        {isLanguagesPending ? (
+                          <SelectLanguagesSkeleton />
+                        ) : (
+                          languages.map((lang) => {
+                            const available = languageAvailability?.availability
+                              ? languageAvailability.availability[lang.code]
+                              : true
+
+                            return (
+                              <SelectItem key={lang.code} value={lang.code} disabled={!available}>
+                                <div className="flex w-full items-center justify-between gap-2">
+                                  <span>{lang.name}</span>
+                                  {!available && (
+                                    <span className="text-xs text-muted-foreground ml-2">
+                                      {t("form.languageUnavailable")}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            )
+                          })
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>

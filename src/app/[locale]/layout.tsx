@@ -30,10 +30,10 @@ export default async function RootLayout({
   params
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: "en" | "cs" }>;
+  params: Promise<{ locale: string }>;
 }) {
 
-  const {locale} = await params
+  const { locale } = await params
   const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (

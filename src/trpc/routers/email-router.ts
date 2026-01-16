@@ -5,6 +5,7 @@ import { language } from "@/db/schema";
 import { TRPCError } from "@trpc/server";
 import { sql } from "drizzle-orm";
 
+// Email router for contact/notification flows (contact form + direct messaging)
 export const emailRouter = createTRPCRouter({
     send: baseProcedure
         .input(
@@ -26,6 +27,7 @@ export const emailRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const db = ctx.db;
 
+            // Validate languages against DB and forward contact request via SMTP
             const availableLanguages = await db
                 .select({ code: language.code })
                 .from(language)
@@ -71,6 +73,7 @@ export const emailRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input }) => {
+            // Simple relay for sending a message to a specific user address
             await sendEmail({
                 to: input.to,
                 subject: input.subject || "Message from translator",

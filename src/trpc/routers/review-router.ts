@@ -8,6 +8,7 @@ import { nanoid } from "nanoid"
 
 
 
+// Handles translator/company review creation and retrieval with authorization checks
 export const reviewRouter = createTRPCRouter({
     publishTranslatorReview: protectedProcedure
         .input(z.object({
@@ -20,6 +21,7 @@ export const reviewRouter = createTRPCRouter({
 
             const user = ctx.user
 
+            // Only project owner (or admin) can publish a translator review
             const [project] = await db
                 .select()
                 .from(Project)
@@ -85,6 +87,7 @@ export const reviewRouter = createTRPCRouter({
             }
         }),
 
+    // Company review submission (for the client’s own company)
     publishCompanyReview: protectedProcedure
         .input(z.object({
             projectId: z.string(),

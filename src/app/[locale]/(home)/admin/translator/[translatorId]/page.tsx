@@ -8,6 +8,7 @@ interface Props {
 }
 
 export default async function TranslatorInfoPage({ params } : Props) {
+    // Admin-only translator profile page (SSR guard)
     await requireAdmin()
     const { translatorId } = await params;
 

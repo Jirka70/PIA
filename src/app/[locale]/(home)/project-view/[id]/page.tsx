@@ -6,6 +6,7 @@ export default async function ProjectViewPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+    // Enforce admin access on the server before rendering the project view
     await requireAdmin()
     const {id} = await params;
 

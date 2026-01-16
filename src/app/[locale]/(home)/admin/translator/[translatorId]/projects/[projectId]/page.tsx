@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default async function TranslatorProjectPage({ params } : Props) {
+    // Admin-only view of a specific translator’s project (SSR guard)
     await requireAdmin();
 
     const { translatorId, projectId } = await params;

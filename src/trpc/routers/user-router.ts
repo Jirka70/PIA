@@ -5,6 +5,7 @@ import { eq, getTableColumns, or, sql } from "drizzle-orm";
 import { id } from "date-fns/locale";
 import { TRPCError } from "@trpc/server";
 
+// User management endpoints for admin dashboards and translator insights
 export const userRouter = createTRPCRouter({
     getUserById: adminProcedure
         .input(z.object({
@@ -26,6 +27,7 @@ export const userRouter = createTRPCRouter({
         .query(async ({ ctx }) => {
             const db = ctx.db;
 
+            // List all users with open project count for admin table
             const res = await db
                 .select({
                     ...getTableColumns(user),
@@ -51,6 +53,7 @@ export const userRouter = createTRPCRouter({
             id: z.string()
         }))
         .query(async ({ ctx, input }) => {
+            // Translator detail view: profile, projects, and languages
             const [translator] = await ctx.db
                 .select()
                 .from(user)
@@ -77,6 +80,7 @@ export const userRouter = createTRPCRouter({
         }))
         .query(async ({ ctx, input }) => {
             const db = ctx.db;
+            // Fetch a user and their projects (for user detail admin page)
             const rows = await db
                 .select({
                     user,
@@ -99,6 +103,7 @@ export const userRouter = createTRPCRouter({
     getUserStats: adminProcedure
         .query(async ({ ctx }) => {
             const db = ctx.db;
+            // High-level user stats for dashboard widgets
             const [result] = await db
                 .select({
                     totalUsers: sql<number>`COUNT(*)`,

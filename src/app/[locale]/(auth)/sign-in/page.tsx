@@ -3,6 +3,7 @@ import { LoginForm } from "@/modules/login/forms/login-form";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Sign-in page; redirect authenticated users to dashboard/home
 export default async function Home() {
   const session = await auth.api.getSession({
     headers: await headers()

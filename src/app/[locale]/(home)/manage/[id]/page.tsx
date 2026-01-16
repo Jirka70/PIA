@@ -6,6 +6,7 @@ export default async function ManageTranslatorPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+    // Restrict manage-translator page to admins on the server
     await requireAdmin()
     const { id } = await params;
 

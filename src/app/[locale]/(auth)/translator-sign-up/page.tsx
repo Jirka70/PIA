@@ -3,6 +3,7 @@ import { TranslatorSignupForm } from "@/modules/login/forms/translator-sign-up-f
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Translator sign-up page – guards against authenticated users landing here
 export default async function Home() {
 
   const session = await auth.api.getSession({

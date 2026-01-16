@@ -32,7 +32,7 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-
+  // Resolve locale and translations on the server before rendering children
   const { locale } = await params
   const messages = (await import(`@/messages/${locale}.json`)).default;
 

@@ -8,7 +8,7 @@ interface UserProjectsProps {
 }
 
 export default async function UserProjectsPage({ params } : UserProjectsProps) {
-    
+    // Admin-only user detail page (SSR guard)
     await requireAdmin()
     const { userId } = await params;
 

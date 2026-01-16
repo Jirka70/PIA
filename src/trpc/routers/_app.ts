@@ -6,6 +6,7 @@ import { projectRouter } from './project-router';
 import { reviewRouter } from './review-router';
 import { userRouter } from './user-router';
 
+// Root TRPC router stitching together domain routers
 export const appRouter = createTRPCRouter({
   projects: projectRouter,
   activity: activityRouter,

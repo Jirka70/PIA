@@ -8,6 +8,7 @@ interface Props {
 }
 
 export default async function TranslatorProjectsPage({ params } : Props) {
+    // Server-side guard to restrict admin-only translator project view
     await requireAdmin()
     const { translatorId } = await params;
 

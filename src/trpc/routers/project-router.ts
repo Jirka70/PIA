@@ -13,7 +13,7 @@ import { isActive, isCancelled, isCompleted } from "@/lib/project-status-utils";
 type DB = typeof db
 
 
-
+// Helper query: fetch projects by client id with joined relations
 const getProjectsByUserId = async (db: DB, id: string) => {
     const sourceFile = alias(ProjectFile, "source_file");
     const targetFile = alias(ProjectFile, "target_file");
@@ -55,6 +55,7 @@ const getProjectsByUserId = async (db: DB, id: string) => {
     }
 }
 
+// Helper query: fetch a single project row
 const getProjectById = async (db: DB, id: string) => {
     const [project] = await db
         .select()
@@ -64,6 +65,7 @@ const getProjectById = async (db: DB, id: string) => {
     return project;
 }
 
+// Helper query: fetch projects by translator id with client and files joined
 const getProjectsByTranslatorId = async (db: DB, id: string) => {
     const sourceFile = alias(ProjectFile, "source_file");
     const targetFile = alias(ProjectFile, "target_file");
@@ -104,6 +106,7 @@ const getProjectsByTranslatorId = async (db: DB, id: string) => {
 }
 
 
+// TRPC router for project lifecycle: creation, status updates, file handling, stats
 export const projectRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createProjectInput)

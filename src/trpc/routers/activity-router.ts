@@ -2,11 +2,15 @@ import { Project, user, userActivity } from "@/db/schema";
 import { adminProcedure, createTRPCRouter } from "../init";
 import { gt, eq, desc } from "drizzle-orm";
 
+// TRPC router for activity feed shown to admins
+// Exposes aggregate endpoints only (no mutations)
+
 export const activityRouter = createTRPCRouter({
     getMany: adminProcedure
         .query(async ({ ctx }) => {
             const db = ctx.db;
 
+            // Fetch the full ordered activity log (joins user and project for context)
             const [activities] = await db
                 .select({
                     id:              userActivity.id,
@@ -32,6 +36,7 @@ export const activityRouter = createTRPCRouter({
             const db = ctx.db;
             const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+            // Fetch a small slice of recent activity (last 24h, limited)
             const recentActivities = await db
             .select({
                 id:              userActivity.id,

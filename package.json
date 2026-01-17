@@ -97,6 +97,7 @@
     "vitest": "^4.0.16"
   },
   "overrides": {
-    "esbuild": "^0.25.0"
-  }
+  "esbuild": "^0.25.0",
+  "@swc/helpers": "0.5.18"
+}
 }

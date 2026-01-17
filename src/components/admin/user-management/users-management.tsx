@@ -181,7 +181,6 @@ export function UsersManagement() {
                             {t("menu.changeRole")}
                           </DropdownMenuItem>
 
-                          <DropdownMenuItem>{t("menu.sendMessage")}</DropdownMenuItem>
 
                           <DropdownMenuItem onClick={() => viewProjects(user.id, user.role)}>
                             {t("menu.viewProjects")}
@@ -192,10 +191,6 @@ export function UsersManagement() {
                               {t("menu.manageTranslator")}
                             </DropdownMenuItem>
                           )}
-
-                          <DropdownMenuSeparator />
-
-                          <DropdownMenuItem className="text-destructive" disabled={user.role === "admin"}>{t("menu.banUser")}</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

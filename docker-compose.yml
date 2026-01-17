@@ -1,4 +1,6 @@
 services:
+
+
   db:
     image: postgres:16
     restart: unless-stopped
@@ -30,7 +32,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@db:5432/app}
     depends_on:
       - db
-    command: ["npm", "run", "db:migrate"]
+    command: ["npm", "run", "db:push"]
 
   app:
     build:

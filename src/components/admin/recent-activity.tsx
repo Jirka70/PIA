@@ -156,15 +156,6 @@ export function RecentActivity({ onViewAll }: RecentActivityProps) {
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onViewAll}
-              className="w-full bg-card/50 backdrop-blur-md border-border/50 text-foreground hover:bg-muted/60 hover:text-foreground group/btn transition-colors"
-            >
-              {t("actions.viewOtherActivities")}
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-            </Button>
           </div>
         )}
       </CardContent>

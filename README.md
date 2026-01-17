@@ -27,6 +27,15 @@ You only need to obtain API keys if you want to enable optional integrations (Go
 
 ---
 
+## Product functionality
+
+- **Sign-in & roles**: Google OAuth via Better Auth. Separate entry points for sign-in (login), sign-up (customer), and translator sign-up; every flow works with Google OAuth. Translators also have an intent flag so they land with the correct role.
+- **Customer workspace**: Create projects with name, source/target language, description, optional deadline (can be cleared), and upload a source file (`.pdf`, `.txt`, `.docx`, `.doc`, max 20 MB). Language options are auto-disabled when no translator in the database supports them. Dashboard cards show active/in-progress/completed/pending-review counts. Users can download source files, track progress (0–100% set by translator), see QA state, approve or reject when in QA, and grab the translated file when available. After completion they can submit reviews for both the translator and the company; reviews are pinned to the project and visible to translators/admins.
+- **Translator workspace**: Sees only assigned projects, with client contact dialog, progress slider (warns if set to 100% without an uploaded translation), and controls to push a project into QA or request customer approval when uploading a translation. Uploading a translated file can auto-set progress to 100%, flip status to QA, and notify the customer. Translators see their aggregated ratings (overall + quality/communication/punctuality breakdown) and review distribution.
+- **Admin workspace**: Overview tab with user/translator/project stats and recent activity. User management allows role changes (user/translator), deep links to a user’s or translator’s projects, and translator management. Admin project detail view shows client/translator info, files, progress, reviews, and full status control (including force-setting DONE); if a project is marked DONE without customer approval, an alert highlights the exception. Cross-links let admins jump directly to the relevant user or translator profile from a project.
+
+---
+
 ## Database & migrations
 
 This project uses **Drizzle ORM migrations**.  

@@ -85,7 +85,7 @@ export const ProjectAdminView = ({ id }: ProjectAdminViewProps) => {
     <ProjectAdminViewWrapper title="Project Details" description="">
       <div className="space-y-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/manage/${translator?.id}`}>
+          <Link href={`/admin/translator/${translator?.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Manage Translator
           </Link>

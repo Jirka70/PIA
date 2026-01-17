@@ -86,6 +86,7 @@
     "@types/nodemailer": "^7.0.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.0.17",
     "drizzle-kit": "^0.31.5",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",

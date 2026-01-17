@@ -27,6 +27,20 @@ You only need to obtain API keys if you want to enable optional integrations (Go
 
 ---
 
+## Testing
+
+Run the Vitest suite with npm (no extra setup needed beyond `npm ci` and a running Postgres if your tests touch the DB):
+
+```bash
+npm test          # watch mode
+npm run test:run  # single run
+npm run test:coverage  # coverage summary
+```
+
+The coverage task uses Vitest V8 coverage and writes reports to the default `.coverage` output (respects any Vitest config overrides).
+
+---
+
 ## Product functionality
 
 - **Sign-in & roles**: Google OAuth via Better Auth. Separate entry points for sign-in (login), sign-up (customer), and translator sign-up; every flow works with Google OAuth. Translators also have an intent flag so they land with the correct role.
